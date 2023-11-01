@@ -1,0 +1,8 @@
+/config/*
+!/config/mangosd.conf.example
+!/config/realmd.conf.example
+/database-backups/*
+/storage/**
+!/storage/**/
+/compose.yaml
+!/**/.gitkeep

@@ -1,0 +1,135 @@
+name: Build and push Docker images
+
+on:
+  # Build images on Wednesday and Sunday
+  schedule:
+    - cron: '0 0 * * 3,6'
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - 'master'
+  workflow_dispatch:
+
+jobs:
+  build-and-push-docker-images:
+    name: Build and push Docker images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - dockerfile: ./docker/database/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-database
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 5875
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 5464
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 5302
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 5086
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 4878
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 4695
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 4544
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 4449
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 4375
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 4297
+          - dockerfile: ./docker/server/Dockerfile
+            image: ghcr.io/mserajnik/vmangos-server
+            client-version: 4222
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get latest commit hash
+        uses: actions/github-script@v6
+        id: get-latest-commit-hash
+        with:
+          result-encoding: string
+          retries: 3
+          script: |
+            const ref = await github.rest.git.getRef({
+              owner: 'vmangos',
+              repo: 'core',
+              ref: 'heads/development',
+            })
+
+            return ref.data.object.sha
+
+      - name: Generate tags
+        uses: actions/github-script@v6
+        id: generate-tags
+        env:
+          OUTPUT_COMMIT_HASH: '${{ steps.get-latest-commit-hash.outputs.result }}'
+          MATRIX_DOCKERFILE: '${{ matrix.dockerfile }}'
+          MATRIX_IMAGE: '${{ matrix.image }}'
+          MATRIX_CLIENT_VERSION: '${{ matrix.client-version }}'
+        with:
+          result-encoding: string
+          script: |
+            const tags = []
+
+            if (process.env.MATRIX_IMAGE === 'ghcr.io/mserajnik/vmangos-database') {
+              tags.push(`${process.env.MATRIX_IMAGE}:latest`)
+              tags.push(`${process.env.MATRIX_IMAGE}:${process.env.OUTPUT_COMMIT_HASH}`)
+            }
+
+            if (process.env.MATRIX_IMAGE === 'ghcr.io/mserajnik/vmangos-server') {
+              // We tag the newest build for client version 5875 with `latest`
+              // since that can be considered the default
+              if (parseInt(process.env.MATRIX_CLIENT_VERSION) === 5875) {
+                tags.push(`${process.env.MATRIX_IMAGE}:latest`)
+              }
+
+              tags.push(`${process.env.MATRIX_IMAGE}:${process.env.MATRIX_CLIENT_VERSION}`)
+              tags.push(`${process.env.MATRIX_IMAGE}:${process.env.MATRIX_CLIENT_VERSION}-${process.env.OUTPUT_COMMIT_HASH}`)
+            }
+
+            return tags.join(',')
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64, linux/arm64
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          provenance: false
+          build-args: |
+            VMANGOS_REVISION=${{ steps.get-latest-commit-hash.outputs.result }}
+          tags: ${{ steps.generate-tags.outputs.result }}

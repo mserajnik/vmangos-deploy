@@ -1,0 +1,118 @@
+version: '3'
+
+services:
+  database:
+    image: ghcr.io/mserajnik/vmangos-database
+    restart: unless-stopped
+    volumes:
+      - vmangos-database:/var/lib/mysql
+      # Mount an SQL file as `/sql/world-new.sql` to force the re-creation of
+      # the world database (with the contents of the mounted file); make sure
+      # to remove this bind mount again before you restart the database the
+      # next time or it will continue to re-create the database each time you
+      # restart.
+      # This can be used to update to a world database dump newer than
+      # `world_full_14_june_2021`; however, to my knowledge, this should not be
+      # necessary as the database migrations will keep it up to date anyway
+      # (and thus, a newer dump would only reduce the time of the initial
+      # creation of a fresh database because it would cause potentially lengthy
+      # migrations to get skipped).
+      # Therefore, this option is merely here to have it available in case it
+      # becomes necessary to import a newer world database dump after all.
+      #
+      # - /path/to/new/world.sql:/sql/world-new.sql:ro
+    environment:
+      - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
+      - MYSQL_ROOT_PASSWORD=password
+      # Only a subset covering the most important realmlist parameters is
+      # exposed in this configuration file. Changing them here after the
+      # database has been created will _not_ update them, but you can always
+      # change them (and the other parameters not exposed here) manually in the
+      # database at any point.
+      - VMANGOS_REALMLIST_NAME=VMaNGOS # Sets the name of the realm as it appears in the selection list and the character screen
+      - VMANGOS_REALMLIST_ADDRESS=127.0.0.1 # Sets the LAN or WAN address of the realm; this can also be a domain name
+      - VMANGOS_REALMLIST_PORT=8085 # Sets the port of the realm; changing this means it also needs to be changed in other places
+      - VMANGOS_REALMLIST_ICON=1 # Sets the icon of the realm; 0 = Normal, 1 = PvP, 6 = RP, 8 = RP PVP
+      - VMANGOS_REALMLIST_TIMEZONE=0 # Sets the timezone of the realm; some common values are: 2 = United States, 3 = Oceanic, 4 = Latin America, 8 = English, 9 = German, 10 = French, 11 = Spanish, 12 = Russian
+      - VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0 # Sets the minimum account security level required to log in to the realm; 0 = regular players
+
+  realmd:
+    image: ghcr.io/mserajnik/vmangos-server:5875
+    # If you are using a Linux host and your user's UID and GID are not 1000,
+    # change these values to reflect your user's UID and GID. This will cause
+    # the user in the container to use the same UID and GID and prevent
+    # permission issues on the bind mounts.
+    # If you are on Windows or macOS, you can ignore this.
+    user: 1000:1000
+    command: realmd
+    depends_on:
+      - database
+    restart: unless-stopped
+    ports:
+      - 3724:3724
+    volumes:
+      - ./config/realmd.conf:/opt/vmangos/config/realmd.conf:ro
+      - ./storage/realmd/logs:/opt/vmangos/storage/logs
+    environment:
+      - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
+      - WAIT_HOSTS=database:3306
+      - WAIT_TIMEOUT=600
+
+  mangosd:
+    image: ghcr.io/mserajnik/vmangos-server:5875
+    # If you are using a Linux host and your user's UID and GID are not 1000,
+    # change these values to reflect your user's UID and GID. This will cause
+    # the user in the container to use the same UID and GID and prevent
+    # permission issues on the bind mounts.
+    # If you are on Windows or macOS, you can ignore this.
+    user: 1000:1000
+    command: mangosd
+    tty: true
+    stdin_open: true
+    depends_on:
+      - database
+    restart: unless-stopped
+    ports:
+      - 8085:8085
+    volumes:
+      - ./config/mangosd.conf:/opt/vmangos/config/mangosd.conf:ro
+      - ./storage/mangosd/extracted-data:/opt/vmangos/storage/data:ro
+      - ./storage/mangosd/logs:/opt/vmangos/storage/logs
+      - ./storage/mangosd/honor:/opt/vmangos/storage/honor
+    environment:
+      - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
+      - WAIT_HOSTS=database:3306
+      - WAIT_TIMEOUT=600
+
+  # Uncomment this service to enable periodic database backups.
+  # The default configuration should work out of the box (unless you have
+  # changed the database service configuration) and will create a backup every
+  # day at 04:00 (change the `TIMEZONE` environment variable to your desired
+  # timezone). Backups older than a week will automatically get deleted.
+  # Backups will be stored in `./database-backups`.
+  # See https://github.com/tiredofit/docker-db-backup#configuration for more
+  # information.
+  # database-backup:
+  #   image: tiredofit/db-backup
+  #   depends_on:
+  #     - database
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./database-backups:/backup
+  #   environment:
+  #     - TIMEZONE=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
+  #     - CONTAINER_ENABLE_MONITORING=FALSE
+  #     - DB_TYPE=mariadb
+  #     - DB_HOST=database
+  #     - DB_NAME=characters,realmd # Which databases should be backed up
+  #     - DB_USER=root
+  #     - DB_PASS=password
+  #     - DB_DUMP_FREQ=1440 # How often to run the backup in minutes; 1440 means once per day
+  #     - DB_DUMP_BEGIN=0400 # When to start the backup; 0400 means it starts at 04:00
+  #     - DB_CLEANUP_TIME=10080 # How old backups have to be to get deleted; 10080 means backups older than a week get deleted
+  #     - ENABLE_CHECKSUM=TRUE
+  #     - CHECKSUM=SHA1
+  #     - COMPRESSION=GZ
+
+volumes:
+  vmangos-database:
