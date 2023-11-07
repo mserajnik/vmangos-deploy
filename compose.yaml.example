@@ -28,7 +28,7 @@ services:
       # exposed in this configuration file. Changing them here after the
       # database has been created will _not_ update them, but you can always
       # change them (and the other parameters not exposed here) manually in the
-      # database at any point.
+      # database at any point (see the `phpmyadmin` service further below).
       - VMANGOS_REALMLIST_NAME=VMaNGOS # Sets the name of the realm as it appears in the selection list and the character screen
       - VMANGOS_REALMLIST_ADDRESS=127.0.0.1 # Sets the LAN or WAN address of the realm; this can also be a domain name
       - VMANGOS_REALMLIST_PORT=8085 # Sets the port of the realm; changing this means it also needs to be changed in other places
@@ -113,6 +113,26 @@ services:
   #     - ENABLE_CHECKSUM=TRUE
   #     - CHECKSUM=SHA1
   #     - COMPRESSION=GZ
+
+  # Uncomment this service to run phpMyAdmin, a web-based MySQL/MariaDB
+  # database administration tool.
+  # This can be useful to manage accounts, make changes to the realm
+  # configuration etc.
+  # With the default configuration, you should be able to open
+  # http://localhost:8080 in your browser and have access to all of the
+  # databases VMaNGOS uses.
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   depends_on:
+  #     - database
+  #   restart: unless-stopped
+  #   ports:
+  #     - 8080:80
+  #   environment:
+  #     - PMA_HOST=database
+  #     - PMA_PORT=3306
+  #     - PMA_USER=root
+  #     - PMA_PASSWORD=password
 
 volumes:
   vmangos-database:

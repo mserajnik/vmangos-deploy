@@ -45,6 +45,7 @@ be provided earlier.
   + [Stopping VMaNGOS](#stopping-vmangos)
   + [Updating](#updating)
   + [Creating database backups](#creating-database-backups)
+  + [Accessing the database](#accessing-the-database)
 + [Maintainer](#maintainer)
 + [Contribute](#contribute)
 + [License](#license)
@@ -271,6 +272,17 @@ To automatically create database backups periodically, uncomment the
 `database-backup` service configuration in your `./compose.yaml` and follow the
 comments there for further information.
 
+### Accessing the database
+
+To make certain changes (e.g., managing accounts or changing the realm
+configuration) it can be necessary to access the database with a MySQL/MariaDB
+client.
+
+A common web-based MySQL/MariaDB database administration tool called
+[phpMyAdmin][phpymadmin] is included and can be enabled by uncommenting the
+`phpmyadmin` service configuration in your `./compose.yaml`. See the comments
+there for further information.
+
 ## Maintainer
 
 [Michael Serajnik][maintainer]
@@ -289,6 +301,7 @@ You are welcome to help out!
 [docker-compose]: https://docs.docker.com/compose/install/
 [image-vmangos-database-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-database/versions?filters%5Bversion_type%5D=tagged
 [image-vmangos-server-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-server/versions?filters%5Bversion_type%5D=tagged
+[phpymadmin]: https://www.phpmyadmin.net/
 [vmangos]: https://github.com/vmangos/core
 [vmangos-docker]: https://github.com/mserajnik/vmangos-docker
 
