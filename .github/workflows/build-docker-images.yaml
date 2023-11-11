@@ -16,6 +16,11 @@ on:
       - 'docker/**'
   workflow_dispatch:
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_SERVER: ${{ github.repository_owner }}/vmangos-server
+  IMAGE_NAME_DATABASE: ${{ github.repository_owner }}/vmangos-database
+
 jobs:
   setup:
     name: Setup
@@ -44,58 +49,22 @@ jobs:
         id: already-built
         run: |
           ghcr_token=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
-          tags=$(skopeo list-tags --registry-token ${ghcr_token} docker://ghcr.io/mserajnik/vmangos-database | jq '.Tags[]')
-          if grep -q "${{ steps.latest-commit-hash.outputs.result }}" <<< "$tags"; then
+          tags=$(skopeo list-tags --registry-token ${ghcr_token} docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }} | jq '.Tags[]')
+          if grep -q "${{ steps.latest-commit-hash.outputs.result }}" <<< "${tags}"; then
             echo "result=true" >> $GITHUB_OUTPUT
           else
             echo "result=false" >> $GITHUB_OUTPUT
           fi
 
-
-  build-and-push-docker-images:
-    name: Build and push images
+  build-and-push-server-images:
+    name: Build and push server images
     needs: setup
     if: ${{ needs.setup.outputs.already-built != 'true' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
-        include:
-          - dockerfile: ./docker/database/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-database
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 5875
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 5464
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 5302
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 5086
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 4878
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 4695
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 4544
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 4449
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 4375
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 4297
-          - dockerfile: ./docker/server/Dockerfile
-            image: ghcr.io/mserajnik/vmangos-server
-            client-version: 4222
+        client-version: [5875, 5464, 5302, 5086, 4878, 4695, 4544, 4449, 4375, 4297, 4222]
     permissions:
       contents: read
       packages: write
@@ -109,29 +78,81 @@ jobs:
         id: generate-tags
         env:
           COMMIT_HASH: '${{ needs.setup.outputs.commit-hash }}'
-          MATRIX_DOCKERFILE: '${{ matrix.dockerfile }}'
-          MATRIX_IMAGE: '${{ matrix.image }}'
-          MATRIX_CLIENT_VERSION: '${{ matrix.client-version }}'
+          IMAGE: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}'
+          CLIENT_VERSION: '${{ matrix.client-version }}'
         with:
           result-encoding: string
           script: |
             const tags = []
 
-            if (process.env.MATRIX_IMAGE === 'ghcr.io/mserajnik/vmangos-database') {
-              tags.push(`${process.env.MATRIX_IMAGE}:latest`)
-              tags.push(`${process.env.MATRIX_IMAGE}:${process.env.COMMIT_HASH}`)
+            // We tag the newest build for client version 5875 with `latest`
+            // since that can be considered the default
+            if (parseInt(process.env.CLIENT_VERSION) === 5875) {
+              tags.push(`${process.env.IMAGE}:latest`)
             }
 
-            if (process.env.MATRIX_IMAGE === 'ghcr.io/mserajnik/vmangos-server') {
-              // We tag the newest build for client version 5875 with `latest`
-              // since that can be considered the default
-              if (parseInt(process.env.MATRIX_CLIENT_VERSION) === 5875) {
-                tags.push(`${process.env.MATRIX_IMAGE}:latest`)
-              }
+            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}`)
+            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}-${process.env.COMMIT_HASH}`)
 
-              tags.push(`${process.env.MATRIX_IMAGE}:${process.env.MATRIX_CLIENT_VERSION}`)
-              tags.push(`${process.env.MATRIX_IMAGE}:${process.env.MATRIX_CLIENT_VERSION}-${process.env.COMMIT_HASH}`)
-            }
+            return tags.join(',')
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64, linux/arm64
+          file: ./docker/server/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          provenance: false
+          build-args: |
+            VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
+          tags: ${{ steps.generate-tags.outputs.result }}
+
+  # Since the database image build only takes a few minutes (and therefore
+  # always completes before the server image builds), we need to build it after
+  # the server images; otherwise, we would push a new database image without
+  # knowing if the server image builds will succeed (and if there is a
+  # compilation error due to a bug upstream we would end up with a version
+  # mismatch between the latest database image and the latest server image).
+  build-and-push-database-image:
+    name: Build and push database image
+    needs: [setup, build-and-push-server-images]
+    if: ${{ needs.setup.outputs.already-built != 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate tags
+        uses: actions/github-script@v6
+        id: generate-tags
+        env:
+          COMMIT_HASH: '${{ needs.setup.outputs.commit-hash }}'
+          IMAGE: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}'
+        with:
+          result-encoding: string
+          script: |
+            const tags = []
+
+            tags.push(`${process.env.IMAGE}:latest`)
+            tags.push(`${process.env.IMAGE}:${process.env.COMMIT_HASH}`)
 
             return tags.join(',')
 
@@ -148,12 +169,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker images
+      - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64, linux/arm64
-          file: ${{ matrix.dockerfile }}
+          file: ./docker/database/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           provenance: false
           build-args: |
