@@ -82,7 +82,19 @@ jobs:
 
             return ref.data.object.sha
 
+      - name: Determine if images for commit hash have already been built
+        id: already-built
+        run: |
+          ghcr_token=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
+          tags=$(skopeo list-tags --registry-token ${ghcr_token} docker://ghcr.io/mserajnik/vmangos-database | jq '.Tags[]')
+          if grep -q "${{ steps.get-latest-commit-hash.outputs.result }}" <<< "$tags"; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Generate tags
+        if: ${{ steps.already-built.outputs.result != 'true' }}
         uses: actions/github-script@v6
         id: generate-tags
         env:
@@ -114,28 +126,20 @@ jobs:
             return tags.join(',')
 
       - name: Set up QEMU
+        if: ${{ steps.already-built.outputs.result != 'true' }}
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
+        if: ${{ steps.already-built.outputs.result != 'true' }}
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to container registry
+        if: ${{ steps.already-built.outputs.result != 'true' }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Determine if images for commit hash have already been built
-        id: already-built
-        run: |
-          ghcr_token=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
-          tags=$(skopeo list-tags --registry-token ${ghcr_token} docker://ghcr.io/mserajnik/vmangos-database | jq '.Tags[]')
-          if grep -q "${{ steps.get-latest-commit-hash.outputs.result }}" <<< "$tags"; then
-            echo "result=true" >> $GITHUB_OUTPUT
-          else
-            echo "result=false" >> $GITHUB_OUTPUT
-          fi
 
       - name: Build and push Docker images
         if: ${{ steps.already-built.outputs.result != 'true' }}
