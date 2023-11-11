@@ -26,9 +26,8 @@ It features:
   [`./config`](config), everything else that is shared between the server and
   your host system lives inside [`./storage`](storage)
 
-The Docker images are automatically built every Wednesday and Sunday; in some
-cases (e.g., a particularly important VMaNGOS commit) updated images might also
-be provided earlier.
+The Docker images are automatically built every daily (unless there have been
+no new commits to VMaNGOS).
 
 ## Table of contents
 
@@ -119,9 +118,9 @@ are no potential discrepancies between code and data. Note that it is _not_
 possible (or intended) to use this feature to perform a clean downgrade due to
 the database migrations.
 
-Since the Docker images are generally built only twice a week it is unlikely
-that there will be a build for every VMaNGOS commit; you can find all the
-available versions for the `vmangos-server` and the `vmangos-database` images
+Since the Docker images are build only once a day it is unlikely that there
+will be a build for every single VMaNGOS commit; you can find all the available
+versions for the `vmangos-server` and the `vmangos-database` images
 [here][image-vmangos-server-versions] and
 [here][image-vmangos-database-versions] respectively.
 
@@ -241,9 +240,6 @@ To update, pull the latest images:
 ```sh
 docker compose pull
 ```
-
-Note that due to the build schedule there usually will not be an update
-available before the next Wednesday or Sunday.
 
 Afterwards, recreate the containers:
 

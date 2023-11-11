@@ -1,9 +1,9 @@
 name: Build and push Docker images
 
 on:
-  # Build images on Wednesday and Sunday
+  # Build images daily
   schedule:
-    - cron: '0 0 * * 0,3'
+    - cron: '0 0 * * *'
   push:
     branches:
       - 'master'
@@ -126,7 +126,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine if images for commit hash have already been built
+        id: already-built
+        run: |
+          ghcr_token=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
+          tags=$(skopeo list-tags --registry-token ${ghcr_token} docker://ghcr.io/mserajnik/vmangos-database | jq '.Tags[]')
+          if grep -q "${{ steps.get-latest-commit-hash.outputs.result }}" <<< "$tags"; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker images
+        if: ${{ steps.already-built.outputs.result != 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: .
