@@ -3,7 +3,7 @@ name: Build and push Docker images
 on:
   # Build images on Wednesday and Sunday
   schedule:
-    - cron: '0 0 * * 3,6'
+    - cron: '0 0 * * 0,3'
   push:
     branches:
       - 'master'
