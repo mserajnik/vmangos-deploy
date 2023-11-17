@@ -26,8 +26,8 @@ It features:
   [`./config`](config), everything else that is shared between the server and
   your host system lives inside [`./storage`](storage)
 
-The Docker images are automatically built every daily (unless there have been
-no new commits to VMaNGOS).
+The Docker images are automatically built every day (unless there have been no
+new commits to VMaNGOS).
 
 ## Table of contents
 
