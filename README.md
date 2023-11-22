@@ -122,7 +122,9 @@ Since the Docker images are build only once a day it is unlikely that there
 will be a build for every single VMaNGOS commit; you can find all the available
 versions for the `vmangos-server` and the `vmangos-database` images
 [here][image-vmangos-server-versions] and
-[here][image-vmangos-database-versions] respectively.
+[here][image-vmangos-database-versions] respectively. Older images are
+automatically deleted (roughly older than 25 days, unless there have been
+builds outside the normal daily build schedule).
 
 Aside from the Docker image version you mainly have to pay attention to the
 `environment` sections of each service configuration. In particular, you will

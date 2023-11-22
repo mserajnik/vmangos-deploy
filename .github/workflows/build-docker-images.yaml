@@ -121,6 +121,26 @@ jobs:
             VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
           tags: ${{ steps.generate-tags.outputs.result }}
 
+      - name: Delete old package versions
+        uses: actions/delete-package-versions@v4
+        with:
+          package-name: 'vmangos-server'
+          package-type: 'container'
+          # According to
+          # https://docs.github.com/en/enterprise-server@3.11/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#limits-for-published-npm-versions
+          # there might at some point be a limit of 1.000 versions per package.
+          # It is not clear if that will only be applied to Enterprise and/or
+          # npm packages, but let's be safe and make sure we don't keep more
+          # than 1.000.
+          #
+          # We have 11 different server versions per build. Per version we have
+          # two actual images in addition to the manifest, so 33 packages in
+          # total.
+          #
+          # 33 * 25 = 825 packages (which keeps us under the assumed limit of
+          # 1.000)
+          min-versions-to-keep: 825
+
   # Since the database image build only takes a few minutes (and therefore
   # always completes before the server image builds), we need to build it after
   # the server images; otherwise, we would push a new database image without
@@ -180,3 +200,18 @@ jobs:
           build-args: |
             VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
           tags: ${{ steps.generate-tags.outputs.result }}
+
+      - name: Delete old package versions
+        uses: actions/delete-package-versions@v4
+        with:
+          package-name: 'vmangos-database'
+          package-type: 'container'
+          # Further above, we have set it up to keep 25 builds worth of server
+          # image (to stay below that supposed 1.000 packages limit). We want
+          # to keep all the matching database images.
+          #
+          # Per database build we have 3 packages in total (the manifest plus
+          # two actual images).
+          #
+          # 3 * 25 = 75 packages
+          min-versions-to-keep: 75
