@@ -118,13 +118,15 @@ are no potential discrepancies between code and data. Note that it is _not_
 possible (or intended) to use this feature to perform a clean downgrade due to
 the database migrations.
 
-Since the Docker images are build only once a day it is unlikely that there
+Since the Docker images are built only once a day it is unlikely that there
 will be a build for every single VMaNGOS commit; you can find all the available
 versions for the `vmangos-server` and the `vmangos-database` images
 [here][image-vmangos-server-versions] and
 [here][image-vmangos-database-versions] respectively. Older images are
-automatically deleted (roughly older than 25 days, unless there have been
-builds outside the normal daily build schedule).
+automatically deleted; only the images from the last 25 builds are kept (which
+usually means the builds from the last 25 days, unless there have been builds
+outside of the normal daily schedule or there have been no VMaNGOS commits on
+some days).
 
 Aside from the Docker image version you mainly have to pay attention to the
 `environment` sections of each service configuration. In particular, you will
