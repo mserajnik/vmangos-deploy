@@ -43,8 +43,6 @@ RUN \
   git clone https://github.com/vmangos/core.git /core && \
   cd /core && \
   git checkout ${VMANGOS_REVISION} && \
-  # Patch out `-march=native`
-  sed -i 's/ -march=native//g' CMakeLists.txt && \
   mkdir -p \
     /opt/vmangos/config \
     /opt/vmangos/mmap-config \
@@ -54,6 +52,7 @@ RUN \
   cmake \
     -DSUPPORTED_CLIENT_BUILD=${VMANGOS_CLIENT_VERSION} \
     -DUSE_STD_MALLOC=0 \
+    -DBUILD_FOR_HOST_CPU=0 \
     -DTBB_DEBUG=0 \
     -DUSE_ANTICHEAT=0 \
     -DUSE_SCRIPTS=1 \
