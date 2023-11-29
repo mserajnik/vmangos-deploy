@@ -79,6 +79,16 @@ services:
       - ./storage/mangosd/extracted-data:/opt/vmangos/storage/data:ro
       - ./storage/mangosd/logs:/opt/vmangos/storage/logs
       - ./storage/mangosd/honor:/opt/vmangos/storage/honor
+      # To enable the usage of Warden you need to use an image with anticheat
+      # support (e.g., ghcr.io/mserajnik/vmangos-server:5875-anticheat).
+      # Next, download the Warden modules from
+      # https://github.com/vmangos/warden_modules and place them into
+      # `./storage/mangosd/warden-modules`.
+      # Finally, uncomment the following bind mount and (optionally) adjust
+      # the Warden configuration in your `./config/mangosd.conf` (in
+      # particular, ensure that `Warden.ModuleDir` is set to
+      # `/opt/vmangos/storage/warden-modules`).
+      # - ./storage/mangosd/warden-modules:/opt/vmangos/storage/warden-modules
     environment:
       - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
       - WAIT_HOSTS=database:3306

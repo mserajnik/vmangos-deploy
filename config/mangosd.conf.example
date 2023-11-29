@@ -1513,7 +1513,7 @@ Warden.ScanFrequency         = 15
 Warden.DefaultPenalty        = 0
 Warden.BanDuration           = 86400
 Warden.DebugLog              = 0
-Warden.ModuleDir             = "warden_modules"
+Warden.ModuleDir             = "/opt/vmangos/storage/warden-modules"
 
 ###################################################################################################
 # MOVEMENT ANTICHEAT SETTINGS

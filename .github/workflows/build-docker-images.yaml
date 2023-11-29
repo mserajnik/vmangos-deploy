@@ -65,6 +65,7 @@ jobs:
       fail-fast: true
       matrix:
         client-version: [5875, 5464, 5302, 5086, 4878, 4695, 4544, 4449, 4375, 4297, 4222]
+        use-anticheat: [0, 1]
     permissions:
       contents: read
       packages: write
@@ -80,19 +81,30 @@ jobs:
           COMMIT_HASH: '${{ needs.setup.outputs.commit-hash }}'
           IMAGE: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}'
           CLIENT_VERSION: '${{ matrix.client-version }}'
+          USE_ANTICHEAT: '${{ matrix.use-anticheat }}'
         with:
           result-encoding: string
           script: |
             const tags = []
 
-            // We tag the newest build for client version 5875 with `latest`
-            // since that can be considered the default
-            if (parseInt(process.env.CLIENT_VERSION) === 5875) {
+            const useAnticheat = parseInt(process.env.USE_ANTICHEAT) === 1
+
+            // We tag the newest non-anticheat build for client version 5875
+            // with `latest` since that can be considered the default
+            if (
+              parseInt(process.env.CLIENT_VERSION) === 5875 &&
+              !useAnticheat
+            ) {
               tags.push(`${process.env.IMAGE}:latest`)
             }
 
-            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}`)
-            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}-${process.env.COMMIT_HASH}`)
+            if (useAnticheat) {
+              tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}-anticheat`)
+              tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}-anticheat-${process.env.COMMIT_HASH}`)
+            } else {
+              tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}`)
+              tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}-${process.env.COMMIT_HASH}`)
+            }
 
             return tags.join(',')
 
@@ -119,6 +131,7 @@ jobs:
           provenance: false
           build-args: |
             VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
+            VMANGOS_USE_ANTICHEAT=${{ matrix.use-anticheat }}
           tags: ${{ steps.generate-tags.outputs.result }}
 
   # Since the database image builds only takes a few minutes (and therefore
@@ -181,8 +194,8 @@ jobs:
             VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
           tags: ${{ steps.generate-tags.outputs.result }}
 
-  delete-old-packages:
-    name: Delete old packages
+  delete-old-package-versions:
+    name: Delete old package versions
     needs: [setup, build-and-push-server-images, build-and-push-database-images]
     if: ${{ needs.setup.outputs.already-built != 'true' }}
     runs-on: ubuntu-latest
@@ -203,25 +216,26 @@ jobs:
           # npm packages, but let's be safe and make sure we don't keep more
           # than 1.000.
           #
-          # We have 11 different server versions per build. Per version we have
-          # two actual images in addition to the manifest, so 33 packages in
-          # total.
+          # We have 11 different server versions per build. For each version,
+          # we have two variants (with and without anticheat support). Per
+          # variant we have two actual images in addition to the manifest, so
+          # 66 packages in total.
           #
-          # 33 * 25 = 825 packages (which keeps us under the assumed limit of
+          # 66 * 14 = 924 packages (which keeps us under the assumed limit of
           # 1.000)
-          min-versions-to-keep: 825
+          min-versions-to-keep: 924
 
       - name: Delete old database package versions
         uses: actions/delete-package-versions@v4
         with:
           package-name: 'vmangos-database'
           package-type: 'container'
-          # Above, we have set it up to keep 25 builds worth of server images
+          # Above, we have set it up to keep 14 builds worth of server images
           # (to stay below that supposed 1.000 packages limit). We want to keep
           # all the matching database images.
           #
           # Per database build we have 3 packages in total (the manifest plus
           # two actual images).
           #
-          # 3 * 25 = 75 packages
-          min-versions-to-keep: 75
+          # 3 * 14 = 42 packages
+          min-versions-to-keep: 42
