@@ -114,17 +114,22 @@ services:
   #   environment:
   #     - TIMEZONE=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
   #     - CONTAINER_ENABLE_MONITORING=FALSE
-  #     - DB_TYPE=mariadb
-  #     - DB_HOST=database
-  #     - DB_NAME=characters,realmd # Which databases should be backed up
-  #     - DB_USER=root
-  #     - DB_PASS=password
-  #     - DB_DUMP_FREQ=1440 # How often to run the backup in minutes; 1440 means once per day
-  #     - DB_DUMP_BEGIN=0400 # When to start the backup; 0400 means it starts at 04:00
-  #     - DB_CLEANUP_TIME=10080 # How old backups have to be to get deleted; 10080 means backups older than a week get deleted
-  #     - ENABLE_CHECKSUM=TRUE
-  #     - CHECKSUM=SHA1
-  #     - COMPRESSION=GZ
+  #     # If you are using a Linux host and your user's UID and GID are not 1000,
+  #     # change these next two variables to reflect your user's UID and GID.
+  #     # This will cause the user in the container to use the same UID and GID
+  #     # and prevent permission issues on the bind mount.
+  #     # If you are on Windows or macOS, you can ignore this.
+  #     - USER_DBBACKUP=1000
+  #     - GROUP_DBBACKUP=1000
+  #     - DEFAULT_COMPRESSION=GZ
+  #     - DEFAULT_BACKUP_INTERVAL=1440 # How often to run the backup in minutes; 1440 means once per day
+  #     - DEFAULT_BACKUP_BEGIN=0400 # When to start the backup; 0400 means it starts at 04:00
+  #     - DEFAULT_CLEANUP_TIME=10080 # How old backups have to be to get deleted; 10080 means backups older than a week get deleted
+  #     - DB01_TYPE=mariadb
+  #     - DB01_HOST=database
+  #     - DB01_NAME=characters,realmd # Which databases should be backed up
+  #     - DB01_USER=root
+  #     - DB01_PASS=password
 
   # Uncomment this service to run phpMyAdmin, a web-based MySQL/MariaDB
   # database administration tool.
