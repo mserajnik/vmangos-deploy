@@ -106,11 +106,11 @@ this table. E.g., if you want to run a server that supports client version
 `1.6.1.4544` you would use `ghcr.io/mserajnik/vmangos-server:4544`. In
 addition, if you want to enable the movement anticheat and/or Warden, choose an
 image suffixed with `-anticheat` (such as
-`ghcr.io/mserajnik/vmangos-server:4544-anticheat`). If want to use Warden, you
-will also have to provide the [Warden modules][warden-modules] (which are only
-available for `x86_64`, so you will not be able to use Warden when using
-`aarch64` images). See the `volumes` section of the `mangosd` service in your
-`./compose.yaml` on how to do that.
+`ghcr.io/mserajnik/vmangos-server:4544-anticheat`). If want to use Warden you
+will also have to provide the [Warden modules][warden-modules]. See the
+`volumes` section of the `mangosd` service in your `./compose.yaml` on how to
+do that. Note that the Warden modules are only available for `x86_64`, so you
+will not be able to use Warden when using `aarch64` images.
 
 Instead of using the latest build you can also use a specific VMaNGOS commit.
 To allow for this, the `vmangos-database` image is tagged with the commit hash

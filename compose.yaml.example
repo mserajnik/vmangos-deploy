@@ -81,9 +81,11 @@ services:
       - ./storage/mangosd/honor:/opt/vmangos/storage/honor
       # To enable the usage of Warden you need to use an image with anticheat
       # support (e.g., ghcr.io/mserajnik/vmangos-server:5875-anticheat).
-      # Next, download the Warden modules from
+      # Then, download the Warden modules from
       # https://github.com/vmangos/warden_modules and place them into
-      # `./storage/mangosd/warden-modules`.
+      # `./storage/mangosd/warden-modules`. Note that the Warden modules are
+      # only available for `x86_64`, so you will not be able to use Warden when
+      # using `aarch64` images.
       # Finally, uncomment the following bind mount and (optionally) adjust
       # the Warden configuration in your `./config/mangosd.conf` (in
       # particular, ensure that `Warden.ModuleDir` is set to
