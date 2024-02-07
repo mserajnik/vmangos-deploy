@@ -56,6 +56,18 @@ jobs:
             echo "result=false" >> $GITHUB_OUTPUT
           fi
 
+      # If the original MariaDB entrypoint script changes, we can't guarantee
+      # that our custom version (which relies on functions defined in the
+      # original) will still work, so we fail the workflow run at this point.
+      - name: Check if MariaDB entrypoint script has been updated
+        id: mariadb-entrypoint-check
+        run: |
+          known_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/6852b71f228e3d003dd7ce6db3627c5b10cfc1a0/11.2/docker-entrypoint.sh
+          latest_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/master/11.2/docker-entrypoint.sh
+          curl -o known_entrypoint.sh ${known_entrypoint}
+          curl -o latest_entrypoint.sh ${latest_entrypoint}
+          diff known_entrypoint.sh latest_entrypoint.sh
+
   build-and-push-server-images:
     name: Build and push server images
     needs: setup
