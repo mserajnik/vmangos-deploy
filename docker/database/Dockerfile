@@ -18,7 +18,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG VMANGOS_WORLD=world_full_14_june_2021
 ARG VMANGOS_REVISION=development
 
-FROM mariadb:11 AS setup
+FROM mariadb:11.2 AS setup
 
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_WORLD
@@ -53,7 +53,7 @@ RUN \
     git \
     p7zip-full
 
-FROM mariadb:11
+FROM mariadb:11.2
 
 COPY --from=setup /sql /sql
 

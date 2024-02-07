@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# This entrypoint script is based on
+# https://github.com/MariaDB/mariadb-docker/blob/6852b71f228e3d003dd7ce6db3627c5b10cfc1a0/11.2/docker-entrypoint.sh
+# and might need to get adjusted when the original script gets updated.
+
 set -eo pipefail
 
 source "$(which docker-entrypoint.sh)"
@@ -37,35 +41,7 @@ fi
 if [ -z "$DATABASE_ALREADY_EXISTS" ]; then
   docker_verify_minimum_env
 
-  # check dir permissions to reduce likelihood of half-initialized database
-  ls /docker-entrypoint-initdb.d/ > /dev/null
-
-  docker_init_database_dir "$@"
-
-  mysql_note "Starting temporary server"
-  docker_temp_server_start "$@"
-  mysql_note "Temporary server started."
-
-  docker_setup_db
-  docker_process_init_files /docker-entrypoint-initdb.d/*
-
-  # Wait until after /docker-entrypoint-initdb.d is performed before setting
-  # root@localhost password to a hash we don't know the password for.
-  if [ -n "${MARIADB_ROOT_PASSWORD_HASH}" ]; then
-    mysql_note "Setting root@localhost password hash"
-    docker_process_sql --dont-use-mysql-root-password --binary-mode <<-EOSQL
-SET @@SESSION.SQL_LOG_BIN=0;
-SET PASSWORD FOR 'root'@'localhost'= '${MARIADB_ROOT_PASSWORD_HASH}';
-EOSQL
-  fi
-
-  mysql_note "Stopping temporary server"
-  docker_temp_server_stop
-  mysql_note "Temporary server stopped"
-
-  echo
-  mysql_note "MariaDB init process done. Ready for start up."
-  echo
+  docker_mariadb_init "$@"
 # run always-run hooks if they exist
 elif test -n "$(shopt -s nullglob; echo /always-initdb.d/*)"; then
   # MDEV-27636 mariadb_upgrade --check-if-upgrade-is-needed cannot be run offline
