@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # This entrypoint script is based on
-# https://github.com/MariaDB/mariadb-docker/blob/6852b71f228e3d003dd7ce6db3627c5b10cfc1a0/11.2/docker-entrypoint.sh
+# https://github.com/MariaDB/mariadb-docker/blob/f64d0cd1176b78c8a42a219fdf0b5c54a12b3c6d/11.2/docker-entrypoint.sh
 # and might need to get adjusted when the original script gets updated.
 
 set -eo pipefail
