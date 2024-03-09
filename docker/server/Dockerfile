@@ -60,6 +60,7 @@ RUN \
     -DUSE_SCRIPTS=1 \
     -DUSE_EXTRACTORS=1 \
     -DUSE_LIBCURL=0 \
+    -DDEBUG_SYMBOLS=0 \
     -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ && \
   make -j$(nproc) && \
   make install && \
