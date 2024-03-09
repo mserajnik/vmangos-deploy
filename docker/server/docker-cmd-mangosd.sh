@@ -18,4 +18,4 @@
 
 eval $(fixuid -q)
 
-wait-for-db && /opt/vmangos/bin/mangosd -c /opt/vmangos/config/mangosd.conf
+wait-for-db && exec /opt/vmangos/bin/mangosd -c /opt/vmangos/config/mangosd.conf

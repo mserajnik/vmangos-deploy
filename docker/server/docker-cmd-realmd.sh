@@ -18,4 +18,4 @@
 
 eval $(fixuid -q)
 
-wait-for-db && /opt/vmangos/bin/realmd -c /opt/vmangos/config/realmd.conf
+wait-for-db && exec /opt/vmangos/bin/realmd -c /opt/vmangos/config/realmd.conf
