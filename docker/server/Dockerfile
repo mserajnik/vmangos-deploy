@@ -104,6 +104,7 @@ RUN \
     libmysqlclient-dev \
     libssl-dev \
     libtbb-dev \
+    netcat \
     openssl \
     zlib1g-dev
 
