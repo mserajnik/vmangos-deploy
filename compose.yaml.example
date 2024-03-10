@@ -1,9 +1,22 @@
-version: '3'
+version: '3.4'
 
 services:
   database:
     image: ghcr.io/mserajnik/vmangos-database
     restart: unless-stopped
+    # The healthcheck determines if the container is working as expected; if
+    # the healthchecks fails it causes a restart of the container. The default
+    # parameters here should work fine on most systems, but if you experience
+    # any issues, you might want to adjust them. In particular, the initial
+    # database creation might take a while and you may want to set
+    # `start_period` even higher if you notice that the container gets
+    # restarted before the initialization finishes.
+    healthcheck:
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      interval: 1m
+      timeout: 3s
+      retries: 5
+      start_period: 5m # This is set relatively high to take the initial database creation into account
     volumes:
       - vmangos-database:/var/lib/mysql
       # Mount an SQL file as `/sql/world-new.sql` to force the re-creation of
@@ -48,6 +61,19 @@ services:
     depends_on:
       - database
     restart: unless-stopped
+    # The healthcheck determines if the container is working as expected; if
+    # the healthchecks fails it causes a restart of the container. The default
+    # parameters here should work fine on most systems, but if you experience
+    # any issues, you might want to adjust them. In particular, the initial
+    # database creation might take a while and you may want to set
+    # `start_period` even higher if you notice that the container gets
+    # restarted before the initialization finishes.
+    healthcheck:
+      test: ['CMD', 'nc', '-z', 'localhost', '3724']
+      interval: 1m
+      timeout: 3s
+      retries: 5
+      start_period: 5m # This is set relatively high to take the initial database creation into account
     ports:
       - 3724:3724
     volumes:
@@ -72,6 +98,19 @@ services:
     depends_on:
       - database
     restart: unless-stopped
+    # The healthcheck determines if the container is working as expected; if
+    # the healthchecks fails it causes a restart of the container. The default
+    # parameters here should work fine on most systems, but if you experience
+    # any issues, you might want to adjust them. In particular, the initial
+    # database creation might take a while and you may want to set
+    # `start_period` even higher if you notice that the container gets
+    # restarted before the initialization finishes.
+    healthcheck:
+      test: ['CMD', 'nc', '-z', 'localhost', '8085']
+      interval: 1m
+      timeout: 3s
+      retries: 5
+      start_period: 5m # This is set relatively high to take the initial database creation into account
     ports:
       - 8085:8085
     volumes:
