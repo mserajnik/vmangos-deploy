@@ -5,7 +5,7 @@ services:
     image: ghcr.io/mserajnik/vmangos-database
     restart: unless-stopped
     # The healthcheck determines if the container is working as expected; if
-    # the healthchecks fails it causes a restart of the container. The default
+    # the healthcheck fails it causes a restart of the container. The default
     # parameters here should work fine on most systems, but if you experience
     # any issues, you might want to adjust them. In particular, the initial
     # database creation might take a while and you may want to set
@@ -62,7 +62,7 @@ services:
       - database
     restart: unless-stopped
     # The healthcheck determines if the container is working as expected; if
-    # the healthchecks fails it causes a restart of the container. The default
+    # the healthcheck fails it causes a restart of the container. The default
     # parameters here should work fine on most systems, but if you experience
     # any issues, you might want to adjust them. In particular, the initial
     # database creation might take a while and you may want to set
@@ -99,7 +99,7 @@ services:
       - database
     restart: unless-stopped
     # The healthcheck determines if the container is working as expected; if
-    # the healthchecks fails it causes a restart of the container. The default
+    # the healthcheck fails it causes a restart of the container. The default
     # parameters here should work fine on most systems, but if you experience
     # any issues, you might want to adjust them. In particular, the initial
     # database creation might take a while and you may want to set
