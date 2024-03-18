@@ -46,7 +46,7 @@ rm -rf ./vmaps
 /opt/vmangos/bin/mapextractor
 /opt/vmangos/bin/vmapextractor
 /opt/vmangos/bin/vmap_assembler
-/opt/vmangos/bin/MoveMapGen --configInputPath /opt/vmangos/mmap-config/config.json --offMeshInput /opt/vmangos/mmap-config/offmesh.txt
+/opt/vmangos/bin/mmap_extract.py --configInputPath /opt/vmangos/mmap-config/config.json --offMeshInput /opt/vmangos/mmap-config/offmesh.txt
 
 # This data isn't used; we delete it to avoid confusion
 rm -rf ./Buildings

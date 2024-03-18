@@ -65,6 +65,7 @@ RUN \
     -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ && \
   make -j$(nproc) && \
   make install && \
+  mv /core/contrib/mmap/mmap_extract.py /opt/vmangos/bin && \
   mv /core/contrib/mmap/config.json /opt/vmangos/mmap-config && \
   mv /core/contrib/mmap/offmesh.txt /opt/vmangos/mmap-config && \
   rm -rf /core
@@ -108,6 +109,8 @@ RUN \
     libtbb-dev \
     netcat \
     openssl \
+    python3 \
+    python-is-python3 \
     zlib1g-dev
 
 # See https://github.com/ufoscout/docker-compose-wait
