@@ -36,6 +36,7 @@ RUN \
     git \
     libace-dev \
     libmysqlclient-dev \
+    libreadline-dev \
     libssl-dev \
     libtbb-dev \
     openssl \
@@ -102,6 +103,7 @@ RUN \
   apt install -y \
     libace-dev \
     libmysqlclient-dev \
+    libreadline-dev \
     libssl-dev \
     libtbb-dev \
     netcat \
