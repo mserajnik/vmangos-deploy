@@ -149,19 +149,15 @@ port mappings, volumes and environment variables.
 
 ### Extracting the client data
 
-VMaNGOS requires some data that gets extracted from the client to work
-correctly. To generate that data automatically, copy the contents of your
-client directory into
-[`./storage/mangosd/client-data`](storage/mangosd/client-data).
-
-If you have already acquired the extracted data previously, you can instead
-place it directly into
+VMaNGOS uses data that is generated from extracted client data to handle things
+like movement and line of sight. If you have already acquired this data
+previously, you can place it directly into
 [`./storage/mangosd/extracted-data`](storage/mangosd/extracted-data) and skip
-the next step.
+the next steps.
 
-Extracting the required client data can take many hours (depending on your
-hardware). Some notices/errors during the generation are normal and nothing to
-worry about. To start the extraction, run the following command:
+To generate the data, first copy the contents of your client directory into
+[`./storage/mangosd/client-data`](storage/mangosd/client-data). Next, simply
+run the following command:
 
 ```sh
 docker run \
@@ -185,10 +181,14 @@ There are two things to look out for here:
   the data from; see the table further above in the
   [Docker Compose configuration section](#adjusting-the-docker-compose-configuration)
 
-Once the extraction is complete you should find the extracted data in
+Generating the data can take many hours (depending on your hardware). Some
+notices/errors during the extraction process are normal and nothing to worry
+about.
+
+Once the extraction is finished you can find the data in
 [`./storage/mangosd/extracted-data`](storage/mangosd/extracted-data). Note that
-you may want to re-run the extraction in the future if VMaNGOS makes changes
-to its extraction code (to benefit from potentially improved mob pathing etc.).
+you may want to re-run the process in the future if VMaNGOS makes changes (to
+benefit from potentially improved mob pathing etc.).
 
 ## Usage
 
