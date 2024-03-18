@@ -79,6 +79,9 @@ ARG VMANGOS_REVISION
 ARG VMANGOS_USER_ID
 ARG VMANGOS_GROUP_ID
 
+# Force the Python stdout and stderr streams to be unbuffered so we can see the
+# output from the mmap_extract.py script while it is running
+ENV PYTHONUNBUFFERED=1
 ENV VMANGOS_CLIENT_VERSION=${VMANGOS_CLIENT_VERSION}
 
 # See https://github.com/boxboat/fixuid
