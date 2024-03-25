@@ -1,5 +1,3 @@
-version: '3.4'
-
 services:
   database:
     image: ghcr.io/mserajnik/vmangos-database
