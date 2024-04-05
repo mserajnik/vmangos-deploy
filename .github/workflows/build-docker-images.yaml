@@ -15,6 +15,11 @@ on:
     paths:
       - 'docker/**'
   workflow_dispatch:
+    inputs:
+      force-rebuild:
+        type: boolean
+        description: Force rebuild (even if commit hash has already been built)
+        default: false
 
 env:
   REGISTRY: ghcr.io
@@ -50,10 +55,10 @@ jobs:
         run: |
           ghcr_token=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
           tags=$(skopeo list-tags --registry-token ${ghcr_token} docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }} | jq '.Tags[]')
-          if grep -q "${{ steps.latest-commit-hash.outputs.result }}" <<< "${tags}"; then
-            echo "result=true" >> $GITHUB_OUTPUT
-          else
+          if [[ "${{ github.event.inputs.force-rebuild }}" == true || ! $(grep -q "${{ steps.latest-commit-hash.outputs.result }}" <<< "${tags}") ]]; then
             echo "result=false" >> $GITHUB_OUTPUT
+          else
+            echo "result=true" >> $GITHUB_OUTPUT
           fi
 
       # If the original MariaDB entrypoint script changes, we can't guarantee
