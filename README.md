@@ -15,7 +15,7 @@ It features:
   single one
 + The ability to run VMaNGOS configured for any of its supported client
   versions (with or without anticheat support); prebuilt images for all
-  versions ranging from `1.2.4.4222` to `1.12.1.5875` are provided
+  versions ranging from `1.6.1.4544` to `1.12.1.5875` are provided
 + A more transparent and easier to follow user experience; due to the prebuilt
   Docker images the number of different commands that need to be run to manage
   the server has been greatly reduced and thus it is no longer necessary to use
@@ -96,10 +96,6 @@ support. You can choose from the following versions:
 | `1.8.4.4878`             | `ghcr.io/mserajnik/vmangos-server:4878`, `ghcr.io/mserajnik/vmangos-server:4878-anticheat` |
 | `1.7.1.4695`             | `ghcr.io/mserajnik/vmangos-server:4695`, `ghcr.io/mserajnik/vmangos-server:4695-anticheat` |
 | `1.6.1.4544`             | `ghcr.io/mserajnik/vmangos-server:4544`, `ghcr.io/mserajnik/vmangos-server:4544-anticheat` |
-| `1.5.1.4449`             | `ghcr.io/mserajnik/vmangos-server:4449`, `ghcr.io/mserajnik/vmangos-server:4449-anticheat` |
-| `1.4.2.4375`             | `ghcr.io/mserajnik/vmangos-server:4375`, `ghcr.io/mserajnik/vmangos-server:4375-anticheat` |
-| `1.3.1.4297`             | `ghcr.io/mserajnik/vmangos-server:4297`, `ghcr.io/mserajnik/vmangos-server:4297-anticheat` |
-| `1.2.4.4222`             | `ghcr.io/mserajnik/vmangos-server:4222`, `ghcr.io/mserajnik/vmangos-server:4222-anticheat` |
 
 Adjust the configured `image` for the `realmd` and `mangosd` services based on
 this table. E.g., if you want to run a server that supports client version
@@ -131,8 +127,8 @@ will be a build for every single VMaNGOS commit; you can find all the available
 versions for the `vmangos-server` and the `vmangos-database` images
 [here][image-vmangos-server-versions] and
 [here][image-vmangos-database-versions] respectively. Older images are
-automatically deleted; only the images from the last 14 builds are kept (which
-usually means the builds from the last 14 days, unless there have been builds
+automatically deleted; only the images from the last 22 builds are kept (which
+usually means the builds from the last 22 days, unless there have been builds
 outside of the normal daily schedule or there have been no VMaNGOS commits on
 some days).
 
