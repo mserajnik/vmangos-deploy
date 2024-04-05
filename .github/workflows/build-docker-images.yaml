@@ -143,6 +143,7 @@ jobs:
           provenance: false
           build-args: |
             VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
+            VMANGOS_CLIENT_VERSION=${{ matrix.client-version }}
             VMANGOS_USE_ANTICHEAT=${{ matrix.use-anticheat }}
           tags: ${{ steps.generate-tags.outputs.result }}
 
