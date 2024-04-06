@@ -122,13 +122,12 @@ jobs:
               tags.push(`${process.env.IMAGE}:latest`)
             }
 
-            if (useAnticheat) {
-              tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}-anticheat`)
-              tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}-anticheat-${process.env.COMMIT_HASH}`)
-            } else {
-              tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}`)
-              tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}-${process.env.COMMIT_HASH}`)
-            }
+            const potentialAntiCheatSuffix = useAnticheat
+              ? '-anticheat'
+              : ''
+
+            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}${potentialAntiCheatSuffix}`)
+            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}${potentialAntiCheatSuffix}-${process.env.COMMIT_HASH}`)
 
             return tags.join(',')
 
