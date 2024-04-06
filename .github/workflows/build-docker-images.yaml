@@ -76,9 +76,9 @@ jobs:
         run: |
           known_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/f64d0cd1176b78c8a42a219fdf0b5c54a12b3c6d/11.2/docker-entrypoint.sh
           latest_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/master/11.2/docker-entrypoint.sh
-          curl -o known_entrypoint.sh ${known_entrypoint}
-          curl -o latest_entrypoint.sh ${latest_entrypoint}
-          diff known_entrypoint.sh latest_entrypoint.sh
+          curl -o known-entrypoint.sh ${known_entrypoint}
+          curl -o latest-entrypoint.sh ${latest_entrypoint}
+          diff known-entrypoint.sh latest-entrypoint.sh
 
   build-and-push-server-images:
     name: Build and push server images
@@ -122,12 +122,12 @@ jobs:
               tags.push(`${process.env.IMAGE}:latest`)
             }
 
-            const potentialAntiCheatSuffix = useAnticheat
+            const potentialAnticheatSuffix = useAnticheat
               ? '-anticheat'
               : ''
 
-            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}${potentialAntiCheatSuffix}`)
-            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}${potentialAntiCheatSuffix}-${process.env.COMMIT_HASH}`)
+            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}${potentialAnticheatSuffix}`)
+            tags.push(`${process.env.IMAGE}:${process.env.CLIENT_VERSION}${potentialAnticheatSuffix}-${process.env.COMMIT_HASH}`)
 
             return tags.join(',')
 
