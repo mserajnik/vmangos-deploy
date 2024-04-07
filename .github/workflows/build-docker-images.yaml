@@ -235,10 +235,10 @@ jobs:
           package-type: 'container'
           # According to
           # https://docs.github.com/en/enterprise-server@3.11/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#limits-for-published-npm-versions
-          # there might at some point be a limit of 1.000 versions per package.
+          # there might at some point be a limit of 1,000 versions per package.
           # It is not clear if that will only be applied to Enterprise and/or
           # npm packages, but let's be safe and make sure we don't keep more
-          # than 1.000.
+          # than 1,000.
           #
           # We have 7 different server versions per build. For each version we
           # have two variants (with and without anticheat support). Per variant
@@ -246,7 +246,7 @@ jobs:
           # 42 packages in total.
           #
           # 42 * 22 = 924 packages (which keeps us under the assumed limit of
-          # 1.000)
+          # 1,000)
           min-versions-to-keep: 924
 
       - name: Delete old database package versions
@@ -255,7 +255,7 @@ jobs:
           package-name: 'vmangos-database'
           package-type: 'container'
           # Above, we have set it up to keep 22 builds worth of server images
-          # (to stay below that supposed 1.000 packages limit). We want to keep
+          # (to stay below that supposed 1,000 packages limit). We want to keep
           # all the matching database images.
           #
           # Per database build we have 3 packages in total (the manifest plus
