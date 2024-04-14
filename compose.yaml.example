@@ -56,6 +56,20 @@ services:
     # If you are on Windows or macOS, you can ignore this.
     user: 1000:1000
     command: realmd
+    # One of VMaNGOS' dependencies reserves memory based on the maximum number
+    # of file descriptors per process. Under certain circumstances, Docker sets
+    # a very large number by default, which can easily lead to extreme amounts
+    # of memory used.
+    # `nofile` is used to override the Docker default to prevent this issue
+    # from happening. The chosen value (1024) is a common setting and should be
+    # sufficient for most use cases. However, since this also directly limits
+    # the maximum amount of concurrent players (to a number slightly lower than
+    # the chosen value), you might want to choose a higher value according to
+    # the amount of players you expect. Even setting a value like 65536 (64
+    # times the default) should not be an issue, so in practice this should not
+    # be a limiting factor.
+    ulimits:
+      nofile: 1024
     depends_on:
       - database
     restart: unless-stopped
@@ -91,6 +105,20 @@ services:
     # If you are on Windows or macOS, you can ignore this.
     user: 1000:1000
     command: mangosd
+    # One of VMaNGOS' dependencies reserves memory based on the maximum number
+    # of file descriptors per process. Under certain circumstances, Docker sets
+    # a very large number by default, which can easily lead to extreme amounts
+    # of memory used.
+    # `nofile` is used to override the Docker default to prevent this issue
+    # from happening. The chosen value (1024) is a common setting and should be
+    # sufficient for most use cases. However, since this also directly limits
+    # the maximum amount of concurrent players (to a number slightly lower than
+    # the chosen value), you might want to choose a higher value according to
+    # the amount of players you expect. Even setting a value like 65536 (64
+    # times the default) should not be an issue, so in practice this should not
+    # be a limiting factor.
+    ulimits:
+      nofile: 1024
     tty: true
     stdin_open: true
     depends_on:
