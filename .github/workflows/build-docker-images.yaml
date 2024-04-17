@@ -3,17 +3,17 @@ name: Build and push Docker images
 on:
   # Build images daily
   schedule:
-    - cron: '0 0 * * *'
+    - cron: 0 0 * * *
   push:
     branches:
-      - 'master'
+      - master
     paths:
-      - 'docker/**'
+      - docker/**
   pull_request:
     branches:
-      - 'master'
+      - master
     paths:
-      - 'docker/**'
+      - docker/**
   workflow_dispatch:
     inputs:
       force-rebuild:
@@ -102,10 +102,10 @@ jobs:
         uses: actions/github-script@v7
         id: generate-tags
         env:
-          COMMIT_HASH: '${{ needs.setup.outputs.commit-hash }}'
-          IMAGE: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}'
-          CLIENT_VERSION: '${{ matrix.client-version }}'
-          USE_ANTICHEAT: '${{ matrix.use-anticheat }}'
+          COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
+          CLIENT_VERSION: ${{ matrix.client-version }}
+          USE_ANTICHEAT: ${{ matrix.use-anticheat }}
         with:
           result-encoding: string
           script: |
@@ -181,8 +181,8 @@ jobs:
         uses: actions/github-script@v7
         id: generate-tags
         env:
-          COMMIT_HASH: '${{ needs.setup.outputs.commit-hash }}'
-          IMAGE: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}'
+          COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
         with:
           result-encoding: string
           script: |
@@ -231,8 +231,8 @@ jobs:
       - name: Delete old server package versions
         uses: actions/delete-package-versions@v5
         with:
-          package-name: 'vmangos-server'
-          package-type: 'container'
+          package-name: vmangos-server
+          package-type: container
           # According to
           # https://docs.github.com/en/enterprise-server@3.11/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#limits-for-published-npm-versions
           # there might at some point be a limit of 1,000 versions per package.
@@ -252,8 +252,8 @@ jobs:
       - name: Delete old database package versions
         uses: actions/delete-package-versions@v5
         with:
-          package-name: 'vmangos-database'
-          package-type: 'container'
+          package-name: vmangos-database
+          package-type: container
           # Above, we have set it up to keep 22 builds worth of server images
           # (to stay below that supposed 1,000 packages limit). We want to keep
           # all the matching database images.
