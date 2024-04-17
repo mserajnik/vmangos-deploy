@@ -16,23 +16,31 @@
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG VMANGOS_WORLD=world_full_14_june_2021
+ARG VMANGOS_OWNER=vmangos
+ARG VMANGOS_REPOSITORY=core
 ARG VMANGOS_REVISION=development
+ARG VMANGOS_DB_OWNER=brotalnia
+ARG VMANGOS_DB_REPOSITORY=database
 
 FROM mariadb:11.2 AS setup
 
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_WORLD
+ARG VMANGOS_OWNER
+ARG VMANGOS_REPOSITORY
 ARG VMANGOS_REVISION
+ARG VMANGOS_DB_OWNER
+ARG VMANGOS_DB_REPOSITORY
 
 RUN \
   apt update -y && \
   apt install -y \
     git \
     p7zip-full && \
-  git clone https://github.com/vmangos/core.git /core && \
+  git clone https://github.com/${VMANGOS_OWNER}/${VMANGOS_REPOSITORY}.git /core && \
   cd /core && \
   git checkout ${VMANGOS_REVISION} && \
-  git clone https://github.com/brotalnia/database.git /database && \
+  git clone https://github.com/${VMANGOS_DB_OWNER}/${VMANGOS_DB_REPOSITORY}.git /database && \
   mkdir -p /sql/migrations && \
   cd /core/sql && \
   mv characters.sql /sql && \
