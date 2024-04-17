@@ -1,0 +1,99 @@
+name: Build and push Docker images for testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      owner:
+        description: The owner of the VMaNGOS code repository to use
+        default: vmangos
+        required: true
+        type: string
+      repository:
+        description: The VMaNGOS code repository to use
+        default: core
+        required: true
+        type: string
+      revision:
+        description: The VMaNGOS code repository revision to use
+        default: development
+        required: true
+        type: string
+      client-version:
+        description: The client version for which to build VMaNGOS
+        default: 5875
+        required: true
+        type: number
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/vmangos-server-testing
+
+jobs:
+  build-and-push-server-images:
+    name: Build and push server images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        use-anticheat: [0, 1]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate tags
+        uses: actions/github-script@v7
+        id: generate-tags
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          OWNER: ${{ github.event.inputs.owner }}
+          REPOSITORY: ${{ github.event.inputs.repository }}
+          REVISION: ${{ github.event.inputs.revision }}
+          CLIENT_VERSION: ${{ github.event.inputs.client-version }}
+          USE_ANTICHEAT: ${{ matrix.use-anticheat }}
+        with:
+          result-encoding: string
+          script: |
+            const tags = []
+
+            const useAnticheat = parseInt(process.env.USE_ANTICHEAT) === 1
+
+            const potentialAnticheatSuffix = useAnticheat
+              ? '-anticheat'
+              : ''
+
+            tags.push(`${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}-${process.env.CLIENT_VERSION}${potentialAnticheatSuffix}`)
+
+            return tags.join(',')
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64, linux/arm64
+          file: ./docker/server/Dockerfile
+          push: true
+          provenance: false
+          build-args: |
+            VMANGOS_OWNER=${{ github.event.inputs.owner }}
+            VMANGOS_REPOSITORY=${{ github.event.inputs.repository }}
+            VMANGOS_REVISION=${{ github.event.inputs.revision }}
+            VMANGOS_CLIENT_VERSION=${{ github.event.inputs.client-version }}
+            VMANGOS_USE_ANTICHEAT=${{ matrix.use-anticheat }}
+          tags: ${{ steps.generate-tags.outputs.result }}
