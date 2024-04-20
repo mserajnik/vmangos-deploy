@@ -2676,15 +2676,20 @@ Alterac.InitMaxPlayers = 0
 ###################################################################################################################
 # OUTDOOR PVP CONFIG
 #
-#    OutdoorPvp.SIEnabled               #Enable Silithus Outdoor pvp
-#    OutdoorPvp.EPEnabled               #Enable Eastern Plaguelands Outdoor pvp
+#    OutdoorPvP.SI.Enable
+#        Enable Silithus Outdoor PvP
+#        Default: 1 (enable)
+#                 0 (disable)
+#
+#    OutdoorPvP.EP.Enable
+#        Enable Eastern Plaguelands Outdoor PvP
 #        Default: 1 (enable)
 #                 0 (disable)
 #
 ###################################################################################################################
 
-OutdoorPvp.SIEnabled = 1
-OutdoorPvp.EPEnabled = 1
+OutdoorPvP.SI.Enable = 1
+OutdoorPvP.EP.Enable = 1
 
 ###################################################################################################################
 # MEETING STONE LFG CONFIG
