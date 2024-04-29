@@ -158,10 +158,10 @@ jobs:
             VMANGOS_USE_ANTICHEAT=${{ matrix.use-anticheat }}
           tags: ${{ steps.generate-tags.outputs.result }}
 
-  # Since the database image builds only takes a few minutes (and therefore
-  # always completes before the server image builds), we need to build after
-  # the server images; otherwise, we would push new database images without
-  # knowing if the server image builds will succeed (and if there is, e.g., a
+  # Since the database image builds only take a few minutes (and therefore
+  # always complete before the server image builds), we need to build after the
+  # server images; otherwise, we would push new database images without knowing
+  # if the server image builds will succeed (and if there is, e.g., a
   # compilation error due to a bug upstream we would end up with a version
   # mismatch between the latest database images and the latest server images).
   build-and-push-database-images:
@@ -202,11 +202,11 @@ jobs:
       - name: Log in to container registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push image
+      - name: Build and push images
         uses: docker/build-push-action@v5
         with:
           context: .
