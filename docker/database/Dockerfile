@@ -59,7 +59,10 @@ RUN \
   rm -rf /core /database && \
   apt remove -y \
     git \
-    p7zip-full
+    p7zip-full && \
+  apt autoremove -y && \
+  apt clean -y && \
+  rm -rf /var/lib/apt/lists/*
 
 FROM mariadb:11.2
 
@@ -67,16 +70,18 @@ COPY --from=setup /sql /sql
 
 COPY ./docker/database/generate-db-1.sql /docker-entrypoint-initdb.d
 COPY ./docker/database/generate-db-2.sh /docker-entrypoint-initdb.d
-RUN chmod +x /docker-entrypoint-initdb.d/generate-db-2.sh
 
 RUN mkdir /always-initdb.d
 COPY ./docker/database/update-db.sh /always-initdb.d
-RUN chmod +x /always-initdb.d/update-db.sh
 
 COPY ./docker/database/regenerate-world-db.sql /sql/regenerate-world-db.sql
 
 COPY ./docker/database/docker-entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+
+RUN \
+  chmod +x /docker-entrypoint-initdb.d/generate-db-2.sh && \
+  chmod +x /always-initdb.d/update-db.sh && \
+  chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["mariadbd"]
