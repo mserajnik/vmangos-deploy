@@ -1,1 +1,3 @@
 compose.yaml.example linguist-language=YAML
+*.conf linguist-language=INI
+*.conf.example linguist-language=INI

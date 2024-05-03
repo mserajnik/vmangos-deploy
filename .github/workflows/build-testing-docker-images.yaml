@@ -30,8 +30,29 @@ env:
   IMAGE_NAME_DATABASE: ${{ github.repository_owner }}/vmangos-database-testing
 
 jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      commit-hash: ${{ steps.latest-commit-hash.outputs.result }}
+      already-built: ${{ steps.already-built.outputs.result }}
+
+    steps:
+      # If the original MariaDB entrypoint script changes, we can't guarantee
+      # that our custom version (which relies on functions defined in the
+      # original) will still work, so we fail the workflow run at this point.
+      - name: Check if MariaDB entrypoint script has been updated
+        id: mariadb-entrypoint-check
+        run: |
+          known_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/f64d0cd1176b78c8a42a219fdf0b5c54a12b3c6d/11.3/docker-entrypoint.sh
+          latest_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/master/11.3/docker-entrypoint.sh
+          curl -o known-entrypoint.sh $known_entrypoint
+          curl -o latest-entrypoint.sh $latest_entrypoint
+          diff known-entrypoint.sh latest-entrypoint.sh
+
   build-and-push-server-images:
     name: Build and push server images
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -107,7 +128,7 @@ jobs:
   # mismatch between the latest database images and the latest server images).
   build-and-push-database-images:
     name: Build and push database images
-    needs: build-and-push-server-images
+    needs: [setup, build-and-push-server-images]
     runs-on: ubuntu-latest
     permissions:
       contents: read

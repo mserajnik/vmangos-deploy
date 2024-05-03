@@ -30,13 +30,14 @@ services:
       # migrations to get skipped).
       # Therefore, this option is merely here to have it available in case it
       # becomes necessary to import a newer world database dump after all.
-      #
       # - /path/to/new/world.sql:/sql/world-new.sql:ro
     environment:
       - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
-      - MYSQL_ROOT_PASSWORD=password
+      - MARIADB_USER=mangos # Specifies the name for the database user utilized by VMaNGOS (must match the credentials in the VMaNGOS configuration files); please note that the name cannot be changed using this environment variable after the initial startup
+      - MARIADB_PASSWORD=mangos # Specifies the password for the database user utilized by VMaNGOS (must match the credentials in the VMaNGOS configuration files); please note that the password cannot be changed using this environment variable after the initial startup
+      - MARIADB_ROOT_PASSWORD=password # Specifies the password for the database's `root` user (not used by VMaNGOS itself, only for database creation/updates); please note that the password cannot be changed using this environment variable after the initial startup
       # Only a subset covering the most important realmlist parameters is
-      # exposed in this configuration file. Changing them here after the
+      # exposed in this configuration file. Altering them here after the
       # database has been created will _not_ update them, but you can always
       # change them (and the other parameters not exposed here) manually in the
       # database at any point (see the `phpmyadmin` service further below).
@@ -163,9 +164,10 @@ services:
 
   # Uncomment this service to enable periodic database backups.
   # The default configuration should work out of the box (unless you have
-  # changed the database service configuration) and will create a backup every
-  # day at 04:00 (change the `TIMEZONE` environment variable to your desired
-  # timezone). Backups older than a week will automatically get deleted.
+  # modified the `database` service configuration) and will create a backup
+  # every day at 04:00 (change the `TIMEZONE` environment variable to your
+  # desired timezone). Backups older than a week will automatically get
+  # deleted.
   # Backups will be stored in `./database-backups`.
   # See https://github.com/tiredofit/docker-db-backup#configuration for more
   # information.
@@ -194,7 +196,7 @@ services:
   #     - DB01_HOST=database
   #     - DB01_NAME=characters,realmd # Which databases should be backed up
   #     - DB01_USER=root
-  #     - DB01_PASS=password
+  #     - DB01_PASS=password # Must match the `MARIADB_ROOT_PASSWORD` environment variable of the `database` service
 
   # Uncomment this service to run phpMyAdmin, a web-based MySQL/MariaDB
   # database administration tool.
@@ -214,7 +216,7 @@ services:
   #     - PMA_HOST=database
   #     - PMA_PORT=3306
   #     - PMA_USER=root
-  #     - PMA_PASSWORD=password
+  #     - PMA_PASSWORD=password # Must match the `MARIADB_ROOT_PASSWORD` environment variable of the `database` service
 
 volumes:
   vmangos-database:

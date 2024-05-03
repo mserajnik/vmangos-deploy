@@ -17,12 +17,71 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # This entrypoint script is based on
-# https://github.com/MariaDB/mariadb-docker/blob/f64d0cd1176b78c8a42a219fdf0b5c54a12b3c6d/11.2/docker-entrypoint.sh
+# https://github.com/MariaDB/mariadb-docker/blob/f64d0cd1176b78c8a42a219fdf0b5c54a12b3c6d/11.3/docker-entrypoint.sh
 # and might need to get adjusted when the original script gets updated.
+# Formatting, comments and commented out code from the original script have
+# been preserved, where possible, to make it easier to compare this script to
+# the original.
 
 set -eo pipefail
 
 source "$(which docker-entrypoint.sh)"
+
+# This is a temporary copy of the `§docker_mariadb_upgrade()` function from the
+# original entrypoint script. It has the `--upgrade-system-tables` option
+# removed from the `mariadb-upgrade` command because we also want to upgrade
+# user tables. Once https://github.com/MariaDB/mariadb-docker/pull/567 gets
+# merged this function can be removed and the original function can be used
+# again.
+docker_mariadb_upgrade_including_user_tables() {
+  if [ -z "$MARIADB_AUTO_UPGRADE" ] \
+    || [ "$MARIADB_AUTO_UPGRADE" = 0 ]; then
+    mysql_note "MariaDB upgrade (mariadb-upgrade or creating healthcheck users) required, but skipped due to \$MARIADB_AUTO_UPGRADE setting"
+    return
+  fi
+  mysql_note "Starting temporary server"
+  docker_temp_server_start "$@" --skip-grant-tables \
+    --loose-innodb_buffer_pool_dump_at_shutdown=0 \
+    --skip-slave-start
+  mysql_note "Temporary server started."
+
+  docker_mariadb_backup_system
+
+  if [ ! -f "$DATADIR"/.my-healthcheck.cnf ]; then
+    mysql_note "Creating healthcheck users"
+    local createHealthCheckUsers
+    createHealthCheckUsers=$(create_healthcheck_users)
+    docker_process_sql --dont-use-mysql-root-password --binary-mode <<-EOSQL
+    -- Healthcheck users shouldn't be replicated
+    SET @@SESSION.SQL_LOG_BIN=0;
+                -- we need the SQL_MODE NO_BACKSLASH_ESCAPES mode to be clear for the password to be set
+    SET @@SESSION.SQL_MODE=REPLACE(@@SESSION.SQL_MODE, 'NO_BACKSLASH_ESCAPES', '');
+    FLUSH PRIVILEGES;
+    $createHealthCheckUsers
+EOSQL
+    mysql_note "Stopping temporary server"
+    docker_temp_server_stop
+    mysql_note "Temporary server stopped"
+
+    if _check_if_upgrade_is_needed; then
+      # need a restart as FLUSH PRIVILEGES isn't reversable
+      mysql_note "Restarting temporary server for upgrade"
+      docker_temp_server_start "$@" --skip-grant-tables \
+        --loose-innodb_buffer_pool_dump_at_shutdown=0 \
+        --skip-slave-start
+    else
+      return 0
+    fi
+  fi
+
+  mysql_note "Starting mariadb-upgrade"
+  mariadb-upgrade
+  mysql_note "Finished mariadb-upgrade"
+
+  mysql_note "Stopping temporary server"
+  docker_temp_server_stop
+  mysql_note "Temporary server stopped"
+}
 
 mysql_note "Custom entrypoint script for MariaDB Server ${MARIADB_VERSION} started."
 
@@ -47,7 +106,7 @@ elif test -n "$(shopt -s nullglob; echo /always-initdb.d/*)"; then
   # MDEV-27636 mariadb_upgrade --check-if-upgrade-is-needed cannot be run offline
   #if mariadb-upgrade --check-if-upgrade-is-needed; then
   if _check_if_upgrade_is_needed; then
-    docker_mariadb_upgrade "$@"
+    docker_mariadb_upgrade_including_user_tables "$@"
   fi
 
   mysql_note "Starting temporary server"
@@ -66,7 +125,7 @@ elif test -n "$(shopt -s nullglob; echo /always-initdb.d/*)"; then
 # MDEV-27636 mariadb_upgrade --check-if-upgrade-is-needed cannot be run offline
 #elif mariadb-upgrade --check-if-upgrade-is-needed; then
 elif _check_if_upgrade_is_needed; then
-  docker_mariadb_upgrade "$@"
+  docker_mariadb_upgrade_including_user_tables "$@"
 fi
 
 exec "$@"

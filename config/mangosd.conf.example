@@ -73,15 +73,27 @@ RealmID = 1
 DataDir = "/opt/vmangos/storage/data"
 LogsDir = "/opt/vmangos/storage/logs"
 HonorDir = "/opt/vmangos/storage/honor"
+# Username and password must match the `MARIADB_USER` and `MARIADB_PASSWORD`
+# environment variables of the `database` service in `compose.yaml`
+# respectively
 LoginDatabase.Info              = "database;3306;mangos;mangos;realmd"
 LoginDatabase.Connections       = 1
 LoginDatabase.WorkerThreads     = 1
+# Username and password must match the `MARIADB_USER` and `MARIADB_PASSWORD`
+# environment variables of the `database` service in `compose.yaml`
+# respectively
 WorldDatabase.Info              = "database;3306;mangos;mangos;mangos"
 WorldDatabase.Connections       = 1
 WorldDatabase.WorkerThreads     = 1
+# Username and password must match the `MARIADB_USER` and `MARIADB_PASSWORD`
+# environment variables of the `database` service in `compose.yaml`
+# respectively
 CharacterDatabase.Info          = "database;3306;mangos;mangos;characters"
 CharacterDatabase.Connections   = 1
 CharacterDatabase.WorkerThreads = 1
+# Username and password must match the `MARIADB_USER` and `MARIADB_PASSWORD`
+# environment variables of the `database` service in `compose.yaml`
+# respectively
 LogsDatabase.Info               = "database;3306;mangos;mangos;logs"
 LogsDatabase.Connections        = 1
 LogsDatabase.WorkerThreads      = 1

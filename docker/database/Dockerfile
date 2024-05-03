@@ -22,7 +22,7 @@ ARG VMANGOS_REVISION=development
 ARG VMANGOS_DB_OWNER=brotalnia
 ARG VMANGOS_DB_REPOSITORY=database
 
-FROM mariadb:11.2 AS setup
+FROM mariadb:11.3 AS setup
 
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_WORLD
@@ -64,22 +64,31 @@ RUN \
   apt clean -y && \
   rm -rf /var/lib/apt/lists/*
 
-FROM mariadb:11.2
+FROM mariadb:11.3
+
+ENV MARIADB_USER=mangos
+ENV MARIADB_PASSWORD=mangos
+ENV MARIADB_ROOT_PASSWORD=password
+ENV VMANGOS_REALMLIST_NAME=VMaNGOS
+ENV VMANGOS_REALMLIST_ADDRESS=127.0.0.1
+ENV VMANGOS_REALMLIST_PORT=8085
+ENV VMANGOS_REALMLIST_ICON=1
+ENV VMANGOS_REALMLIST_TIMEZONE=0
+ENV VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0
+# See https://github.com/MariaDB/mariadb-docker/blob/f64d0cd1176b78c8a42a219fdf0b5c54a12b3c6d/11.3/docker-entrypoint.sh#L580-L585
+ENV MARIADB_AUTO_UPGRADE=1
 
 COPY --from=setup /sql /sql
 
-COPY ./docker/database/generate-db-1.sql /docker-entrypoint-initdb.d
-COPY ./docker/database/generate-db-2.sh /docker-entrypoint-initdb.d
+COPY ./docker/database/create-db.sh /docker-entrypoint-initdb.d
 
 RUN mkdir /always-initdb.d
 COPY ./docker/database/update-db.sh /always-initdb.d
 
-COPY ./docker/database/regenerate-world-db.sql /sql/regenerate-world-db.sql
-
 COPY ./docker/database/docker-entrypoint.sh /entrypoint.sh
 
 RUN \
-  chmod +x /docker-entrypoint-initdb.d/generate-db-2.sh && \
+  chmod +x /docker-entrypoint-initdb.d/create-db.sh && \
   chmod +x /always-initdb.d/update-db.sh && \
   chmod +x /entrypoint.sh
 

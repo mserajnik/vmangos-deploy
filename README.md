@@ -45,6 +45,7 @@ new commits to VMaNGOS).
   + [Updating](#updating)
   + [Creating database backups](#creating-database-backups)
   + [Accessing the database](#accessing-the-database)
+  + [Database security](#database-security)
 + [Maintainer](#maintainer)
 + [Contribute](#contribute)
 + [License](#license)
@@ -83,7 +84,7 @@ Docker Compose example configuration:
 cp ./compose.yaml.example ./compose.yaml
 ```
 
-Next, adjust your `./compose.yaml`. The first thing to decide on is the Docker
+Next, adjust your `compose.yaml`. The first thing to decide on is the Docker
 image version you want to use based on the client version the server should
 support. You can choose from the following versions:
 
@@ -104,9 +105,9 @@ addition, if you want to enable the movement anticheat and/or Warden, choose an
 image suffixed with `-anticheat` (such as
 `ghcr.io/mserajnik/vmangos-server:4544-anticheat`). If want to use Warden you
 will also have to provide the [Warden modules][warden-modules]. See the
-`volumes` section of the `mangosd` service in your `./compose.yaml` on how to
-do that. Note that the Warden modules are only available for `x86_64`, so you
-will not be able to use Warden when using `aarch64` images.
+`volumes` section of the `mangosd` service in your `compose.yaml` on how to do
+that. Note that the Warden modules are only available for `x86_64`, so you will
+not be able to use Warden when using `aarch64` images.
 
 Instead of using the latest build you can also use a specific VMaNGOS commit.
 To allow for this, the `vmangos-database` image is tagged with the commit hash
@@ -134,8 +135,8 @@ some days).
 
 Aside from the Docker image version you mainly have to pay attention to the
 `environment` sections of each service configuration. In particular, you will
-want to adjust the `TZ` (time zone) environment parameter for each service. The
-`VMANGOS_REALMLIST_*` environment parameters of the `database` service should
+want to adjust the `TZ` (time zone) environment variable for each service. The
+`VMANGOS_REALMLIST_*` environment variables of the `database` service should
 also be of interest; changing `VMANGOS_REALMLIST_ADDRESS` to a LAN IP, a WAN IP
 or a domain name is required if you want to allow non-local connections.
 
@@ -273,7 +274,7 @@ It is recommended to perform regular database backups, particularly before
 updating.
 
 To automatically create database backups periodically, uncomment the
-`database-backup` service configuration in your `./compose.yaml` and follow the
+`database-backup` service configuration in your `compose.yaml` and follow the
 comments there for further information.
 
 ### Accessing the database
@@ -284,8 +285,19 @@ client.
 
 A common web-based MySQL/MariaDB database administration tool called
 [phpMyAdmin][phpymadmin] is included and can be enabled by uncommenting the
-`phpmyadmin` service configuration in your `./compose.yaml`. See the comments
+`phpmyadmin` service configuration in your `compose.yaml`. See the comments
 there for further information.
+
+### Database security
+
+The default database users with full access to all VMaNGOS data (`root` and the
+user named via `MARIADB_USER` environment variable) do not have any
+restrictions in place in regards to which IPs/hosts can connect. Therefore, you
+should __never__ expose your database to the public (whether through direct
+port access, a WAN-accessible phpMyAdmin instance, or any other means). If you
+decide to do so, you will have to implement appropriate security measures.
+Please note that no further support or guidance regarding this will be provided
+here.
 
 ## Maintainer
 
