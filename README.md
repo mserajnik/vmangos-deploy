@@ -138,7 +138,11 @@ Aside from the Docker image version you mainly have to pay attention to the
 want to adjust the `TZ` (time zone) environment variable for each service. The
 `VMANGOS_REALMLIST_*` environment variables of the `database` service should
 also be of interest; changing `VMANGOS_REALMLIST_ADDRESS` to a LAN IP, a WAN IP
-or a domain name is required if you want to allow non-local connections.
+or a domain name is required if you want to allow non-local connections. In
+addition, you can also modify `VMANGOS_REALMLIST_LOCAL_ADDRESS` (and
+`VMANGOS_REALMLIST_LOCAL_SUBNET_MASK`) to advertise that address instead of
+`VMANGOS_REALMLIST_ADDRESS` to clients that are on the same network as the
+realm.
 
 Anything else that is not commented is likely something you do not not have to
 (or, in some cases, _must not_) adjust; this applies to everything including
