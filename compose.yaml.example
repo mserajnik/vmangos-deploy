@@ -164,15 +164,15 @@ services:
       - WAIT_HOSTS=database:3306
       - WAIT_TIMEOUT=600
 
-  # Uncomment this service to enable periodic database backups.
-  # The default configuration should work out of the box (unless you have
-  # modified the `database` service configuration) and will create a backup
-  # every day at 04:00 (change the `TIMEZONE` environment variable to your
-  # desired timezone). Backups older than a week will automatically get
-  # deleted.
-  # Backups will be stored in `./database-backups`.
-  # See https://github.com/tiredofit/docker-db-backup#configuration for more
-  # information.
+  # # Uncomment this service to enable periodic database backups.
+  # # The default configuration should work out of the box (unless you have
+  # # modified the `database` service configuration) and will create a backup
+  # # every day at 04:00 (change the `TIMEZONE` environment variable to your
+  # # desired timezone). Backups older than a week will automatically get
+  # # deleted.
+  # # Backups will be stored in `./database-backups`.
+  # # See https://github.com/tiredofit/docker-db-backup#configuration for more
+  # # information.
   # database-backup:
   #   image: tiredofit/db-backup
   #   depends_on:
@@ -200,13 +200,13 @@ services:
   #     - DB01_USER=root
   #     - DB01_PASS=password # Must match the `MARIADB_ROOT_PASSWORD` environment variable of the `database` service
 
-  # Uncomment this service to run phpMyAdmin, a web-based MySQL/MariaDB
-  # database administration tool.
-  # This can be useful to manage accounts, make changes to the realm
-  # configuration etc.
-  # With the default configuration, you should be able to open
-  # http://localhost:8080 in your browser and have access to all of the
-  # databases VMaNGOS uses.
+  # # Uncomment this service to run phpMyAdmin, a web-based MySQL/MariaDB
+  # # database administration tool.
+  # # This can be useful to manage accounts, make changes to the realm
+  # # configuration etc.
+  # # With the default configuration, you should be able to open
+  # # http://localhost:8080 in your browser and have access to all of the
+  # # databases VMaNGOS uses.
   # phpmyadmin:
   #   image: phpmyadmin/phpmyadmin
   #   depends_on:
