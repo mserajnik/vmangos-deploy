@@ -57,6 +57,6 @@ echo "[vmangos-deploy]: Importing database updates if available..."
 
 echo "[vmangos-deploy]: Configuring default realm..."
 mariadb -u root -p$MARIADB_ROOT_PASSWORD -e \
-  "INSERT INTO \`realmd\`.\`realmlist\` (\`name\`, \`address\`, \`localAddress\`, \`localSubnetMask\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$VMANGOS_REALMLIST_NAME', '$VMANGOS_REALMLIST_ADDRESS', '$VMANGOS_REALMLIST_LOCAL_ADDRESS', '$VMANGOS_REALMLIST_LOCAL_SUBNET_MASK', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
+  "INSERT INTO \`realmd\`.\`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$VMANGOS_REALMLIST_NAME', '$VMANGOS_REALMLIST_ADDRESS', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
 
 echo "[vmangos-deploy]: Database creation complete!"

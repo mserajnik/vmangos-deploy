@@ -42,9 +42,7 @@ services:
       # change them (and the other parameters not exposed here) manually in the
       # database at any point (see the `phpmyadmin` service further below).
       - VMANGOS_REALMLIST_NAME=VMaNGOS # Sets the name of the realm as it appears in the selection list and the character screen
-      - VMANGOS_REALMLIST_ADDRESS=127.0.0.1 # Sets the address of the realm; this can also be a domain name
-      - VMANGOS_REALMLIST_LOCAL_ADDRESS=127.0.0.1 # Sets a separate local address for the realm that is advertised to clients that are on the same network as the realm (instead of `VMANGOS_REALMLIST_ADDRESS`); see also `VMANGOS_REALMLIST_LOCAL_SUBNET_MASK`
-      - VMANGOS_REALMLIST_LOCAL_SUBNET_MASK=255.255.255.0 # Sets the subnet mask for the local network where the realm is located (used in combination with `VMANGOS_REALMLIST_LOCAL_ADDRESS`)
+      - VMANGOS_REALMLIST_ADDRESS=127.0.0.1 # Sets the LAN or WAN address of the realm; this can also be a domain name
       - VMANGOS_REALMLIST_PORT=8085 # Sets the port of the realm; changing this means it also needs to be changed in other places
       - VMANGOS_REALMLIST_ICON=1 # Sets the icon of the realm; 0 = Normal, 1 = PvP, 6 = RP, 8 = RP PVP
       - VMANGOS_REALMLIST_TIMEZONE=0 # Sets the timezone of the realm; some common values are: 2 = United States, 3 = Oceanic, 4 = Latin America, 8 = English, 9 = German, 10 = French, 11 = Spanish, 12 = Russian
