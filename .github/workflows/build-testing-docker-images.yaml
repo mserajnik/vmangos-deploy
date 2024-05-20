@@ -44,8 +44,13 @@ jobs:
       - name: Check if MariaDB entrypoint script has been updated
         id: mariadb-entrypoint-check
         run: |
-          known_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/012f09c4e582a09e5803d3558feb03e87cf50ee5/11.3/docker-entrypoint.sh
-          latest_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/master/11.3/docker-entrypoint.sh
+          known_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/0ec02f517e896dd99fb71f4fa8540f3d415f37c5/11.3/docker-entrypoint.sh
+          # FIXME: MariaDB 11.3 code has been removed from the mariadb-docker
+          # repository before 11.4 was released, so we have to pin to the last
+          # commit where 11.3 is available for this check to pass (until 11.4
+          # gets released).
+          # latest_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/master/11.3/docker-entrypoint.sh
+          latest_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/0ec02f517e896dd99fb71f4fa8540f3d415f37c5/11.3/docker-entrypoint.sh
           curl -o known-entrypoint.sh $known_entrypoint
           curl -o latest-entrypoint.sh $latest_entrypoint
           diff known-entrypoint.sh latest-entrypoint.sh
