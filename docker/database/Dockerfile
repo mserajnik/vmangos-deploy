@@ -22,7 +22,7 @@ ARG VMANGOS_REVISION=development
 ARG VMANGOS_DB_OWNER=brotalnia
 ARG VMANGOS_DB_REPOSITORY=database
 
-FROM mariadb:11.3 AS setup
+FROM mariadb:11.4 AS setup
 
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_WORLD
@@ -64,7 +64,7 @@ RUN \
   apt clean -y && \
   rm -rf /var/lib/apt/lists/*
 
-FROM mariadb:11.3
+FROM mariadb:11.4
 
 ENV MARIADB_USER=mangos
 ENV MARIADB_PASSWORD=mangos
@@ -75,7 +75,7 @@ ENV VMANGOS_REALMLIST_PORT=8085
 ENV VMANGOS_REALMLIST_ICON=1
 ENV VMANGOS_REALMLIST_TIMEZONE=0
 ENV VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0
-# See https://github.com/MariaDB/mariadb-docker/blob/0ec02f517e896dd99fb71f4fa8540f3d415f37c5/11.3/docker-entrypoint.sh#L580-L585
+# See https://github.com/MariaDB/mariadb-docker/blob/4e20774a56c8fb93cec9ee9d4a5b476bc0f8dd0d/11.4/docker-entrypoint.sh#L589-L593
 ENV MARIADB_AUTO_UPGRADE=1
 
 COPY --from=setup /sql /sql
