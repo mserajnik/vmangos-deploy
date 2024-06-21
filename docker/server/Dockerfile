@@ -42,7 +42,6 @@ RUN \
     git \
     libace-dev \
     libmysqlclient-dev \
-    libreadline-dev \
     libssl-dev \
     libtbb-dev \
     openssl \
@@ -99,7 +98,6 @@ RUN \
     curl \
     libace-dev \
     libmysqlclient-dev \
-    libreadline-dev \
     libssl-dev \
     libtbb-dev \
     netcat-openbsd \
