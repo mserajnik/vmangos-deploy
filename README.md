@@ -140,6 +140,11 @@ want to adjust the `TZ` (time zone) environment variable for each service. The
 also be of interest; changing `VMANGOS_REALMLIST_ADDRESS` to a LAN IP, a WAN IP
 or a domain name is required if you want to allow non-local connections.
 
+Also take note of the `healthcheck` sections; if you are on a low end system
+you may have to adjust the `start_period` setting so that the initial database
+creation process will be able to complete in time before the healthcheck
+considers the container unhealthy and causes a restart.
+
 Anything else that is not commented is likely something you do not not have to
 (or, in some cases, _must not_) adjust; this applies to everything including
 port mappings, volumes and environment variables.
@@ -200,7 +205,10 @@ docker compose up -d
 
 This pulls the Docker images first and afterwards automatically creates and
 starts the containers. Note that during the first startup it might take a
-little longer until the server becomes available due to the database creation.
+little longer until the server becomes available due to the initial database
+creation. __Make sure to not (accidentally) stop VMaNGOS before the database__
+__creation process has finished;__ otherwise, you will likely end up with a
+broken database and will have to delete and re-create it.
 
 ### Observing the VMaNGOS output
 
