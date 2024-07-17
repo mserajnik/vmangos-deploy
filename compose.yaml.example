@@ -162,6 +162,7 @@ services:
       - WAIT_HOSTS=database:3306
       - WAIT_TIMEOUT=600
 
+  # # Optional:
   # # Uncomment this service to enable periodic database backups.
   # # The default configuration should work out of the box (unless you have
   # # modified the `database` service configuration) and will create a backup
@@ -198,6 +199,7 @@ services:
   #     - DB01_USER=root
   #     - DB01_PASS=password # Must match the `MARIADB_ROOT_PASSWORD` environment variable of the `database` service
 
+  # # Optional:
   # # Uncomment this service to run phpMyAdmin, a web-based MySQL/MariaDB
   # # database administration tool.
   # # This can be useful to manage accounts, make changes to the realm
