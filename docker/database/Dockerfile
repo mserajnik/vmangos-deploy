@@ -75,7 +75,7 @@ ENV VMANGOS_REALMLIST_PORT=8085
 ENV VMANGOS_REALMLIST_ICON=1
 ENV VMANGOS_REALMLIST_TIMEZONE=0
 ENV VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0
-# See https://github.com/MariaDB/mariadb-docker/blob/81c4ce79659a9b705686b5704a3f3d3b9119532a/11.4/docker-entrypoint.sh#L589-L593
+# See https://github.com/MariaDB/mariadb-docker/blob/2611c396fbe700a2103e91cd2e3da3017a6079e2/11.4/docker-entrypoint.sh#L595-L599
 ENV MARIADB_AUTO_UPGRADE=1
 
 COPY --from=setup /sql /sql
