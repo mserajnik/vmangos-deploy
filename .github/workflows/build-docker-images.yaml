@@ -53,6 +53,14 @@ jobs:
       - name: Determine if images for commit hash have already been built
         id: already-built
         run: |
+          # Check if today is Monday, in which case we want to trigger a
+          # (re)build in any case (to keep the Docker images up-to-date)
+          if [[ "$(date +%u)" -eq 1 ]]; then
+            echo "result=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check if the "force rebuild" input is checked
           if [[ "${{ github.event.inputs.force-rebuild }}" == "true" ]]; then
             echo "result=false" >> $GITHUB_OUTPUT
             exit 0
