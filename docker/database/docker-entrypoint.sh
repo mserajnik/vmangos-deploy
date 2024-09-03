@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # This entrypoint script is based on
-# https://github.com/MariaDB/mariadb-docker/blob/8b9a47d0544826a8fb7c01b4308b400c3f6e529f/11.4/docker-entrypoint.sh
+# https://github.com/MariaDB/mariadb-docker/blob/29f8caccc4790118489524b3f1ee1aa73a2bd760/11.4/docker-entrypoint.sh
 # and might need to get adjusted when the original script gets updated.
 # Formatting, comments and commented out code from the original script have
 # been preserved, where possible, to make it easier to compare this script to
