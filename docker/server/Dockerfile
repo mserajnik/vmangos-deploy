@@ -40,7 +40,6 @@ RUN \
     build-essential \
     cmake \
     git \
-    libace-dev \
     libcurl4-openssl-dev \
     libmysqlclient-dev \
     libssl-dev \
@@ -106,7 +105,6 @@ RUN \
   apt update -y && \
   apt install -y \
     curl \
-    libace-7.1.2 \
     libcurl4 \
     libmysqlclient21 \
     libssl3 \
@@ -156,6 +154,9 @@ COPY ./docker/server/docker-cmd-realmd.sh /usr/local/bin/realmd
 COPY ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bin/extract-client-data
 
 RUN \
+  # These files are not needed in the final image
+  rm -rf /opt/vmangos/include && \
+  rm -rf /opt/vmangos/lib && \
   chmod +x /opt/vmangos/bin/* && \
   find /opt/vmangos/bin/Extractors/ -type f ! -regex ".*\.\(json\|txt\)$" -exec chmod +x {} + && \
   chmod +x /usr/local/bin/mangosd && \
