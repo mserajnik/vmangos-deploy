@@ -42,7 +42,6 @@ RUN \
     build-essential \
     cmake \
     git \
-    libace-dev \
     libmysqlclient-dev \
     libssl-dev \
     libtbb-dev \
@@ -99,7 +98,6 @@ RUN \
   apt update -y && \
   apt install -y \
     curl \
-    libace-7.1.2 \
     libmysqlclient21 \
     libssl3 \
     libtbb12 \
@@ -149,6 +147,9 @@ COPY ./docker/server/docker-cmd-realmd.sh /usr/local/bin/realmd
 COPY ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bin/extract-client-data
 
 RUN \
+  # These files are not needed in the final image
+  rm -rf /opt/vmangos/include && \
+  rm -rf /opt/vmangos/lib && \
   chmod +x /opt/vmangos/bin/* && \
   chmod +x /usr/local/bin/mangosd && \
   chmod +x /usr/local/bin/realmd && \
