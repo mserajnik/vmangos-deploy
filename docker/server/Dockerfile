@@ -44,7 +44,6 @@ RUN \
     libmysqlclient-dev \
     libssl-dev \
     libtbb-dev \
-    openssl \
     zlib1g-dev && \
   git clone https://github.com/${VMANGOS_OWNER}/${VMANGOS_REPOSITORY}.git /core && \
   cd /core && \
@@ -96,15 +95,14 @@ RUN \
   apt update -y && \
   apt install -y \
     curl \
-    libace-dev \
-    libmysqlclient-dev \
-    libssl-dev \
-    libtbb-dev \
+    libace-7.1.2 \
+    libmysqlclient21 \
+    libssl3 \
+    libtbb12 \
     netcat-openbsd \
-    openssl \
     python3 \
     python-is-python3 \
-    zlib1g-dev && \
+    zlib1g && \
   # The Ubuntu 24.04 LTS Docker image has a user called `ubuntu` with UID 1000
   # and GID 1000 by default. Since we allow configuration of the name, UID and
   # GID of the user and group that should be used in the container, we need to
