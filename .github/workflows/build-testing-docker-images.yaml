@@ -23,6 +23,21 @@ on:
         default: 5875
         required: true
         type: number
+      db-owner:
+        description: The owner of the VMaNGOS database repository to use
+        default: brotalnia
+        required: true
+        type: string
+      db-repository:
+        description: The VMaNGOS database repository to use
+        default: database
+        required: true
+        type: string
+      db-dump:
+        description: The VMaNGOS database dump to use
+        default: world_full_14_june_2021
+        required: true
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -180,4 +195,7 @@ jobs:
             VMANGOS_OWNER=${{ github.event.inputs.owner }}
             VMANGOS_REPOSITORY=${{ github.event.inputs.repository }}
             VMANGOS_REVISION=${{ github.event.inputs.revision }}
+            VMANGOS_DB_OWNER=${{ github.event.inputs.db-owner }}
+            VMANGOS_DB_REPOSITORY=${{ github.event.inputs.db-repository }}
+            VMANGOS_DB_DUMP=${{ github.event.inputs.db-dump }}
           tags: ${{ steps.generate-tags.outputs.result }}

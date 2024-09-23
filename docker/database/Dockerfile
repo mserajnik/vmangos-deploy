@@ -15,22 +15,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG VMANGOS_WORLD=world_full_14_june_2021
 ARG VMANGOS_OWNER=vmangos
 ARG VMANGOS_REPOSITORY=core
 ARG VMANGOS_REVISION=development
 ARG VMANGOS_DB_OWNER=brotalnia
 ARG VMANGOS_DB_REPOSITORY=database
+ARG VMANGOS_DB_DUMP=world_full_14_june_2021
 
 FROM mariadb:11.4 AS setup
 
 ARG DEBIAN_FRONTEND
-ARG VMANGOS_WORLD
 ARG VMANGOS_OWNER
 ARG VMANGOS_REPOSITORY
 ARG VMANGOS_REVISION
 ARG VMANGOS_DB_OWNER
 ARG VMANGOS_DB_REPOSITORY
+ARG VMANGOS_DB_DUMP
 
 RUN \
   apt update -y && \
@@ -54,8 +54,8 @@ RUN \
   mv logs_db_updates.sql /sql/migrations && \
   mv world_db_updates.sql /sql/migrations && \
   cd /database && \
-  7z e ${VMANGOS_WORLD}.7z && \
-  mv ${VMANGOS_WORLD}.sql /sql/world.sql && \
+  7z e ${VMANGOS_DB_DUMP}.7z && \
+  mv ${VMANGOS_DB_DUMP}.sql /sql/world.sql && \
   rm -rf /core /database && \
   apt remove -y \
     git \
