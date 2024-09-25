@@ -38,6 +38,10 @@ on:
         default: world_full_14_june_2021
         required: true
         type: string
+      custom-name:
+        description: (Optional) A custom name to use as part of the image tags (when provided, this overrides the default `{ owner }-{ repository }-{ revision }` naming scheme)
+        required: false
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -91,6 +95,7 @@ jobs:
           REVISION: ${{ github.event.inputs.revision }}
           CLIENT_VERSION: ${{ github.event.inputs.client-version }}
           USE_ANTICHEAT: ${{ matrix.use-anticheat }}
+          CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
         with:
           result-encoding: string
           script: |
@@ -101,6 +106,12 @@ jobs:
             const potentialAnticheatSuffix = useAnticheat
               ? '-anticheat'
               : ''
+
+            if (process.env.CUSTOM_NAME.trim() !== '') {
+              tags.push(`${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}${potentialAnticheatSuffix}`)
+
+              return tags.join(',')
+            }
 
             tags.push(`${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}-${process.env.CLIENT_VERSION}${potentialAnticheatSuffix}`)
 
@@ -161,10 +172,17 @@ jobs:
           OWNER: ${{ github.event.inputs.owner }}
           REPOSITORY: ${{ github.event.inputs.repository }}
           REVISION: ${{ github.event.inputs.revision }}
+          CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
         with:
           result-encoding: string
           script: |
             const tags = []
+
+            if (process.env.CUSTOM_NAME.trim() !== '') {
+              tags.push(`${process.env.IMAGE}:${process.env.CUSTOM_NAME}`)
+
+              return tags.join(',')
+            }
 
             tags.push(`${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}`)
 
