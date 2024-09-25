@@ -28,8 +28,9 @@ services:
       # (and thus, a newer dump would only reduce the time of the initial
       # creation of a fresh database because it would cause potentially lengthy
       # migrations to get skipped).
-      # Therefore, this option is merely here to have it available in case it
-      # becomes necessary to import a newer world database dump after all.
+      # Therefore, this option is mainly here to have it available in case it
+      # becomes necessary or desirable to re-create the world database (e.g.,
+      # because of later edits in migrations that have already been run).
       # - /path/to/new/world.sql:/sql/world-new.sql:ro
     environment:
       - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)

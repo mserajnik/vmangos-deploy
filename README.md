@@ -45,6 +45,7 @@ been no updates to VMaNGOS itself.
   + [Creating the first account](#creating-the-first-account)
   + [Stopping VMaNGOS](#stopping-vmangos)
   + [Updating](#updating)
+    + [Breaking changes](#breaking-changes)
   + [Creating database backups](#creating-database-backups)
   + [Accessing the database](#accessing-the-database)
   + [Database security](#database-security)
@@ -270,13 +271,27 @@ Note that using a specific VMaNGOS commit will obviously prevent you from
 updating (but attempting to do so is not harmful, it just will not have any
 effect).
 
-It is also recommended to regularly check this repository (either manually or
-by updating your local repository via `git pull`). Usually, the commits here
-will just consist of maintenance and potentially new VMaNGOS configuration
-options (that you may want to incorporate into your configuration). Sometimes,
-there may be new features or changes that require manual intervention. While
-there should never be anything that breaks your setup, changes in VMaNGOS may
-require new bind mounts or other things.
+#### Breaking changes
+
+It is recommended to regularly check this repository (either manually or by
+updating your local repository via `git pull`). Usually, the commits here will
+just consist of maintenance and potentially new VMaNGOS configuration options
+(that you may want to incorporate into your configuration). Sometimes, there
+may be new features or changes that require manual intervention. Such breaking
+changes will be listed here (and removed again once they become irrelevant),
+sorted by newest first:
+
++ __[2024-09-25] - Migration edits in__
+  __[`vmangos/core@4bad448`](https://github.com/vmangos/core/commit/4bad44863a1d079b62d79e4afc22da49b56cce80)__
+  __and__
+  __[`vmangos/core@8ab4fbf`](https://github.com/vmangos/core/commit/8ab4fbf3b2df90d84c8a98905da3371a1418ff47):__
+  if your world database has been created before these commits and migrations
+  have already been run, you will have to either manually edit your database to
+  reflect these changes or alternatively re-create the world database and run
+  migrations again. To do the latter, you can simply mount the initial database
+  dump as described [here][world-db-dump-mount]. Make sure your Docker images
+  are newer than the commits mentioned above before re-creating the database
+  via this method.
 
 ### Creating database backups
 
@@ -331,6 +346,7 @@ You are welcome to help out!
 [vmangos]: https://github.com/vmangos/core
 [vmangos-docker]: https://github.com/mserajnik/vmangos-docker
 [warden-modules]: https://github.com/vmangos/warden_modules
+[world-db-dump-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20-L34
 
 [actions-status]: https://github.com/mserajnik/vmangos-deploy/actions
 [actions-status-badge]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml/badge.svg
