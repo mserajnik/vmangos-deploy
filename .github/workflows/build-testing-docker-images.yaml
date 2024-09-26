@@ -51,7 +51,7 @@ env:
 jobs:
   setup:
     name: Setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       commit-hash: ${{ steps.latest-commit-hash.outputs.result }}
       already-built: ${{ steps.already-built.outputs.result }}
@@ -72,7 +72,7 @@ jobs:
   build-and-push-server-images:
     name: Build and push server images
     needs: setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: true
       matrix:
@@ -155,7 +155,7 @@ jobs:
   build-and-push-database-images:
     name: Build and push database images
     needs: [setup, build-and-push-server-images]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write

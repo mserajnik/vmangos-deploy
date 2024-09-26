@@ -29,7 +29,7 @@ env:
 jobs:
   setup:
     name: Setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       commit-hash: ${{ steps.latest-commit-hash.outputs.result }}
       already-built: ${{ steps.already-built.outputs.result }}
@@ -92,7 +92,7 @@ jobs:
     name: Build and push server images
     needs: setup
     if: ${{ needs.setup.outputs.already-built != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: true
       matrix:
@@ -176,7 +176,7 @@ jobs:
     name: Build and push database images
     needs: [setup, build-and-push-server-images]
     if: ${{ needs.setup.outputs.already-built != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -230,7 +230,7 @@ jobs:
     name: Delete old package versions
     needs: [setup, build-and-push-server-images, build-and-push-database-images]
     if: ${{ needs.setup.outputs.already-built != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
