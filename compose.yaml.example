@@ -141,6 +141,10 @@ services:
       start_period: 5m # This is set relatively high to take the initial database creation into account
     ports:
       - 8085:8085
+      # To enable SOAP API access, set `SOAP.Enabled` to `1` and make sure
+      # `SOAP.IP` is set to `0.0.0.0` and `SOAP.Port` to `7878` in your
+      # `./config/mangosd.conf`, then uncomment the following port mapping:
+      # - 7878:7878
     volumes:
       - ./config/mangosd.conf:/opt/vmangos/config/mangosd.conf:ro
       - ./storage/mangosd/extracted-data:/opt/vmangos/storage/data:ro
