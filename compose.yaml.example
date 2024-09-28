@@ -145,6 +145,10 @@ services:
       # `SOAP.IP` is set to `0.0.0.0` and `SOAP.Port` to `7878` in your
       # `./config/mangosd.conf`, then uncomment the following port mapping:
       # - 7878:7878
+      # To enable RA, set `Ra.Enable` to `1` and make sure `Ra.IP` is set to
+      # `0.0.0.0` and `Ra.Port` to `3443` in your `./config/mangosd.conf`, then
+      # uncomment the following port mapping:
+      # - 3443:3443
     volumes:
       - ./config/mangosd.conf:/opt/vmangos/config/mangosd.conf:ro
       - ./storage/mangosd/extracted-data:/opt/vmangos/storage/data:ro
