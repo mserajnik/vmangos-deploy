@@ -34,6 +34,8 @@ ARG VMANGOS_OWNER
 ARG VMANGOS_REPOSITORY
 ARG VMANGOS_REVISION
 
+COPY ./docker/server/healthcheck.c /healthcheck.c
+
 RUN \
   apt update -y && \
   apt install -y \
@@ -73,6 +75,8 @@ RUN \
   mv /core/contrib/mmap/config.json /opt/vmangos/mmap-config && \
   mv /core/contrib/mmap/offmesh.txt /opt/vmangos/mmap-config && \
   rm -rf /core && \
+  gcc -O2 -o /usr/local/bin/healthcheck /healthcheck.c && \
+  rm -f /healthcheck.c && \
   apt clean -y && \
   rm -rf /var/lib/apt/lists/*
 
@@ -135,6 +139,7 @@ RUN \
   rm -rf /var/lib/apt/lists/*
 
 COPY --from=build --chown=${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME} /opt /opt
+COPY --from=build /usr/local/bin/healthcheck /usr/local/bin/healthcheck
 
 # See https://github.com/ufoscout/docker-compose-wait
 COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /usr/local/bin/wait-for-db
@@ -147,7 +152,8 @@ RUN \
   chmod +x /opt/vmangos/bin/* && \
   chmod +x /usr/local/bin/mangosd && \
   chmod +x /usr/local/bin/realmd && \
-  chmod +x /usr/local/bin/extract-client-data
+  chmod +x /usr/local/bin/extract-client-data && \
+  chmod +x /usr/local/bin/healthcheck
 
 USER ${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME}
 
