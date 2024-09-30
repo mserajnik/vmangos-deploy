@@ -281,6 +281,13 @@ may be new features or changes that require manual intervention. Such breaking
 changes will be listed here (and removed again once they become irrelevant),
 sorted by newest first:
 
++ __[2024-10-01] - Healthcheck method change:__ healthchecks have been changed
+  to use a [small custom program](docker/server/healthcheck.c) instead of `nc`.
+  This change requires you to adjust the `healthcheck` sections of the `realmd`
+  and `mangosd` services in your `compose.yaml` accordingly (as shown in
+  [`compose.yaml.example`](compose.yaml.example)). Running healthchecks via
+  `nc` is deprecated and `nc` will no longer be available in the Docker images
+  after 2024-12-31, at which point this previous healthcheck method will fail.
 + __[2024-09-25] - Migration edits in__
   __[`vmangos/core@4bad448`](https://github.com/vmangos/core/commit/4bad44863a1d079b62d79e4afc22da49b56cce80)__
   __and__
