@@ -1,0 +1,22 @@
+diff --git a/src/mangosd/Master.cpp b/src/mangosd/Master.cpp
+index 3ecaba28..dc47c19d 100644
+--- a/src/mangosd/Master.cpp
++++ b/src/mangosd/Master.cpp
+@@ -521,6 +521,8 @@ void Master::SigvSignalHandler()
+
+ void Master::_OnSignal(int s)
+ {
++    printf("GOT SIGNAL %d\n", s);
++    fflush(stdout);
+     switch (s)
+     {
+         case SIGINT:
+@@ -575,6 +577,8 @@ void Master::_OnSignal(int s)
+
+ void Master::_HookSignals()
+ {
++    printf("HOOKING SIGNALS\n");
++    fflush(stdout);
+     ::signal(SIGINT, _OnSignal);
+     ::signal(SIGTERM, _OnSignal);
+     ::signal(SIGSEGV, _OnSignal);
