@@ -35,6 +35,7 @@ ARG VMANGOS_REPOSITORY
 ARG VMANGOS_REVISION
 
 COPY ./docker/server/healthcheck.c /healthcheck.c
+COPY ./docker/server/patches /patches
 
 RUN \
   apt update -y && \
@@ -49,6 +50,7 @@ RUN \
   git clone https://github.com/${VMANGOS_OWNER}/${VMANGOS_REPOSITORY}.git /core && \
   cd /core && \
   git checkout ${VMANGOS_REVISION} && \
+  git apply /patches/*.patch && \
   mkdir -p \
     /opt/vmangos/config \
     /opt/vmangos/mmap-config \
@@ -98,6 +100,7 @@ RUN \
   apt update -y && \
   apt install -y \
     curl \
+    gdb \
     libmysqlclient21 \
     libssl3 \
     libtbb12 \

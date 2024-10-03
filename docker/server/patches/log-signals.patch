@@ -1,0 +1,35 @@
+diff --git a/src/mangosd/Master.cpp b/src/mangosd/Master.cpp
+index 8f3f9d1e..f1e70be6 100644
+--- a/src/mangosd/Master.cpp
++++ b/src/mangosd/Master.cpp
+@@ -521,15 +521,21 @@ void Master::SigvSignalHandler()
+ 
+ void Master::_OnSignal(int s)
+ {
++    printf("[DOCKER-DEBUG]: RECEIVED SIGNAL %d\n", s);
++    fflush(stdout);
+     switch (s)
+     {
+         case SIGINT:
++            printf("[DOCKER-DEBUG]: RECEIVED SIGINT, calling World::StopNow(RESTART_EXIT_CODE)\n");
++            fflush(stdout);
+             World::StopNow(RESTART_EXIT_CODE);
+             break;
+         case SIGTERM:
+ #ifdef _WIN32
+             case SIGBREAK:
+ #endif
++            printf("[DOCKER-DEBUG]: RECEIVED SIGTERM, calling World::StopNow(SHUTDOWN_EXIT_CODE)\n");
++            fflush(stdout);
+             World::StopNow(SHUTDOWN_EXIT_CODE);
+             break;
+         case SIGSEGV:
+@@ -575,6 +581,8 @@ void Master::_OnSignal(int s)
+ 
+ void Master::_HookSignals()
+ {
++    printf("[DOCKER-DEBUG]: HOOKING SIGNALS\n");
++    fflush(stdout);
+     ::signal(SIGINT, _OnSignal);
+     ::signal(SIGTERM, _OnSignal);
+     ::signal(SIGSEGV, _OnSignal);
