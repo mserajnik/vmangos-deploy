@@ -126,6 +126,15 @@ services:
     depends_on:
       - database
     restart: unless-stopped
+    # `stop_grace_period` configures how long Docker waits during shutdown
+    # before it kills the container. The Docker default is 10 seconds, which
+    # might be too short for VMaNGOS servers with larger populations to
+    # complete the shutdown tasks in time. Setting it to 2 minutes instead
+    # should be on the safe side and doesn't have any downsides except the
+    # longer wait time when the server actually hangs during shutdown. Feel
+    # free to adjust this value based on the actual shutdown duration you
+    # observe.
+    stop_grace_period: 2m
     # The healthcheck determines if the container is working as expected; if
     # the healthcheck fails it causes a restart of the container. The default
     # parameters here should work fine on most systems, but if you experience
