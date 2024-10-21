@@ -43,10 +43,12 @@ rm -rf ./maps
 rm -rf ./mmaps
 rm -rf ./vmaps
 
-/opt/vmangos/bin/mapextractor
-/opt/vmangos/bin/vmapextractor
-/opt/vmangos/bin/vmap_assembler
-/opt/vmangos/bin/mmap_extract.py --configInputPath /opt/vmangos/mmap-config/config.json --offMeshInput /opt/vmangos/mmap-config/offmesh.txt
+/opt/vmangos/bin/Extractors/MapExtractor
+/opt/vmangos/bin/Extractors/VMapExtractor
+/opt/vmangos/bin/Extractors/VMapAssembler
+/opt/vmangos/bin/Extractors/mmap_extract.py \
+  --configInputPath /opt/vmangos/bin/Extractors/config.json \
+  --offMeshInput /opt/vmangos/bin/Extractors/offmesh.txt
 
 # This data isn't used; we delete it to avoid confusion
 rm -rf ./Buildings

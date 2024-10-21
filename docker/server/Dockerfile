@@ -50,7 +50,6 @@ RUN \
   git checkout ${VMANGOS_REVISION} && \
   mkdir -p \
     /opt/vmangos/config \
-    /opt/vmangos/mmap-config \
     /opt/vmangos/storage/data \
     /opt/vmangos/storage/honor \
     /opt/vmangos/storage/logs && \
@@ -69,9 +68,6 @@ RUN \
     -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ && \
   make -j$(nproc) && \
   make install && \
-  mv /core/contrib/mmap/mmap_extract.py /opt/vmangos/bin && \
-  mv /core/contrib/mmap/config.json /opt/vmangos/mmap-config && \
-  mv /core/contrib/mmap/offmesh.txt /opt/vmangos/mmap-config && \
   rm -rf /core && \
   apt clean -y && \
   rm -rf /var/lib/apt/lists/*
@@ -145,6 +141,7 @@ COPY ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bin/extract-cl
 
 RUN \
   chmod +x /opt/vmangos/bin/* && \
+  find /opt/vmangos/bin/Extractors/ -type f ! -regex ".*\.\(json\|txt\)$" -exec chmod +x {} + && \
   chmod +x /usr/local/bin/mangosd && \
   chmod +x /usr/local/bin/realmd && \
   chmod +x /usr/local/bin/extract-client-data
