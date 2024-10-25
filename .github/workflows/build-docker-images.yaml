@@ -50,20 +50,22 @@ jobs:
 
             return ref.data.object.sha
 
+      # We check if the workflow was triggered by a schedule and if today is
+      # Monday, in which case we want to trigger a (re)build in any case (to
+      # keep the Docker images up-to-date).
+      #
+      # We also check if the "force rebuild" input is checked when the workflow
+      # is triggered manually; if yes, we also want to (re)build.
       - name: Determine if images for commit hash have already been built
         id: already-built
         run: |
-          # Check if the workflow was triggered by a schedule
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            # Check if today is Monday, in which case we want to trigger a
-            # (re)build in any case (to keep the Docker images up-to-date)
             if [[ "$(date +%u)" -eq 1 ]]; then
               echo "result=false" >> $GITHUB_OUTPUT
               exit 0
             fi
           fi
 
-          # Check if the "force rebuild" input is checked
           if [[ "${{ github.event.inputs.force-rebuild }}" == "true" ]]; then
             echo "result=false" >> $GITHUB_OUTPUT
             exit 0
@@ -109,6 +111,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # We tag the newest non-anticheat build for client version 5875 with
+      # `latest` since that can be considered the default.
       - name: Generate tags
         uses: actions/github-script@v7
         id: generate-tags
@@ -124,8 +128,6 @@ jobs:
 
             const useAnticheat = parseInt(process.env.USE_ANTICHEAT) === 1
 
-            // We tag the newest non-anticheat build for client version 5875
-            // with `latest` since that can be considered the default
             if (
               parseInt(process.env.CLIENT_VERSION) === 5875 &&
               !useAnticheat
