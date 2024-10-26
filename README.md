@@ -14,8 +14,8 @@ It features:
   optimized for size and previously redundant images have been merged into a
   single one
 + The ability to run VMaNGOS configured for any of its supported client
-  versions (with or without anticheat support); prebuilt images for all
-  versions ranging from `1.6.1.4544` to `1.12.1.5875` are provided
+  versions; prebuilt images for all versions ranging from `1.6.1.4544` to
+  `1.12.1.5875` are provided
 + A more transparent and easier to follow user experience; due to the prebuilt
   Docker images the number of different commands that need to be run to manage
   the server has been greatly reduced and thus it is no longer necessary to use
@@ -39,6 +39,7 @@ been no updates to VMaNGOS itself.
     + [Cloning the repository and adjusting the VMaNGOS configuration](#cloning-the-repository-and-adjusting-the-vmangos-configuration)
     + [Adjusting the Docker Compose configuration](#adjusting-the-docker-compose-configuration)
     + [Extracting the client data](#extracting-the-client-data)
+    + [Providing the Warden modules (optional)](#providing-the-warden-modules-optional)
 + [Usage](#usage)
   + [Starting VMaNGOS](#starting-vmangos)
   + [Observing the VMaNGOS output](#observing-the-vmangos-output)
@@ -91,34 +92,26 @@ Next, adjust your `compose.yaml`. The first thing to decide on is the Docker
 image version you want to use based on the client version the server should
 support. You can choose from the following versions:
 
-| Supported client version | Image tags                                                                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------ |
-| `1.12.1.5875`            | `ghcr.io/mserajnik/vmangos-server:5875`, `ghcr.io/mserajnik/vmangos-server:5875-anticheat` |
-| `1.11.2.5464`            | `ghcr.io/mserajnik/vmangos-server:5464`, `ghcr.io/mserajnik/vmangos-server:5464-anticheat` |
-| `1.10.2.5302`            | `ghcr.io/mserajnik/vmangos-server:5302`, `ghcr.io/mserajnik/vmangos-server:5302-anticheat` |
-| `1.9.4.5086`             | `ghcr.io/mserajnik/vmangos-server:5086`, `ghcr.io/mserajnik/vmangos-server:5086-anticheat` |
-| `1.8.4.4878`             | `ghcr.io/mserajnik/vmangos-server:4878`, `ghcr.io/mserajnik/vmangos-server:4878-anticheat` |
-| `1.7.1.4695`             | `ghcr.io/mserajnik/vmangos-server:4695`, `ghcr.io/mserajnik/vmangos-server:4695-anticheat` |
-| `1.6.1.4544`             | `ghcr.io/mserajnik/vmangos-server:4544`, `ghcr.io/mserajnik/vmangos-server:4544-anticheat` |
+| Supported client version | Image tag                               |
+| ------------------------ | --------------------------------------- |
+| `1.12.1.5875`            | `ghcr.io/mserajnik/vmangos-server:5875` |
+| `1.11.2.5464`            | `ghcr.io/mserajnik/vmangos-server:5464` |
+| `1.10.2.5302`            | `ghcr.io/mserajnik/vmangos-server:5302` |
+| `1.9.4.5086`             | `ghcr.io/mserajnik/vmangos-server:5086` |
+| `1.8.4.4878`             | `ghcr.io/mserajnik/vmangos-server:4878` |
+| `1.7.1.4695`             | `ghcr.io/mserajnik/vmangos-server:4695` |
+| `1.6.1.4544`             | `ghcr.io/mserajnik/vmangos-server:4544` |
 
 Adjust the configured `image` for the `realmd` and `mangosd` services based on
 this table. E.g., if you want to run a server that supports client version
-`1.6.1.4544` you would use `ghcr.io/mserajnik/vmangos-server:4544`. In
-addition, if you want to enable the movement anticheat and/or Warden, choose an
-image suffixed with `-anticheat` (such as
-`ghcr.io/mserajnik/vmangos-server:4544-anticheat`). If want to use Warden you
-will also have to provide the [Warden modules][warden-modules]. See the
-`volumes` section of the `mangosd` service in your `compose.yaml` on how to do
-that. Note that the Warden modules are only available for `x86_64`, so you will
-not be able to use Warden when using `aarch64` images.
+`1.6.1.4544` you would use `ghcr.io/mserajnik/vmangos-server:4544`.
 
 Instead of using the latest build you can also use a specific VMaNGOS commit.
 To allow for this, the `vmangos-database` image is tagged with the commit hash
 (e.g., `vmangos-database:e87d583a5e50ad49f12a716fb408b393d3c21103`) and the
-`vmangos-server` image tag is suffixed with the commit hash (e.g., `vmangos-server:5875-e87d583a5e50ad49f12a716fb408b393d3c21103` or
-`vmangos-server:5875-anticheat-e87d583a5e50ad49f12a716fb408b393d3c21103`) so
-you can still select the supported client version and choose whether you want
-anticheat support or not.
+`vmangos-server` image tag is suffixed with the commit hash (e.g.,
+`vmangos-server:5875-e87d583a5e50ad49f12a716fb408b393d3c21103`) so you can
+still select the supported client version.
 
 When you decide to use a specific commit you should always make sure to use the
 same one for the `vmangos-server` and the `vmangos-database` images so there
@@ -194,6 +187,14 @@ Once the extraction is finished you can find the data in
 [`./storage/mangosd/extracted-data`](storage/mangosd/extracted-data). Note that
 you may want to re-run the process in the future if VMaNGOS makes changes (to
 benefit from potentially improved mob pathing etc.).
+
+### Providing the Warden modules (optional)
+
+Optionally, if want to use Warden you have to provide the
+[Warden modules][warden-modules]. See the `volumes` section of the `mangosd`
+service in your `compose.yaml` on how to do that. Note that the Warden modules
+are only available for `x86_64`, so you will not be able to use Warden when
+using `aarch64` images.
 
 ## Usage
 
@@ -281,6 +282,13 @@ may be new features or changes that require manual intervention. Such breaking
 changes will be listed here (and removed again once they become irrelevant),
 sorted by newest first:
 
++ __[2024-10-31] - Removal of separate images with anticheat support:__
+  As of
+  [`vmangos/core@fbbc4ae`](https://github.com/vmangos/core/commit/fbbc4ae899f876a78a37d8fee805dce40a182331)
+  VMaNGOS no longer supports building without anticheat support, thus anticheat
+  is always available and there is no longer a need for separate images. If
+  you were using one of the anticheat images (which were suffixed with
+  `-anticheat`), simply switch to the regular version of that image.
 + __[2024-10-29] - Migration edits in__
   __[`vmangos/core@e3f0547`](https://github.com/vmangos/core/commit/e3f0547b9973cbb72e250f04362ebf35db388939)__
   __and__

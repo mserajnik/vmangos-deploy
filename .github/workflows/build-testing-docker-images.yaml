@@ -73,10 +73,6 @@ jobs:
     name: Build and push server images
     needs: setup
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: true
-      matrix:
-        use-anticheat: [0, 1]
     permissions:
       contents: read
       packages: write
@@ -94,26 +90,19 @@ jobs:
           REPOSITORY: ${{ github.event.inputs.repository }}
           REVISION: ${{ github.event.inputs.revision }}
           CLIENT_VERSION: ${{ github.event.inputs.client-version }}
-          USE_ANTICHEAT: ${{ matrix.use-anticheat }}
           CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
         with:
           result-encoding: string
           script: |
             const tags = []
 
-            const useAnticheat = parseInt(process.env.USE_ANTICHEAT) === 1
-
-            const potentialAnticheatSuffix = useAnticheat
-              ? '-anticheat'
-              : ''
-
             if (process.env.CUSTOM_NAME.trim() !== '') {
-              tags.push(`${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}${potentialAnticheatSuffix}`)
+              tags.push(`${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}`)
 
               return tags.join(',')
             }
 
-            tags.push(`${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}-${process.env.CLIENT_VERSION}${potentialAnticheatSuffix}`)
+            tags.push(`${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`)
 
             return tags.join(',')
 
@@ -143,7 +132,6 @@ jobs:
             VMANGOS_REPOSITORY=${{ github.event.inputs.repository }}
             VMANGOS_REVISION=${{ github.event.inputs.revision }}
             VMANGOS_CLIENT_VERSION=${{ github.event.inputs.client-version }}
-            VMANGOS_USE_ANTICHEAT=${{ matrix.use-anticheat }}
           tags: ${{ steps.generate-tags.outputs.result }}
 
   # Since the database image builds only take a few minutes (and therefore
