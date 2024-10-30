@@ -281,12 +281,23 @@ may be new features or changes that require manual intervention. Such breaking
 changes will be listed here (and removed again once they become irrelevant),
 sorted by newest first:
 
++ __[2024-10-29] - Migration edits in__
+  __[`vmangos/core@e3f0547`](https://github.com/vmangos/core/commit/e3f0547b9973cbb72e250f04362ebf35db388939)__
+  __and__
+  __[`vmangos/core@ebf9cd8`](https://github.com/vmangos/core/commit/ebf9cd81f88de62dd85f8f127ed91cf7e690da3d):__
+  if you have already run the affected migrations before they have been edited
+  in these commits, you will have to either manually edit your database to
+  reflect these changes or alternatively re-create the world database and run
+  migrations again. To do the latter, you can simply mount the initial database
+  dump as described [here][world-db-dump-mount]. Make sure your Docker images
+  are newer than the commits mentioned above before re-creating the database
+  via this method.
 + __[2024-09-25] - Migration edits in__
   __[`vmangos/core@4bad448`](https://github.com/vmangos/core/commit/4bad44863a1d079b62d79e4afc22da49b56cce80)__
   __and__
   __[`vmangos/core@8ab4fbf`](https://github.com/vmangos/core/commit/8ab4fbf3b2df90d84c8a98905da3371a1418ff47):__
-  if your world database has been created before these commits and migrations
-  have already been run, you will have to either manually edit your database to
+  if you have already run the affected migrations before they have been edited
+  in these commits, you will have to either manually edit your database to
   reflect these changes or alternatively re-create the world database and run
   migrations again. To do the latter, you can simply mount the initial database
   dump as described [here][world-db-dump-mount]. Make sure your Docker images
