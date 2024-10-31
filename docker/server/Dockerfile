@@ -39,6 +39,7 @@ RUN \
     cmake \
     git \
     libace-dev \
+    libcurl4-openssl-dev \
     libmysqlclient-dev \
     libssl-dev \
     libtbb-dev \
@@ -54,15 +55,17 @@ RUN \
   mkdir /core/build && \
   cd /core/build && \
   cmake \
-    -DSUPPORTED_CLIENT_BUILD=${VMANGOS_CLIENT_VERSION} \
+    -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ \
+    -DUSE_PCH=1 \
     -DUSE_STD_MALLOC=0 \
     -DBUILD_FOR_HOST_CPU=0 \
     -DTBB_DEBUG=0 \
     -DUSE_SCRIPTS=1 \
     -DUSE_EXTRACTORS=1 \
-    -DUSE_LIBCURL=0 \
-    -DDEBUG_SYMBOLS=0 \
-    -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ && \
+    -DUSE_REALMMERGE=0 \
+    -DENABLE_MAILSENDER=1 \
+    -DSUPPORTED_CLIENT_BUILD=${VMANGOS_CLIENT_VERSION} \
+    -DDEBUG_SYMBOLS=0 && \
   make -j$(nproc) && \
   make install && \
   rm -rf /core && \
@@ -89,6 +92,7 @@ RUN \
   apt install -y \
     curl \
     libace-7.1.2 \
+    libcurl4 \
     libmysqlclient21 \
     libssl3 \
     libtbb12 \
