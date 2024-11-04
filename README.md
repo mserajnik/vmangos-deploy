@@ -192,9 +192,7 @@ benefit from potentially improved mob pathing etc.).
 
 Optionally, if want to use Warden you have to provide the
 [Warden modules][warden-modules]. See the `volumes` section of the `mangosd`
-service in your `compose.yaml` on how to do that. Note that the Warden modules
-are only available for `x86_64`, so you will not be able to use Warden when
-using `aarch64` images.
+service in your `compose.yaml` on how to do that.
 
 ## Usage
 
