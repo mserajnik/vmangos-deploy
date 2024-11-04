@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # This entrypoint script is based on
-# https://github.com/MariaDB/mariadb-docker/blob/29f8caccc4790118489524b3f1ee1aa73a2bd760/11.4/docker-entrypoint.sh
+# https://github.com/MariaDB/mariadb-docker/blob/70d5dbb8052e1d67f69ac25783537afd457afa34/11.4/docker-entrypoint.sh
 # and might need to get adjusted when the original script gets updated.
 # Formatting, comments and commented out code from the original script have
 # been preserved, where possible, to make it easier to compare this script to
@@ -41,8 +41,7 @@ docker_mariadb_upgrade_including_user_tables() {
   fi
   mysql_note "Starting temporary server"
   docker_temp_server_start "$@" --skip-grant-tables \
-    --loose-innodb_buffer_pool_dump_at_shutdown=0 \
-    --skip-slave-start
+    --loose-innodb_buffer_pool_dump_at_shutdown=0
   mysql_note "Temporary server started."
 
   docker_mariadb_backup_system
@@ -67,8 +66,7 @@ EOSQL
       # need a restart as FLUSH PRIVILEGES isn't reversable
       mysql_note "Restarting temporary server for upgrade"
       docker_temp_server_start "$@" --skip-grant-tables \
-        --loose-innodb_buffer_pool_dump_at_shutdown=0 \
-        --skip-slave-start
+        --loose-innodb_buffer_pool_dump_at_shutdown=0
     else
       return 0
     fi
