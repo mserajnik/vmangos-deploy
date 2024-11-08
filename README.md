@@ -4,27 +4,29 @@
 
 This is a simplified Docker setup for [VMaNGOS][vmangos] based on my
 [previous project][vmangos-docker]. It aims to improve upon its foundation
-while providing a much nicer experience for the user.
+while providing a much nicer experience for the user and features a number of
+big improvements:
 
-It features:
-
-+ Prebuilt Docker images for both `x86_64` and `aarch64`, leveraging GitHub
-  Actions; you no longer need to spend a lot of time re-compiling VMaNGOS every
-  time you want to update. The Docker images have been completely rewritten and
-  optimized for size and previously redundant images have been merged into a
-  single one
-+ The ability to run VMaNGOS configured for any of its supported client
-  versions; prebuilt images for all versions ranging from `1.6.1.4544` to
++ __Prebuilt Docker images for both `x86_64` and `aarch64`, leveraging GitHub__
+  __Actions:__ you no longer need to spend a lot of time re-compiling VMaNGOS
+  every time you want to update. In addition, the Docker images have been
+  completely rewritten and optimized for size and previously redundant images
+  have been merged into a single one
++ __The ability to run VMaNGOS configured for any of its supported client__
+  __versions:__ prebuilt images for all versions ranging from `1.6.1.4544` to
   `1.12.1.5875` are provided
-+ A more transparent and easier to follow user experience; due to the prebuilt
-  Docker images the number of different commands that need to be run to manage
-  the server has been greatly reduced and thus it is no longer necessary to use
-  various scripts to install, update and manage VMaNGOS. Instead, you can
-  simply use the Docker CLI (or any other tool that is able to manage Docker
-  containers)
-+ A much tidier repository structure; the server configuration can be found in
-  [`./config`](config), everything else that is shared between the server and
-  your host system lives inside [`./storage`](storage)
++ __Seamless automated database migrations:__ by pulling the latest Docker
+  images and recreating the containers, migrations are applied automatically to
+  keep your database up-to-date
++ __A more transparent and easier to follow user experience:__ due to the
+  prebuilt images the number of different commands that need to be run to
+  manage the server has been greatly reduced and thus it is no longer necessary
+  to use various scripts to install, update and manage VMaNGOS. Instead, you
+  can simply use the Docker CLI (or any other tool that is able to manage
+  Docker containers)
++ __A much tidier repository structure:__ the VMaNGOS configuration can be
+  found in [`./config`](config), everything else that is shared between the
+  containers and your host system lives inside [`./storage`](storage)
 
 The Docker images are built daily, unless there have been no new commits to
 VMaNGOS. Additionally, every Monday, the latest images are rebuilt to ensure
