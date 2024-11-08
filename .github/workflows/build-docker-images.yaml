@@ -246,21 +246,22 @@ jobs:
           # packages in total.
           #
           # This means, to stay below the assumed limit of 1,000 packages, we
-          # can keep 47 builds worth of server images:
-          # 21 * 47 = 987 packages
-          min-versions-to-keep: 987
+          # can keep a maximum of 47 builds worth of server images; let's make
+          # that 45 to have a nice and round number:
+          # 21 * 45 = 945 packages
+          min-versions-to-keep: 945
 
       - name: Delete old database package versions
         uses: actions/delete-package-versions@v5
         with:
           package-name: vmangos-database
           package-type: container
-          # Above, we have set it up to keep 47 builds worth of server images
+          # Above, we have set it up to keep 45 builds worth of server images
           # (to stay below that supposed 1,000 packages limit). We want to keep
           # all the matching database images.
           #
           # Per database build we have 3 packages in total (the manifest plus
           # two actual images).
           #
-          # 3 * 47 = 138 packages
-          min-versions-to-keep: 138
+          # 3 * 45 = 135 packages
+          min-versions-to-keep: 135

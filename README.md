@@ -124,8 +124,8 @@ will be a build for every single VMaNGOS commit; you can find all the available
 versions for the `vmangos-server` and the `vmangos-database` images
 [here][image-vmangos-server-versions] and
 [here][image-vmangos-database-versions] respectively. Older images are
-automatically deleted; only the images from the last 22 builds are kept (which
-usually means the builds from the last 22 days, unless there have been builds
+automatically deleted; only the images from the last 45 builds are kept (which
+usually means the builds from the last 45 days, unless there have been builds
 outside of the normal daily schedule or there have been no VMaNGOS commits on
 some days).
 
