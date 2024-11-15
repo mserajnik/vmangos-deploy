@@ -1,4 +1,4 @@
-# vmangos-deploy [![GitHub Actions status][actions-status-badge]][actions-status]
+# vmangos-deploy [![Latest VMaNGOS build][vmangos-revision-badge]][vmangos] [![GitHub Actions status][actions-status-badge]][actions-status]
 
 > A Docker setup for VMaNGOS
 
@@ -364,6 +364,7 @@ You are welcome to help out!
 [phpymadmin]: https://www.phpmyadmin.net/
 [vmangos]: https://github.com/vmangos/core
 [vmangos-docker]: https://github.com/mserajnik/vmangos-docker
+[vmangos-revision-badge]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-revision%2Fbadge.json
 [warden-modules]: https://github.com/vmangos/warden_modules
 [world-db-dump-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20-L34
 

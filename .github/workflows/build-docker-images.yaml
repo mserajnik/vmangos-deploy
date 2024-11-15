@@ -222,7 +222,7 @@ jobs:
   delete-old-package-versions:
     name: Delete old package versions
     needs: [setup, build-and-push-server-images, build-and-push-database-images]
-    if: ${{ needs.setup.outputs.already-built != 'true' }}
+    if: ${{ needs.setup.outputs.already-built != 'true' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -265,3 +265,33 @@ jobs:
           #
           # 3 * 45 = 135 packages
           min-versions-to-keep: 135
+
+  update-revision-badge:
+    name: Update revision badge
+    needs: [setup, build-and-push-server-images, build-and-push-database-images, delete-old-package-versions]
+    if: ${{ needs.setup.outputs.already-built != 'true' && github.event_name != 'pull_request' }}
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Check if FTP secrets are available
+      run: |
+        if [[ -z "${{ secrets.REVISION_BADGE_FTP_HOST }}" || -z "${{ secrets.REVISION_BADGE_FTP_USERNAME }}" || -z "${{ secrets.REVISION_BADGE_FTP_PASSWORD }}" ]]; then
+          echo "FTP secrets are missing, skipping job."
+          exit 0
+        fi
+
+    - name: Generate badge JSON
+      run: |
+        short_hash=$(echo "${{ needs.setup.outputs.commit-hash }}" | cut -c1-7)
+        echo '{
+          "schemaVersion": 1,
+          "label": "Latest VMaNGOS build",
+          "message": "'$short_hash'",
+          "color": "blue"
+        }' > badge.json
+
+    - name: Upload badge JSON to web server
+      run: |
+        curl -T badge.json \
+          --user ${{ secrets.REVISION_BADGE_FTP_USERNAME }}:${{ secrets.REVISION_BADGE_FTP_PASSWORD }} \
+          ftp://${{ secrets.REVISION_BADGE_FTP_HOST }}/
