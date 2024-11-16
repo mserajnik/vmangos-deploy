@@ -1,4 +1,4 @@
-name: Build and push Docker images for testing
+name: Build and push custom Docker images
 
 on:
   workflow_dispatch:
@@ -49,8 +49,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME_SERVER: ${{ github.repository_owner }}/vmangos-server-testing
-  IMAGE_NAME_DATABASE: ${{ github.repository_owner }}/vmangos-database-testing
+  IMAGE_NAME_SERVER: ${{ github.repository_owner }}/vmangos-server-custom
+  IMAGE_NAME_DATABASE: ${{ github.repository_owner }}/vmangos-database-custom
 
 jobs:
   setup:
