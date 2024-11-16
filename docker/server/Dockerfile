@@ -50,11 +50,11 @@ RUN \
   cd /core && \
   git checkout ${VMANGOS_REVISION} && \
   if [ -n "$VMANGOS_PATCHES_REPOSITORY" ]; then \
-    echo "Cloning and applying patches from $VMANGOS_PATCHES_REPOSITORY..."; \
+    echo "Cloning and applying patches from $VMANGOS_PATCHES_REPOSITORY"; \
     git clone "$VMANGOS_PATCHES_REPOSITORY" /tmp/patches && \
     for patch in /tmp/patches/*.patch; do \
       if [ -f "$patch" ]; then \
-        echo "Applying patch $patch..."; \
+        echo "Applying patch $patch"; \
         git apply "$patch"; \
       fi; \
     done; \
