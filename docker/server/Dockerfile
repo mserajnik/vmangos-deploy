@@ -19,6 +19,7 @@ ARG VMANGOS_CLIENT_VERSION=5875
 ARG VMANGOS_OWNER=vmangos
 ARG VMANGOS_REPOSITORY=core
 ARG VMANGOS_REVISION=development
+ARG VMANGOS_PATCHES_REPOSITORY
 ARG VMANGOS_USER_ID=1000
 ARG VMANGOS_GROUP_ID=1000
 ARG VMANGOS_USER_NAME=vmangos
@@ -31,6 +32,7 @@ ARG VMANGOS_CLIENT_VERSION
 ARG VMANGOS_OWNER
 ARG VMANGOS_REPOSITORY
 ARG VMANGOS_REVISION
+ARG VMANGOS_PATCHES_REPOSITORY
 
 RUN \
   apt update -y && \
@@ -47,6 +49,19 @@ RUN \
   git clone https://github.com/${VMANGOS_OWNER}/${VMANGOS_REPOSITORY}.git /core && \
   cd /core && \
   git checkout ${VMANGOS_REVISION} && \
+  if [ -n "$VMANGOS_PATCHES_REPOSITORY" ]; then \
+    echo "Cloning and applying patches from $VMANGOS_PATCHES_REPOSITORY..."; \
+    git clone "$VMANGOS_PATCHES_REPOSITORY" /tmp/patches && \
+    for patch in /tmp/patches/*.patch; do \
+      if [ -f "$patch" ]; then \
+        echo "Applying patch $patch..."; \
+        git apply "$patch"; \
+      fi; \
+    done; \
+    rm -rf /tmp/patches; \
+  else \
+    echo "No repository to apply patches from provided."; \
+  fi && \
   mkdir -p \
     /opt/vmangos/config \
     /opt/vmangos/storage/data \

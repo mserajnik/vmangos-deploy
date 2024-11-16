@@ -38,6 +38,10 @@ on:
         default: world_full_14_june_2021
         required: true
         type: string
+      patches-repository:
+        description: (Optional) A repository to use that contains patches to apply to the VMaNGOS code (patches have to end in `.patch` and be located in the root of the repository)
+        required: false
+        type: string
       custom-name:
         description: (Optional) A custom name to use as part of the image tags (when provided, this overrides the default `{ owner }-{ repository }-{ revision }` naming scheme)
         required: false
@@ -132,6 +136,7 @@ jobs:
             VMANGOS_REPOSITORY=${{ github.event.inputs.repository }}
             VMANGOS_REVISION=${{ github.event.inputs.revision }}
             VMANGOS_CLIENT_VERSION=${{ github.event.inputs.client-version }}
+            VMANGOS_PATCHES_REPOSITORY=${{ github.event.inputs.patches-repository }}
           tags: ${{ steps.generate-tags.outputs.result }}
 
   # Since the database image builds only take a few minutes (and therefore
