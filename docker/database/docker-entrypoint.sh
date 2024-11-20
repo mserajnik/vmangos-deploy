@@ -27,7 +27,7 @@ set -eo pipefail
 
 source "$(which docker-entrypoint.sh)"
 
-# This is a temporary copy of the `§docker_mariadb_upgrade()` function from the
+# This is a temporary copy of the `docker_mariadb_upgrade()` function from the
 # original entrypoint script. It has the `--upgrade-system-tables` option
 # removed from the `mariadb-upgrade` command because we also want to upgrade
 # user tables. Once https://github.com/MariaDB/mariadb-docker/pull/567 gets
