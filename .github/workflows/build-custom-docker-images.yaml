@@ -51,14 +51,23 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME_SERVER: ${{ github.repository_owner }}/vmangos-server-custom
   IMAGE_NAME_DATABASE: ${{ github.repository_owner }}/vmangos-database-custom
+  OCI_ANNOTATION_AUTHORS: ${{ vars.OCI_ANNOTATION_AUTHORS || github.repository_owner }}
+  OCI_ANNOTATION_URL: https://github.com/${{ github.repository }}
+  OCI_ANNOTATION_DOCUMENTATION: https://github.com/${{ github.repository }}/blob/master/README.md
+  OCI_ANNOTATION_SOURCE: https://github.com/${{ github.repository }}
+  OCI_ANNOTATION_VENDOR: ${{ vars.OCI_ANNOTATION_VENDOR || github.repository_owner }}
+  OCI_ANNOTATION_LICENSES: GPL-2.0
+  OCI_ANNOTATION_SERVER_TITLE: vmangos-deploy - Custom VMaNGOS server image
+  OCI_ANNOTATION_SERVER_DESCRIPTION: VMaNGOS is a server emulator supporting versions 1.6.1 to 1.12.1.
+  OCI_ANNOTATION_SERVER_BASE_NAME: ubuntu:24.04
+  OCI_ANNOTATION_DATABASE_TITLE: vmangos-deploy - Custom VMaNGOS database image
+  OCI_ANNOTATION_DATABASE_DESCRIPTION: Database for the VMaNGOS server emulator.
+  OCI_ANNOTATION_DATABASE_BASE_NAME: mariadb:11.4
 
 jobs:
   setup:
     name: Setup
     runs-on: ubuntu-24.04
-    outputs:
-      commit-hash: ${{ steps.latest-commit-hash.outputs.result }}
-      already-built: ${{ steps.already-built.outputs.result }}
 
     steps:
       # If the original MariaDB entrypoint script changes, we can't guarantee
@@ -85,6 +94,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Generate tags
         uses: actions/github-script@v7
         id: generate-tags
@@ -110,18 +132,47 @@ jobs:
 
             return tags.join(',')
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to container registry
-        uses: docker/login-action@v3
+      # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
+      - name: Generate OCI annotations
+        uses: actions/github-script@v7
+        id: generate-annotations
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
+          OWNER: ${{ github.event.inputs.owner }}
+          REPOSITORY: ${{ github.event.inputs.repository }}
+          REVISION: ${{ github.event.inputs.revision }}
+          CLIENT_VERSION: ${{ github.event.inputs.client-version }}
+          CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            const refName = process.env.CUSTOM_NAME.trim() !== ''
+              ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}`
+              : `${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`
+
+            const annotations = [
+              { key: 'created', value: new Date().toISOString() },
+              { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
+              { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
+              { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
+              { key: 'source', envKey: 'OCI_ANNOTATION_SOURCE' },
+              { key: 'vendor', envKey: 'OCI_ANNOTATION_VENDOR' },
+              { key: 'licenses', envKey: 'OCI_ANNOTATION_LICENSES' },
+              { key: 'ref.name', value: refName },
+              { key: 'title', envKey: 'OCI_ANNOTATION_SERVER_TITLE' },
+              { key: 'description', envKey: 'OCI_ANNOTATION_SERVER_DESCRIPTION' },
+              { key: 'base.name', envKey: 'OCI_ANNOTATION_SERVER_BASE_NAME' },
+            ].map(({ key, value, envKey }) => {
+                const resolvedValue = value ?? process.env[envKey] ?? ''
+                return [
+                  `manifest:org.opencontainers.image.${key}=${resolvedValue}`,
+                  `index:org.opencontainers.image.${key}=${resolvedValue}`,
+                ]
+              })
+              .flat()
+              .join('\n')
+
+            return annotations
 
       - name: Build and push images
         uses: docker/build-push-action@v6
@@ -138,6 +189,7 @@ jobs:
             VMANGOS_CLIENT_VERSION=${{ github.event.inputs.client-version }}
             VMANGOS_PATCHES_REPOSITORY=${{ github.event.inputs.patches-repository }}
           tags: ${{ steps.generate-tags.outputs.result }}
+          annotations: ${{ steps.generate-annotations.outputs.result }}
 
   # Since the database image builds only take a few minutes (and therefore
   # always complete before the server image builds), we need to build after the
@@ -156,6 +208,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate tags
         uses: actions/github-script@v7
@@ -181,18 +246,46 @@ jobs:
 
             return tags.join(',')
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to container registry
-        uses: docker/login-action@v3
+      # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
+      - name: Generate OCI annotations
+        uses: actions/github-script@v7
+        id: generate-annotations
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
+          OWNER: ${{ github.event.inputs.owner }}
+          REPOSITORY: ${{ github.event.inputs.repository }}
+          REVISION: ${{ github.event.inputs.revision }}
+          CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            const refName = process.env.CUSTOM_NAME.trim() !== ''
+              ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}`
+              : `${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}`
+
+            const annotations = [
+              { key: 'created', value: new Date().toISOString() },
+              { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
+              { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
+              { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
+              { key: 'source', envKey: 'OCI_ANNOTATION_SOURCE' },
+              { key: 'vendor', envKey: 'OCI_ANNOTATION_VENDOR' },
+              { key: 'licenses', envKey: 'OCI_ANNOTATION_LICENSES' },
+              { key: 'ref.name', value: refName },
+              { key: 'title', envKey: 'OCI_ANNOTATION_DATABASE_TITLE' },
+              { key: 'description', envKey: 'OCI_ANNOTATION_DATABASE_DESCRIPTION' },
+              { key: 'base.name', envKey: 'OCI_ANNOTATION_DATABASE_BASE_NAME' },
+            ].map(({ key, value, envKey }) => {
+                const resolvedValue = value ?? process.env[envKey] ?? ''
+                return [
+                  `manifest:org.opencontainers.image.${key}=${resolvedValue}`,
+                  `index:org.opencontainers.image.${key}=${resolvedValue}`,
+                ]
+              })
+              .flat()
+              .join('\n')
+
+            return annotations
 
       - name: Build and push images
         uses: docker/build-push-action@v6
@@ -210,3 +303,4 @@ jobs:
             VMANGOS_DB_REPOSITORY=${{ github.event.inputs.db-repository }}
             VMANGOS_DB_DUMP=${{ github.event.inputs.db-dump }}
           tags: ${{ steps.generate-tags.outputs.result }}
+          annotations: ${{ steps.generate-annotations.outputs.result }}
