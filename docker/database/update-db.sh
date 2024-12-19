@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [ -e /sql/world-new.sql ] && \
-  echo "[vmangos-deploy]: world-new.sql exists, re-creating world database" && \
+  echo "[vmangos-deploy]: /sql/world-new.sql exists, re-creating world database" && \
   mariadb -u root -p$MARIADB_ROOT_PASSWORD -e \
     "DROP DATABASE IF EXISTS \`mangos\`; \
     CREATE DATABASE \`mangos\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci; \

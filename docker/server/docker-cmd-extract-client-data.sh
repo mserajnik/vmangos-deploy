@@ -19,19 +19,19 @@
 eval $(fixuid -q)
 
 if [ ! -d "/opt/vmangos/storage/client-data" ]; then
-  echo "[vmangos-deploy]: Client data bind mount missing, aborting extraction." >&2
+  echo "[vmangos-deploy]: Client data bind mount is missing, aborting extraction" >&2
   exit 1
 fi
 
 if [ ! -d "/opt/vmangos/storage/extracted-data" ]; then
-  echo "[vmangos-deploy]: Extracted data bind mount missing, aborting extraction." >&2
+  echo "[vmangos-deploy]: Extracted data bind mount is missing, aborting extraction" >&2
   exit 1
 fi
 
 cd /opt/vmangos/storage/client-data
 
 if [ ! -d "./Data" ]; then
-  echo "[vmangos-deploy]: Client data missing, aborting extraction." >&2
+  echo "[vmangos-deploy]: Client data is missing, aborting extraction" >&2
   exit 1
 fi
 

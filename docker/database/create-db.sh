@@ -59,4 +59,4 @@ echo "[vmangos-deploy]: Configuring default realm"
 mariadb -u root -p$MARIADB_ROOT_PASSWORD -e \
   "INSERT INTO \`realmd\`.\`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$VMANGOS_REALMLIST_NAME', '$VMANGOS_REALMLIST_ADDRESS', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
 
-echo "[vmangos-deploy]: Database creation complete!"
+echo "[vmangos-deploy]: Database creation complete"

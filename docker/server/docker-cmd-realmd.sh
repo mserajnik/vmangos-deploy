@@ -18,4 +18,9 @@
 
 eval $(fixuid -q)
 
+if [ ! -f "/opt/vmangos/config/realmd.conf" ]; then
+  echo "[vmangos-deploy]: Configuration file /opt/vmangos/config/realmd.conf is missing, exiting" >&2
+  exit 1
+fi
+
 wait-for-db && exec /opt/vmangos/bin/realmd -c /opt/vmangos/config/realmd.conf
