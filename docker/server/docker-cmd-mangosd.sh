@@ -18,9 +18,11 @@
 
 eval $(fixuid -q)
 
-if [ ! -f "/opt/vmangos/config/mangosd.conf" ]; then
-  echo "[vmangos-deploy]: Configuration file /opt/vmangos/config/mangosd.conf is missing, exiting" >&2
+config_file="/opt/vmangos/config/mangosd.conf"
+
+if [ ! -f "$config_file" ]; then
+  echo "[vmangos-deploy]: Configuration file $config_file is missing, exiting" >&2
   exit 1
 fi
 
-wait-for-db && exec /opt/vmangos/bin/mangosd -c /opt/vmangos/config/mangosd.conf
+wait-for-db && exec /opt/vmangos/bin/mangosd -c $config_file
