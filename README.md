@@ -196,6 +196,10 @@ Optionally, if want to use Warden you have to provide the
 [Warden modules][warden-modules]. See the `volumes` section of the `mangosd`
 service in your `compose.yaml` on how to do that.
 
+Note that using [HermesProxy][hermesproxy] (or projects derived from it) to
+connect `1.14.x` clients to VMaNGOS will likely not be possible (in a stable
+manner without getting kicked off the server) when Warden is enabled.
+
 ## Usage
 
 ### Starting VMaNGOS
@@ -368,6 +372,7 @@ You are welcome to help out!
 
 [docker]: https://docs.docker.com/get-docker/
 [docker-compose]: https://docs.docker.com/compose/install/
+[hermesproxy]: https://github.com/WowLegacyCore/HermesProxy
 [image-vmangos-database-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-database/versions?filters%5Bversion_type%5D=tagged
 [image-vmangos-server-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-server/versions?filters%5Bversion_type%5D=tagged
 [phpymadmin]: https://www.phpmyadmin.net/

@@ -166,6 +166,9 @@ services:
       # To enable the usage of Warden, download the Warden modules from
       # https://github.com/vmangos/warden_modules and place them into
       # `./storage/mangosd/warden-modules`.
+      # Note that using HermesProxy (or projects derived from it) to connect
+      # `1.14.x` clients to VMaNGOS will likely not be possible (in a stable
+      # manner without getting kicked off the server) when Warden is enabled.
       # Finally, uncomment the following bind mount and (optionally) adjust
       # the Warden configuration in your `./config/mangosd.conf` (in
       # particular, ensure that `Warden.ModuleDir` is set to
