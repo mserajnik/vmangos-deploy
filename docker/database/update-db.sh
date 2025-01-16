@@ -16,21 +16,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-[ -e /sql/world-new.sql ] && \
-  echo "[vmangos-deploy]: /sql/world-new.sql exists, re-creating world database" && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD -e \
-    "DROP DATABASE IF EXISTS \`mangos\`; \
-    CREATE DATABASE \`mangos\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci; \
-    GRANT ALL ON \`mangos\`.* TO '$MARIADB_USER'@'%'; \
-    FLUSH PRIVILEGES;" && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD mangos < /sql/world-new.sql
+. "/opt/scripts/db-functions.sh"
 
-echo "[vmangos-deploy]: Importing database updates if available"
-[ -e /sql/migrations/world_db_updates.sql ] && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD mangos < /sql/migrations/world_db_updates.sql
-[ -e /sql/migrations/characters_db_updates.sql ] && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD characters < /sql/migrations/characters_db_updates.sql
-[ -e /sql/migrations/logon_db_updates.sql ] && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD realmd < /sql/migrations/logon_db_updates.sql
-[ -e /sql/migrations/logs_db_updates.sql ] && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD logs < /sql/migrations/logs_db_updates.sql
+if [ -e "$VMANGOS_WORLD_DB_DUMP_NEW_FILE" ]; then
+  echo "[vmangos-deploy]: $VMANGOS_WORLD_DB_DUMP_NEW_FILE exists, re-creating world database"
+  drop_database "mangos"
+  create_database "mangos"
+  grant_permissions "mangos"
+  import_dump "mangos" "$VMANGOS_WORLD_DB_DUMP_NEW_FILE"
+fi
+
+import_updates "mangos" "/sql/migrations/world_db_updates.sql"
+import_updates "characters" "/sql/migrations/characters_db_updates.sql"
+import_updates "realmd" "/sql/migrations/logon_db_updates.sql"
+import_updates "logs" "/sql/migrations/logs_db_updates.sql"

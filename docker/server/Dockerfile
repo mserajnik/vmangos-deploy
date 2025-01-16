@@ -16,10 +16,10 @@
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG VMANGOS_CLIENT_VERSION=5875
-ARG VMANGOS_OWNER=vmangos
-ARG VMANGOS_REPOSITORY=core
+ARG VMANGOS_REPOSITORY_OWNER=vmangos
+ARG VMANGOS_REPOSITORY_NAME=core
 ARG VMANGOS_REVISION=development
-ARG VMANGOS_PATCHES_REPOSITORY
+ARG VMANGOS_PATCHES_REPOSITORY_URL
 ARG VMANGOS_USER_ID=1000
 ARG VMANGOS_GROUP_ID=1000
 ARG VMANGOS_USER_NAME=vmangos
@@ -29,10 +29,10 @@ FROM ubuntu:24.04 AS build
 
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_CLIENT_VERSION
-ARG VMANGOS_OWNER
-ARG VMANGOS_REPOSITORY
+ARG VMANGOS_REPOSITORY_OWNER
+ARG VMANGOS_REPOSITORY_NAME
 ARG VMANGOS_REVISION
-ARG VMANGOS_PATCHES_REPOSITORY
+ARG VMANGOS_PATCHES_REPOSITORY_URL
 
 RUN \
   apt update -y && \
@@ -46,12 +46,12 @@ RUN \
     libssl-dev \
     libtbb-dev \
     zlib1g-dev && \
-  git clone https://github.com/${VMANGOS_OWNER}/${VMANGOS_REPOSITORY}.git /core && \
+  git clone https://github.com/${VMANGOS_REPOSITORY_OWNER}/${VMANGOS_REPOSITORY_NAME}.git /core && \
   cd /core && \
   git checkout ${VMANGOS_REVISION} && \
-  if [ -n "$VMANGOS_PATCHES_REPOSITORY" ]; then \
-    echo "Cloning and applying patches from $VMANGOS_PATCHES_REPOSITORY"; \
-    git clone "$VMANGOS_PATCHES_REPOSITORY" /tmp/patches && \
+  if [ -n "$VMANGOS_PATCHES_REPOSITORY_URL" ]; then \
+    echo "Cloning and applying patches from $VMANGOS_PATCHES_REPOSITORY_URL"; \
+    git clone "$VMANGOS_PATCHES_REPOSITORY_URL" /tmp/patches && \
     for patch in /tmp/patches/*.patch; do \
       if [ -f "$patch" ]; then \
         echo "Applying patch $patch"; \

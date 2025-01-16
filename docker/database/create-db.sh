@@ -16,47 +16,26 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-echo "[vmangos-deploy]: Creating databases"
-mariadb -u root -p$MARIADB_ROOT_PASSWORD -e \
-  "CREATE DATABASE IF NOT EXISTS \`mangos\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci; \
-  CREATE DATABASE IF NOT EXISTS \`characters\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci; \
-  CREATE DATABASE IF NOT EXISTS \`realmd\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci; \
-  CREATE DATABASE IF NOT EXISTS \`logs\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+. "/opt/scripts/db-functions.sh"
 
-echo "[vmangos-deploy]: Granting permissions to database user $MARIADB_USER"
-mariadb -u root -p$MARIADB_ROOT_PASSWORD -e \
-  "GRANT ALL ON \`mangos\`.* TO '$MARIADB_USER'@'%'; \
-  GRANT ALL ON \`characters\`.* TO '$MARIADB_USER'@'%'; \
-  GRANT ALL ON \`realmd\`.* TO '$MARIADB_USER'@'%'; \
-  GRANT ALL ON \`logs\`.* TO '$MARIADB_USER'@'%'; \
-  FLUSH PRIVILEGES;"
+create_database "mangos"
+create_database "characters"
+create_database "realmd"
+create_database "logs"
 
-echo "[vmangos-deploy]: Importing databases"
+grant_permissions "mangos"
+grant_permissions "characters"
+grant_permissions "realmd"
+grant_permissions "logs"
 
-echo "[vmangos-deploy]: Importing world database"
-mariadb -u root -p$MARIADB_ROOT_PASSWORD mangos < /sql/world.sql
+import_dump "mangos" "/sql/world.sql"
+import_dump "characters" "/sql/characters.sql"
+import_dump "realmd" "/sql/logon.sql"
+import_dump "logs" "/sql/logs.sql"
 
-echo "[vmangos-deploy]: Importing characters database"
-mariadb -u root -p$MARIADB_ROOT_PASSWORD characters < /sql/characters.sql
+import_updates "mangos" "/sql/migrations/world_db_updates.sql"
+import_updates "characters" "/sql/migrations/characters_db_updates.sql"
+import_updates "realmd" "/sql/migrations/logon_db_updates.sql"
+import_updates "logs" "/sql/migrations/logs_db_updates.sql"
 
-echo "[vmangos-deploy]: Importing logon database"
-mariadb -u root -p$MARIADB_ROOT_PASSWORD realmd < /sql/logon.sql
-
-echo "[vmangos-deploy]: Importing logs database"
-mariadb -u root -p$MARIADB_ROOT_PASSWORD logs < /sql/logs.sql
-
-echo "[vmangos-deploy]: Importing database updates if available"
-[ -e /sql/migrations/world_db_updates.sql ] && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD mangos < /sql/migrations/world_db_updates.sql
-[ -e /sql/migrations/characters_db_updates.sql ] && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD characters < /sql/migrations/characters_db_updates.sql
-[ -e /sql/migrations/logon_db_updates.sql ] && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD realmd < /sql/migrations/logon_db_updates.sql
-[ -e /sql/migrations/logs_db_updates.sql ] && \
-  mariadb -u root -p$MARIADB_ROOT_PASSWORD logs < /sql/migrations/logs_db_updates.sql
-
-echo "[vmangos-deploy]: Configuring default realm"
-mariadb -u root -p$MARIADB_ROOT_PASSWORD -e \
-  "INSERT INTO \`realmd\`.\`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$VMANGOS_REALMLIST_NAME', '$VMANGOS_REALMLIST_ADDRESS', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
-
-echo "[vmangos-deploy]: Database creation complete"
+configure_realm

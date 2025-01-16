@@ -15,32 +15,33 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG VMANGOS_OWNER=vmangos
-ARG VMANGOS_REPOSITORY=core
+ARG VMANGOS_REPOSITORY_OWNER=vmangos
+ARG VMANGOS_REPOSITORY_NAME=core
 ARG VMANGOS_REVISION=development
-ARG VMANGOS_DB_OWNER=brotalnia
-ARG VMANGOS_DB_REPOSITORY=database
-ARG VMANGOS_DB_DUMP=world_full_14_june_2021
+ARG VMANGOS_WORLD_DB_REPOSITORY_OWNER=brotalnia
+ARG VMANGOS_WORLD_DB_REPOSITORY_NAME=database
+ARG VMANGOS_WORLD_DB_DUMP_NAME=world_full_14_june_2021
+ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE=/sql/world-new.sql
 
 FROM mariadb:11.4 AS setup
 
 ARG DEBIAN_FRONTEND
-ARG VMANGOS_OWNER
-ARG VMANGOS_REPOSITORY
+ARG VMANGOS_REPOSITORY_OWNER
+ARG VMANGOS_REPOSITORY_NAME
 ARG VMANGOS_REVISION
-ARG VMANGOS_DB_OWNER
-ARG VMANGOS_DB_REPOSITORY
-ARG VMANGOS_DB_DUMP
+ARG VMANGOS_WORLD_DB_REPOSITORY_OWNER
+ARG VMANGOS_WORLD_DB_REPOSITORY_NAME
+ARG VMANGOS_WORLD_DB_DUMP_NAME
 
 RUN \
   apt update -y && \
   apt install -y \
     git \
     p7zip-full && \
-  git clone https://github.com/${VMANGOS_OWNER}/${VMANGOS_REPOSITORY}.git /core && \
+  git clone https://github.com/${VMANGOS_REPOSITORY_OWNER}/${VMANGOS_REPOSITORY_NAME}.git /core && \
   cd /core && \
   git checkout ${VMANGOS_REVISION} && \
-  git clone https://github.com/${VMANGOS_DB_OWNER}/${VMANGOS_DB_REPOSITORY}.git /database && \
+  git clone https://github.com/${VMANGOS_WORLD_DB_REPOSITORY_OWNER}/${VMANGOS_WORLD_DB_REPOSITORY_NAME}.git /database && \
   mkdir -p /sql/migrations && \
   cd /core/sql && \
   mv characters.sql /sql && \
@@ -54,8 +55,8 @@ RUN \
   mv logs_db_updates.sql /sql/migrations && \
   mv world_db_updates.sql /sql/migrations && \
   cd /database && \
-  7z e ${VMANGOS_DB_DUMP}.7z && \
-  mv ${VMANGOS_DB_DUMP}.sql /sql/world.sql && \
+  7z e ${VMANGOS_WORLD_DB_DUMP_NAME}.7z && \
+  mv ${VMANGOS_WORLD_DB_DUMP_NAME}.sql /sql/world.sql && \
   rm -rf /core /database && \
   apt remove -y \
     git \
@@ -66,6 +67,8 @@ RUN \
 
 FROM mariadb:11.4
 
+ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE
+
 ENV MARIADB_USER=mangos
 ENV MARIADB_PASSWORD=mangos
 ENV MARIADB_ROOT_PASSWORD=password
@@ -75,14 +78,18 @@ ENV VMANGOS_REALMLIST_PORT=8085
 ENV VMANGOS_REALMLIST_ICON=1
 ENV VMANGOS_REALMLIST_TIMEZONE=0
 ENV VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0
+ENV VMANGOS_WORLD_DB_DUMP_NEW_FILE=${VMANGOS_WORLD_DB_DUMP_NEW_FILE}
 # See https://github.com/MariaDB/mariadb-docker/blob/64252135052f269ed2bb57134ad73537e93b7ab6/11.4/docker-entrypoint.sh#L594-L598
 ENV MARIADB_AUTO_UPGRADE=1
 
 COPY --from=setup /sql /sql
 
-COPY ./docker/database/create-db.sh /docker-entrypoint-initdb.d
+RUN \
+  mkdir -p /opt/scripts && \
+  mkdir /always-initdb.d
 
-RUN mkdir /always-initdb.d
+COPY ./docker/database/db-functions.sh /opt/scripts
+COPY ./docker/database/create-db.sh /docker-entrypoint-initdb.d
 COPY ./docker/database/update-db.sh /always-initdb.d
 
 COPY ./docker/database/docker-entrypoint.sh /entrypoint.sh

@@ -3,13 +3,13 @@ name: Build and push custom Docker images
 on:
   workflow_dispatch:
     inputs:
-      owner:
+      repository-owner:
         description: The owner of the VMaNGOS code repository to use
         default: vmangos
         required: true
         type: string
-      repository:
-        description: The VMaNGOS code repository to use
+      repository-name:
+        description: The name of the VMaNGOS code repository to use
         default: core
         required: true
         type: string
@@ -23,23 +23,23 @@ on:
         default: 5875
         required: true
         type: number
-      db-owner:
-        description: The owner of the VMaNGOS database repository to use
+      world-db-repository-owner:
+        description: The owner of the VMaNGOS world database repository to use
         default: brotalnia
         required: true
         type: string
-      db-repository:
-        description: The VMaNGOS database repository to use
+      world-db-repository-name:
+        description: The name of the VMaNGOS world database repository to use
         default: database
         required: true
         type: string
-      db-dump:
-        description: The VMaNGOS database dump to use
+      world-db-dump-name:
+        description: The name of the VMaNGOS world database dump to use
         default: world_full_14_june_2021
         required: true
         type: string
-      patches-repository:
-        description: (Optional) A repository to use that contains patches to apply to the VMaNGOS code (patches have to end in `.patch` and be located in the root of the repository)
+      patches-repository-url:
+        description: (Optional) A URL to a repository that contains patches to apply to the VMaNGOS code (patches have to end in `.patch` and be located in the root of the repository)
         required: false
         type: string
       custom-name:
@@ -183,11 +183,11 @@ jobs:
           push: true
           provenance: false
           build-args: |
-            VMANGOS_OWNER=${{ github.event.inputs.owner }}
-            VMANGOS_REPOSITORY=${{ github.event.inputs.repository }}
+            VMANGOS_REPOSITORY_OWNER=${{ github.event.inputs.repository-owner }}
+            VMANGOS_REPOSITORY_NAME=${{ github.event.inputs.repository-name }}
             VMANGOS_REVISION=${{ github.event.inputs.revision }}
             VMANGOS_CLIENT_VERSION=${{ github.event.inputs.client-version }}
-            VMANGOS_PATCHES_REPOSITORY=${{ github.event.inputs.patches-repository }}
+            VMANGOS_PATCHES_REPOSITORY_URL=${{ github.event.inputs.patches-repository-url }}
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
 
@@ -296,11 +296,11 @@ jobs:
           push: true
           provenance: false
           build-args: |
-            VMANGOS_OWNER=${{ github.event.inputs.owner }}
-            VMANGOS_REPOSITORY=${{ github.event.inputs.repository }}
+            VMANGOS_REPOSITORY_OWNER=${{ github.event.inputs.repository-owner }}
+            VMANGOS_REPOSITORY_NAME=${{ github.event.inputs.repository-name }}
             VMANGOS_REVISION=${{ github.event.inputs.revision }}
-            VMANGOS_DB_OWNER=${{ github.event.inputs.db-owner }}
-            VMANGOS_DB_REPOSITORY=${{ github.event.inputs.db-repository }}
-            VMANGOS_DB_DUMP=${{ github.event.inputs.db-dump }}
+            VMANGOS_WORLD_DB_REPOSITORY_OWNER=${{ github.event.inputs.world-db-repository-owner }}
+            VMANGOS_WORLD_DB_REPOSITORY_NAME=${{ github.event.inputs.world-db-repository-name }}
+            VMANGOS_WORLD_DB_DUMP_NAME=${{ github.event.inputs.world-db-dump-name }}
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
