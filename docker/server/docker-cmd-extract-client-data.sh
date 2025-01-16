@@ -54,7 +54,7 @@ rm -rf ./Buildings ./Cameras ./dbc ./maps ./mmaps ./vmaps
 rm -rf ./Buildings ./Cameras
 
 # Remove potentially existing extracted data
-rm -rf "$extracted_data_dir/*"
+rm -rf "$extracted_data_dir"/*
 
 mkdir -p "$client_version_dir"
 mv ./dbc "$client_version_dir/"
