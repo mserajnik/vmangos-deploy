@@ -40,7 +40,7 @@ if [ ! -d "./Data" ]; then
   exit 1
 fi
 
-# Remove potentially existing data
+# Remove any potentially previously extracted data from the client directory
 rm -rf ./Buildings ./Cameras ./dbc ./maps ./mmaps ./vmaps
 
 "$extractors_dir/MapExtractor"
@@ -50,10 +50,12 @@ rm -rf ./Buildings ./Cameras ./dbc ./maps ./mmaps ./vmaps
   --configInputPath "$extractors_dir/config.json" \
   --offMeshInput "$extractors_dir/offmesh.txt"
 
-# This data isn't used; we delete it to avoid confusion
+# Delete extracted data that is no longer needed after processing it to avoid
+# confusion
 rm -rf ./Buildings ./Cameras
 
-# Remove potentially existing extracted data
+# Remove any potentially already existing data from the extracted data
+# directory before moving the new data there
 rm -rf "$extracted_data_dir"/*
 
 mkdir -p "$client_version_dir"
