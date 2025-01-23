@@ -96,6 +96,11 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+        # Work around QEMU 7.x compilation issues by explicitly using 8.x,
+        # which is not yet the default for the action.
+        # See https://github.com/tonistiigi/binfmt/issues/215
+        with:
+          image: tonistiigi/binfmt:qemu-v8.1.5
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
