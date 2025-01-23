@@ -155,12 +155,13 @@ previously, you can place it directly into
 [`./storage/mangosd/extracted-data`](storage/mangosd/extracted-data) and skip
 the next steps.
 
-To generate the data, first copy the contents of your client directory into
+To extract the data, first copy the contents of your client directory into
 [`./storage/mangosd/client-data`](storage/mangosd/client-data). Next, simply
 run the following command:
 
 ```sh
 docker run \
+  -i \
   -v ./storage/mangosd/client-data:/opt/vmangos/storage/client-data \
   -v ./storage/mangosd/extracted-data:/opt/vmangos/storage/extracted-data \
   --rm \
@@ -181,14 +182,30 @@ There are two things to look out for here:
   the data from; see the table further above in the
   [Docker Compose configuration section](#adjusting-the-docker-compose-configuration)
 
-Generating the data can take many hours (depending on your hardware). Some
-notices/errors during the extraction process are normal and nothing to worry
-about.
+Extracting the data can take many hours (depending on your hardware). Some
+notices/errors during the process are normal and usually nothing to worry
+about (as long as the execution continues afterwards).
 
 Once the extraction is finished you can find the data in
 [`./storage/mangosd/extracted-data`](storage/mangosd/extracted-data). Note that
 you may want to re-run the process in the future if VMaNGOS makes changes (to
 benefit from potentially improved mob pathing etc.).
+
+If you re-run the extraction, it will automatically detect previously extracted
+data and ask you if you want to continue (which will overwrite the old data).
+You can also skip this confirmation prompt (and force the re-extraction) by
+adding the `--force` flag to the `extract-client-data` command, like this:
+
+```sh
+docker run \
+  -i \
+  -v ./storage/mangosd/client-data:/opt/vmangos/storage/client-data \
+  -v ./storage/mangosd/extracted-data:/opt/vmangos/storage/extracted-data \
+  --rm \
+  --user 1000:1000 \
+  ghcr.io/mserajnik/vmangos-server:5875 \
+  extract-client-data --force
+```
 
 ### Providing the Warden modules (optional)
 
@@ -266,7 +283,7 @@ To update, pull the latest images:
 docker compose pull
 ```
 
-Afterwards, recreate the containers:
+Afterwards, re-create the containers:
 
 ```sh
 docker compose up -d
