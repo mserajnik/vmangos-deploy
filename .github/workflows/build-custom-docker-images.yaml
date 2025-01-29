@@ -117,8 +117,8 @@ jobs:
         id: generate-tags
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
-          OWNER: ${{ github.event.inputs.owner }}
-          REPOSITORY: ${{ github.event.inputs.repository }}
+          REPOSITORY_OWNER: ${{ github.event.inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ github.event.inputs.repository-name }}
           REVISION: ${{ github.event.inputs.revision }}
           CLIENT_VERSION: ${{ github.event.inputs.client-version }}
           CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
@@ -133,7 +133,7 @@ jobs:
               return tags.join(',')
             }
 
-            tags.push(`${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`)
+            tags.push(`${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`)
 
             return tags.join(',')
 
@@ -143,8 +143,8 @@ jobs:
         id: generate-annotations
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
-          OWNER: ${{ github.event.inputs.owner }}
-          REPOSITORY: ${{ github.event.inputs.repository }}
+          REPOSITORY_OWNER: ${{ github.event.inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ github.event.inputs.repository-name }}
           REVISION: ${{ github.event.inputs.revision }}
           CLIENT_VERSION: ${{ github.event.inputs.client-version }}
           CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
@@ -153,7 +153,7 @@ jobs:
           script: |
             const refName = process.env.CUSTOM_NAME.trim() !== ''
               ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}`
-              : `${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`
+              : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`
 
             const annotations = [
               { key: 'created', value: new Date().toISOString() },
@@ -232,8 +232,8 @@ jobs:
         id: generate-tags
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
-          OWNER: ${{ github.event.inputs.owner }}
-          REPOSITORY: ${{ github.event.inputs.repository }}
+          REPOSITORY_OWNER: ${{ github.event.inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ github.event.inputs.repository-name }}
           REVISION: ${{ github.event.inputs.revision }}
           CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
         with:
@@ -247,7 +247,7 @@ jobs:
               return tags.join(',')
             }
 
-            tags.push(`${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}`)
+            tags.push(`${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}`)
 
             return tags.join(',')
 
@@ -257,8 +257,8 @@ jobs:
         id: generate-annotations
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
-          OWNER: ${{ github.event.inputs.owner }}
-          REPOSITORY: ${{ github.event.inputs.repository }}
+          REPOSITORY_OWNER: ${{ github.event.inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ github.event.inputs.repository-name }}
           REVISION: ${{ github.event.inputs.revision }}
           CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
         with:
@@ -266,7 +266,7 @@ jobs:
           script: |
             const refName = process.env.CUSTOM_NAME.trim() !== ''
               ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}`
-              : `${process.env.IMAGE}:${process.env.OWNER}-${process.env.REPOSITORY}-${process.env.REVISION}`
+              : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}`
 
             const annotations = [
               { key: 'created', value: new Date().toISOString() },
