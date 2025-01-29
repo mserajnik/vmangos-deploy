@@ -4,52 +4,52 @@ on:
   workflow_dispatch:
     inputs:
       repository-owner:
+        type: string
+        required: true
         description: The owner of the VMaNGOS code repository to use
         default: vmangos
-        required: true
-        type: string
       repository-name:
+        type: string
+        required: true
         description: The name of the VMaNGOS code repository to use
         default: core
-        required: true
-        type: string
       revision:
+        type: string
+        required: true
         description: The VMaNGOS code repository revision to use
         default: development
-        required: true
-        type: string
       client-version:
+        type: number
+        required: true
         description: The client version for which to build VMaNGOS
         default: 5875
-        required: true
-        type: number
       world-db-repository-owner:
+        type: string
+        required: true
         description: The owner of the VMaNGOS world database repository to use
         default: brotalnia
-        required: true
-        type: string
       world-db-repository-name:
+        type: string
+        required: true
         description: The name of the VMaNGOS world database repository to use
         default: database
-        required: true
-        type: string
       world-db-dump-name:
+        type: string
+        required: true
         description: The name of the VMaNGOS world database dump to use
         default: world_full_14_june_2021
-        required: true
-        type: string
       patches-repository-url:
+        type: string
+        required: false
         description: (Optional) A URL to a repository that contains patches to apply to the VMaNGOS code (patches have to end in `.patch` and be located in the root of the repository)
-        required: false
-        type: string
       custom-name:
-        description: (Optional) A custom name to use as part of the image tags (when provided, this overrides the default `{ owner }-{ repository }-{ revision }` naming scheme)
-        required: false
         type: string
+        required: false
+        description: (Optional) A custom name to use as part of the image tags (when provided, this overrides the default `{ owner }-{ repository }-{ revision }` naming scheme)
       build-aarch64-images:
+        type: boolean
         description: Build `aarch64` images (if unchecked, only `x86_64` images will be built)
         default: true
-        type: boolean
 
 env:
   REGISTRY: ghcr.io

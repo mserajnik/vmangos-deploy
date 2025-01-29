@@ -17,9 +17,9 @@ on:
   workflow_dispatch:
     inputs:
       force-rebuild:
+        type: boolean
         description: Force rebuild (even if commit hash has already been built)
         default: false
-        type: boolean
 
 env:
   REGISTRY: ghcr.io
