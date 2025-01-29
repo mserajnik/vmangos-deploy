@@ -46,6 +46,10 @@ on:
         description: (Optional) A custom name to use as part of the image tags (when provided, this overrides the default `{ owner }-{ repository }-{ revision }` naming scheme)
         required: false
         type: string
+      build-aarch64-images:
+        description: Build `aarch64` images (if unchecked, only `x86_64` images will be built)
+        default: true
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
@@ -95,6 +99,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU
+        if: inputs.build-aarch64-images == true
         uses: docker/setup-qemu-action@v3
         # Work around QEMU 7.x compilation issues by explicitly using 8.x,
         # which is not yet the default for the action.
@@ -117,11 +122,11 @@ jobs:
         id: generate-tags
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
-          REPOSITORY_OWNER: ${{ github.event.inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ github.event.inputs.repository-name }}
-          REVISION: ${{ github.event.inputs.revision }}
-          CLIENT_VERSION: ${{ github.event.inputs.client-version }}
-          CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
+          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CLIENT_VERSION: ${{ inputs.client-version }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
         with:
           result-encoding: string
           script: |
@@ -143,11 +148,12 @@ jobs:
         id: generate-annotations
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
-          REPOSITORY_OWNER: ${{ github.event.inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ github.event.inputs.repository-name }}
-          REVISION: ${{ github.event.inputs.revision }}
-          CLIENT_VERSION: ${{ github.event.inputs.client-version }}
-          CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
+          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CLIENT_VERSION: ${{ inputs.client-version }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+          BUILD_AARCH64_IMAGES: ${{ inputs.build-aarch64-images }}
         with:
           result-encoding: string
           script: |
@@ -169,10 +175,9 @@ jobs:
               { key: 'base.name', envKey: 'OCI_ANNOTATION_SERVER_BASE_NAME' },
             ].map(({ key, value, envKey }) => {
                 const resolvedValue = value ?? process.env[envKey] ?? ''
-                return [
-                  `manifest:org.opencontainers.image.${key}=${resolvedValue}`,
-                  `index:org.opencontainers.image.${key}=${resolvedValue}`,
-                ]
+                const prefixes = ['manifest:']
+                if (process.env.BUILD_AARCH64_IMAGES === 'true') prefixes.push('index:')
+                return prefixes.map(prefix => `${prefix}org.opencontainers.image.${key}=${resolvedValue}`)
               })
               .flat()
               .join('\n')
@@ -183,16 +188,16 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64, linux/arm64
+          platforms: ${{ inputs.build-aarch64-images && 'linux/amd64, linux/arm64' || 'linux/amd64' }}
           file: ./docker/server/Dockerfile
           push: true
           provenance: false
           build-args: |
-            VMANGOS_REPOSITORY_OWNER=${{ github.event.inputs.repository-owner }}
-            VMANGOS_REPOSITORY_NAME=${{ github.event.inputs.repository-name }}
-            VMANGOS_REVISION=${{ github.event.inputs.revision }}
-            VMANGOS_CLIENT_VERSION=${{ github.event.inputs.client-version }}
-            VMANGOS_PATCHES_REPOSITORY_URL=${{ github.event.inputs.patches-repository-url }}
+            VMANGOS_REPOSITORY_OWNER=${{ inputs.repository-owner }}
+            VMANGOS_REPOSITORY_NAME=${{ inputs.repository-name }}
+            VMANGOS_REVISION=${{ inputs.revision }}
+            VMANGOS_CLIENT_VERSION=${{ inputs.client-version }}
+            VMANGOS_PATCHES_REPOSITORY_URL=${{ inputs.patches-repository-url }}
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
 
@@ -215,6 +220,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU
+        if: inputs.build-aarch64-images == true
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
@@ -232,10 +238,10 @@ jobs:
         id: generate-tags
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
-          REPOSITORY_OWNER: ${{ github.event.inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ github.event.inputs.repository-name }}
-          REVISION: ${{ github.event.inputs.revision }}
-          CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
+          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
         with:
           result-encoding: string
           script: |
@@ -257,10 +263,11 @@ jobs:
         id: generate-annotations
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
-          REPOSITORY_OWNER: ${{ github.event.inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ github.event.inputs.repository-name }}
-          REVISION: ${{ github.event.inputs.revision }}
-          CUSTOM_NAME: ${{ github.event.inputs.custom-name }}
+          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+          BUILD_AARCH64_IMAGES: ${{ inputs.build-aarch64-images }}
         with:
           result-encoding: string
           script: |
@@ -282,10 +289,9 @@ jobs:
               { key: 'base.name', envKey: 'OCI_ANNOTATION_DATABASE_BASE_NAME' },
             ].map(({ key, value, envKey }) => {
                 const resolvedValue = value ?? process.env[envKey] ?? ''
-                return [
-                  `manifest:org.opencontainers.image.${key}=${resolvedValue}`,
-                  `index:org.opencontainers.image.${key}=${resolvedValue}`,
-                ]
+                const prefixes = ['manifest:']
+                if (process.env.BUILD_AARCH64_IMAGES === 'true') prefixes.push('index:')
+                return prefixes.map(prefix => `${prefix}org.opencontainers.image.${key}=${resolvedValue}`)
               })
               .flat()
               .join('\n')
@@ -296,16 +302,16 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64, linux/arm64
+          platforms: ${{ inputs.build-aarch64-images && 'linux/amd64, linux/arm64' || 'linux/amd64' }}
           file: ./docker/database/Dockerfile
           push: true
           provenance: false
           build-args: |
-            VMANGOS_REPOSITORY_OWNER=${{ github.event.inputs.repository-owner }}
-            VMANGOS_REPOSITORY_NAME=${{ github.event.inputs.repository-name }}
-            VMANGOS_REVISION=${{ github.event.inputs.revision }}
-            VMANGOS_WORLD_DB_REPOSITORY_OWNER=${{ github.event.inputs.world-db-repository-owner }}
-            VMANGOS_WORLD_DB_REPOSITORY_NAME=${{ github.event.inputs.world-db-repository-name }}
-            VMANGOS_WORLD_DB_DUMP_NAME=${{ github.event.inputs.world-db-dump-name }}
+            VMANGOS_REPOSITORY_OWNER=${{ inputs.repository-owner }}
+            VMANGOS_REPOSITORY_NAME=${{ inputs.repository-name }}
+            VMANGOS_REVISION=${{ inputs.revision }}
+            VMANGOS_WORLD_DB_REPOSITORY_OWNER=${{ inputs.world-db-repository-owner }}
+            VMANGOS_WORLD_DB_REPOSITORY_NAME=${{ inputs.world-db-repository-name }}
+            VMANGOS_WORLD_DB_DUMP_NAME=${{ inputs.world-db-dump-name }}
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
