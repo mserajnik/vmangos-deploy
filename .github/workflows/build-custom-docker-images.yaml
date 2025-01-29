@@ -142,6 +142,10 @@ jobs:
 
             return tags.join(',')
 
+      - name: Generate timestamp
+        id: generate-timestamp
+        run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
       # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
       - name: Generate OCI annotations
         uses: actions/github-script@v7
@@ -154,6 +158,7 @@ jobs:
           CLIENT_VERSION: ${{ inputs.client-version }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
           BUILD_AARCH64_IMAGES: ${{ inputs.build-aarch64-images }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
         with:
           result-encoding: string
           script: |
@@ -162,7 +167,7 @@ jobs:
               : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`
 
             const annotations = [
-              { key: 'created', value: new Date().toISOString() },
+              { key: 'created', value: process.env.TIMESTAMP },
               { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
               { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
               { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
@@ -184,6 +189,49 @@ jobs:
 
             return annotations
 
+      # We also add the generated OCI metadata as labels because the GitHub
+      # Container registry does not correctly pick up the OCI annotations in
+      # some cases and prefers to pull displayed data from the image labels
+      # instead (which then results in data from the base images being shown if
+      # we do not provide values for the respective labels ourselves).
+      - name: Generate OCI labels
+        uses: actions/github-script@v7
+        id: generate-labels
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
+          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CLIENT_VERSION: ${{ inputs.client-version }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
+        with:
+          result-encoding: string
+          script: |
+            const refName = process.env.CUSTOM_NAME.trim() !== ''
+              ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}`
+              : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`
+
+            const labels = [
+              { key: 'created', value: process.env.TIMESTAMP },
+              { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
+              { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
+              { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
+              { key: 'source', envKey: 'OCI_ANNOTATION_SOURCE' },
+              { key: 'vendor', envKey: 'OCI_ANNOTATION_VENDOR' },
+              { key: 'licenses', envKey: 'OCI_ANNOTATION_LICENSES' },
+              { key: 'ref.name', value: refName },
+              { key: 'title', envKey: 'OCI_ANNOTATION_SERVER_TITLE' },
+              { key: 'description', envKey: 'OCI_ANNOTATION_SERVER_DESCRIPTION' },
+              { key: 'base.name', envKey: 'OCI_ANNOTATION_SERVER_BASE_NAME' },
+            ].map(({ key, value, envKey }) => {
+                const resolvedValue = value ?? process.env[envKey] ?? ''
+                return `org.opencontainers.image.${key}=${resolvedValue}`
+              })
+              .join('\n')
+
+            return labels
+
       - name: Build and push images
         uses: docker/build-push-action@v6
         with:
@@ -200,6 +248,7 @@ jobs:
             VMANGOS_PATCHES_REPOSITORY_URL=${{ inputs.patches-repository-url }}
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
+          labels: ${{ steps.generate-labels.outputs.result }}
 
   # Since the database image builds only take a few minutes (and therefore
   # always complete before the server image builds), we need to build after the
@@ -257,6 +306,10 @@ jobs:
 
             return tags.join(',')
 
+      - name: Generate timestamp
+        id: generate-timestamp
+        run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
       # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
       - name: Generate OCI annotations
         uses: actions/github-script@v7
@@ -268,6 +321,7 @@ jobs:
           REVISION: ${{ inputs.revision }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
           BUILD_AARCH64_IMAGES: ${{ inputs.build-aarch64-images }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
         with:
           result-encoding: string
           script: |
@@ -276,7 +330,7 @@ jobs:
               : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}`
 
             const annotations = [
-              { key: 'created', value: new Date().toISOString() },
+              { key: 'created', value: process.env.TIMESTAMP },
               { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
               { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
               { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
@@ -298,6 +352,48 @@ jobs:
 
             return annotations
 
+      # We also add the generated OCI metadata as labels because the GitHub
+      # Container registry does not correctly pick up the OCI annotations in
+      # some cases and prefers to pull displayed data from the image labels
+      # instead (which then results in data from the base images being shown if
+      # we do not provide values for the respective labels ourselves).
+      - name: Generate OCI labels
+        uses: actions/github-script@v7
+        id: generate-labels
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
+          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
+          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
+        with:
+          result-encoding: string
+          script: |
+            const refName = process.env.CUSTOM_NAME.trim() !== ''
+              ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}`
+              : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}`
+
+            const labels = [
+              { key: 'created', value: process.env.TIMESTAMP },
+              { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
+              { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
+              { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
+              { key: 'source', envKey: 'OCI_ANNOTATION_SOURCE' },
+              { key: 'vendor', envKey: 'OCI_ANNOTATION_VENDOR' },
+              { key: 'licenses', envKey: 'OCI_ANNOTATION_LICENSES' },
+              { key: 'ref.name', value: refName },
+              { key: 'title', envKey: 'OCI_ANNOTATION_DATABASE_TITLE' },
+              { key: 'description', envKey: 'OCI_ANNOTATION_DATABASE_DESCRIPTION' },
+              { key: 'base.name', envKey: 'OCI_ANNOTATION_DATABASE_BASE_NAME' },
+            ].map(({ key, value, envKey }) => {
+                const resolvedValue = value ?? process.env[envKey] ?? ''
+                return `org.opencontainers.image.${key}=${resolvedValue}`
+              })
+              .join('\n')
+
+            return labels
+
       - name: Build and push images
         uses: docker/build-push-action@v6
         with:
@@ -315,3 +411,4 @@ jobs:
             VMANGOS_WORLD_DB_DUMP_NAME=${{ inputs.world-db-dump-name }}
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
+          labels: ${{ steps.generate-labels.outputs.result }}

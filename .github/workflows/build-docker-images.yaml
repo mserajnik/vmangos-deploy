@@ -140,6 +140,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate timestamp
+        id: generate-timestamp
+        run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
       # We tag the newest build for client version 5875 with `latest` since
       # that can be considered the default.
       - name: Generate tags
@@ -171,11 +175,12 @@ jobs:
           COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
           CLIENT_VERSION: ${{ matrix.client-version }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
         with:
           result-encoding: string
           script: |
             const annotations = [
-              { key: 'created', value: new Date().toISOString() },
+              { key: 'created', value: process.env.TIMESTAMP },
               { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
               { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
               { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
@@ -200,6 +205,44 @@ jobs:
 
             return annotations
 
+      # We also add the generated OCI metadata as labels because the GitHub
+      # Container registry does not correctly pick up the OCI annotations in
+      # some cases and prefers to pull displayed data from the image labels
+      # instead (which then results in data from the base images being shown if
+      # we do not provide values for the respective labels ourselves).
+      - name: Generate OCI labels
+        uses: actions/github-script@v7
+        id: generate-labels
+        env:
+          COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
+          CLIENT_VERSION: ${{ matrix.client-version }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
+        with:
+          result-encoding: string
+          script: |
+            const labels = [
+              { key: 'created', value: process.env.TIMESTAMP },
+              { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
+              { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
+              { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
+              { key: 'source', envKey: 'OCI_ANNOTATION_SOURCE' },
+              { key: 'version', envKey: 'COMMIT_HASH' },
+              { key: 'revision', envKey: 'COMMIT_HASH' },
+              { key: 'vendor', envKey: 'OCI_ANNOTATION_VENDOR' },
+              { key: 'licenses', envKey: 'OCI_ANNOTATION_LICENSES' },
+              { key: 'ref.name', value: `${process.env.IMAGE}:${process.env.CLIENT_VERSION}-${process.env.COMMIT_HASH}` },
+              { key: 'title', envKey: 'OCI_ANNOTATION_SERVER_TITLE' },
+              { key: 'description', envKey: 'OCI_ANNOTATION_SERVER_DESCRIPTION' },
+              { key: 'base.name', envKey: 'OCI_ANNOTATION_SERVER_BASE_NAME' },
+            ].map(({ key, value, envKey }) => {
+                const resolvedValue = value ?? process.env[envKey] ?? ''
+                return `org.opencontainers.image.${key}=${resolvedValue}`
+              })
+              .join('\n')
+
+            return labels
+
       - name: Build and push images
         uses: docker/build-push-action@v6
         with:
@@ -213,6 +256,7 @@ jobs:
             VMANGOS_CLIENT_VERSION=${{ matrix.client-version }}
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
+          labels: ${{ steps.generate-labels.outputs.result }}
 
   # Since the database image builds only take a few minutes (and therefore
   # always complete before the server image builds), we need to build after the
@@ -246,6 +290,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate timestamp
+        id: generate-timestamp
+        run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
       - name: Generate tags
         uses: actions/github-script@v7
         id: generate-tags
@@ -269,11 +317,12 @@ jobs:
         env:
           COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
         with:
           result-encoding: string
           script: |
             const annotations = [
-              { key: 'created', value: new Date().toISOString() },
+              { key: 'created', value: process.env.TIMESTAMP },
               { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
               { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
               { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
@@ -298,6 +347,43 @@ jobs:
 
             return annotations
 
+      # We also add the generated OCI metadata as labels because the GitHub
+      # Container registry does not correctly pick up the OCI annotations in
+      # some cases and prefers to pull displayed data from the image labels
+      # instead (which then results in data from the base images being shown if
+      # we do not provide values for the respective labels ourselves).
+      - name: Generate OCI labels
+        uses: actions/github-script@v7
+        id: generate-labels
+        env:
+          COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
+        with:
+          result-encoding: string
+          script: |
+            const labels = [
+              { key: 'created', value: process.env.TIMESTAMP },
+              { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
+              { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
+              { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
+              { key: 'source', envKey: 'OCI_ANNOTATION_SOURCE' },
+              { key: 'version', envKey: 'COMMIT_HASH' },
+              { key: 'revision', envKey: 'COMMIT_HASH' },
+              { key: 'vendor', envKey: 'OCI_ANNOTATION_VENDOR' },
+              { key: 'licenses', envKey: 'OCI_ANNOTATION_LICENSES' },
+              { key: 'ref.name', value: `${process.env.IMAGE}:${process.env.COMMIT_HASH}` },
+              { key: 'title', envKey: 'OCI_ANNOTATION_DATABASE_TITLE' },
+              { key: 'description', envKey: 'OCI_ANNOTATION_DATABASE_DESCRIPTION' },
+              { key: 'base.name', envKey: 'OCI_ANNOTATION_DATABASE_BASE_NAME' },
+            ].map(({ key, value, envKey }) => {
+                const resolvedValue = value ?? process.env[envKey] ?? ''
+                return `org.opencontainers.image.${key}=${resolvedValue}`
+              })
+              .join('\n')
+
+            return labels
+
       - name: Build and push images
         uses: docker/build-push-action@v6
         with:
@@ -310,6 +396,7 @@ jobs:
             VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
+          labels: ${{ steps.generate-labels.outputs.result }}
 
   delete-old-package-versions:
     name: Delete old package versions
