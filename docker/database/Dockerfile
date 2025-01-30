@@ -15,22 +15,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG VMANGOS_REPOSITORY_OWNER=vmangos
-ARG VMANGOS_REPOSITORY_NAME=core
+ARG VMANGOS_REPOSITORY_URL=https://github.com/vmangos/core.git
 ARG VMANGOS_REVISION=development
-ARG VMANGOS_WORLD_DB_REPOSITORY_OWNER=brotalnia
-ARG VMANGOS_WORLD_DB_REPOSITORY_NAME=database
+ARG VMANGOS_WORLD_DB_REPOSITORY_URL=https://github.com/brotalnia/database.git
 ARG VMANGOS_WORLD_DB_DUMP_NAME=world_full_14_june_2021
 ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE=/sql/world-new.sql
 
 FROM mariadb:11.4 AS setup
 
 ARG DEBIAN_FRONTEND
-ARG VMANGOS_REPOSITORY_OWNER
-ARG VMANGOS_REPOSITORY_NAME
+ARG VMANGOS_REPOSITORY_URL
 ARG VMANGOS_REVISION
-ARG VMANGOS_WORLD_DB_REPOSITORY_OWNER
-ARG VMANGOS_WORLD_DB_REPOSITORY_NAME
+ARG VMANGOS_WORLD_DB_REPOSITORY_URL
 ARG VMANGOS_WORLD_DB_DUMP_NAME
 
 RUN \
@@ -38,10 +34,10 @@ RUN \
   apt install -y \
     git \
     p7zip-full && \
-  git clone https://github.com/${VMANGOS_REPOSITORY_OWNER}/${VMANGOS_REPOSITORY_NAME}.git /core && \
+  git clone "${VMANGOS_REPOSITORY_URL}" /core && \
   cd /core && \
-  git checkout ${VMANGOS_REVISION} && \
-  git clone https://github.com/${VMANGOS_WORLD_DB_REPOSITORY_OWNER}/${VMANGOS_WORLD_DB_REPOSITORY_NAME}.git /database && \
+  git checkout "${VMANGOS_REVISION}" && \
+  git clone "${VMANGOS_WORLD_DB_REPOSITORY_URL}" /database && \
   mkdir -p /sql/migrations && \
   cd /core/sql && \
   mv characters.sql /sql && \

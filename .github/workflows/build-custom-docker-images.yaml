@@ -3,16 +3,11 @@ name: Build and push custom Docker images
 on:
   workflow_dispatch:
     inputs:
-      repository-owner:
+      repository-url:
         type: string
         required: true
-        description: The owner of the VMaNGOS code repository to use
-        default: vmangos
-      repository-name:
-        type: string
-        required: true
-        description: The name of the VMaNGOS code repository to use
-        default: core
+        description: The URL of the VMaNGOS code repository to use
+        default: https://github.com/vmangos/core.git
       revision:
         type: string
         required: true
@@ -23,16 +18,11 @@ on:
         required: true
         description: The client version for which to build VMaNGOS
         default: 5875
-      world-db-repository-owner:
+      world-db-repository-url:
         type: string
         required: true
-        description: The owner of the VMaNGOS world database repository to use
-        default: brotalnia
-      world-db-repository-name:
-        type: string
-        required: true
-        description: The name of the VMaNGOS world database repository to use
-        default: database
+        description: The URL of the VMaNGOS world database repository to use
+        default: https://github.com/brotalnia/database.git
       world-db-dump-name:
         type: string
         required: true
@@ -77,6 +67,9 @@ jobs:
   setup:
     name: Setup
     runs-on: ubuntu-24.04
+    outputs:
+      repository-owner: ${{ steps.parse-repository-url.outputs.owner }}
+      repository-name: ${{ steps.parse-repository-url.outputs.name }}
 
     steps:
       # If the original MariaDB entrypoint script changes, we can't guarantee
@@ -90,6 +83,54 @@ jobs:
           curl -o known-entrypoint.sh $known_entrypoint
           curl -o latest-entrypoint.sh $latest_entrypoint
           diff known-entrypoint.sh latest-entrypoint.sh
+
+      # The following Git repository URL formats are supported:
+      #
+      # SSH URLs:
+      # - git@github.com:owner/repo.git
+      # - git@gitlab.com:owner/repo.git
+      # - git@gitea.example.com:owner/repository.git
+      # - git@bitbucket.org:owner/repository.git
+      #
+      # HTTPS URLs:
+      # - https://github.com/owner/repo.git
+      # - https://gitlab.com/owner/repo.git
+      # - https://gitea.example.com/owner/repository.git
+      # - https://bitbucket.org/owner/repository.git
+      - name: Parse repository URL
+        id: parse-repository-url
+        uses: actions/github-script@v7
+        with:
+          script: |
+            function parseGitUrl (url) {
+              const sshMatch = url.match(/git@([^:]+):([^\/]+)\/([^.]+)/)
+              if (sshMatch) {
+                return { owner: sshMatch[2], name: sshMatch[3] }
+              }
+
+              const urlObj = new URL(url)
+              const parts = urlObj.pathname.split('/')
+                .filter(part => part)
+              return {
+                owner: parts[0],
+                name: parts[1].replace(/\.git$/, '')
+              }
+            }
+
+            const { owner, name } = parseGitUrl('${{ inputs.repository-url }}')
+
+            if (!owner || !name) {
+              core.setFailed('Failed to parse repository URL: Unable to determine owner and/or repository name')
+              return
+            }
+
+            if (owner.trim() === '' || name.trim() === '') {
+              core.setFailed('Failed to parse repository URL: Owner and/or repository name are empty')
+              return
+            }
+
+            core.setOutput('owner', owner)
+            core.setOutput('name', name)
 
   build-and-push-server-images:
     name: Build and push server images
@@ -127,8 +168,8 @@ jobs:
         id: generate-tags
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
-          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
           REVISION: ${{ inputs.revision }}
           CLIENT_VERSION: ${{ inputs.client-version }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
@@ -157,8 +198,8 @@ jobs:
         id: generate-annotations
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
-          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
           REVISION: ${{ inputs.revision }}
           CLIENT_VERSION: ${{ inputs.client-version }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
@@ -204,8 +245,8 @@ jobs:
         id: generate-labels
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
-          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
           REVISION: ${{ inputs.revision }}
           CLIENT_VERSION: ${{ inputs.client-version }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
@@ -246,8 +287,7 @@ jobs:
           push: true
           provenance: false
           build-args: |
-            VMANGOS_REPOSITORY_OWNER=${{ inputs.repository-owner }}
-            VMANGOS_REPOSITORY_NAME=${{ inputs.repository-name }}
+            VMANGOS_REPOSITORY_URL=${{ inputs.repository-url }}
             VMANGOS_REVISION=${{ inputs.revision }}
             VMANGOS_CLIENT_VERSION=${{ inputs.client-version }}
             VMANGOS_PATCHES_REPOSITORY_URL=${{ inputs.patches-repository-url }}
@@ -292,8 +332,8 @@ jobs:
         id: generate-tags
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
-          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
           REVISION: ${{ inputs.revision }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
         with:
@@ -321,8 +361,8 @@ jobs:
         id: generate-annotations
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
-          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
           REVISION: ${{ inputs.revision }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
           MULTI_ARCH_BUILD: ${{ inputs.architectures == 'Both x86_64 and aarch64' }}
@@ -367,8 +407,8 @@ jobs:
         id: generate-labels
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
-          REPOSITORY_OWNER: ${{ inputs.repository-owner }}
-          REPOSITORY_NAME: ${{ inputs.repository-name }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
           REVISION: ${{ inputs.revision }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
           TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
@@ -408,11 +448,9 @@ jobs:
           push: true
           provenance: false
           build-args: |
-            VMANGOS_REPOSITORY_OWNER=${{ inputs.repository-owner }}
-            VMANGOS_REPOSITORY_NAME=${{ inputs.repository-name }}
+            VMANGOS_REPOSITORY_URL=${{ inputs.repository-url }}
             VMANGOS_REVISION=${{ inputs.revision }}
-            VMANGOS_WORLD_DB_REPOSITORY_OWNER=${{ inputs.world-db-repository-owner }}
-            VMANGOS_WORLD_DB_REPOSITORY_NAME=${{ inputs.world-db-repository-name }}
+            VMANGOS_WORLD_DB_REPOSITORY_URL=${{ inputs.world-db-repository-url }}
             VMANGOS_WORLD_DB_DUMP_NAME=${{ inputs.world-db-dump-name }}
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}

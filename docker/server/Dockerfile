@@ -16,8 +16,7 @@
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG VMANGOS_CLIENT_VERSION=5875
-ARG VMANGOS_REPOSITORY_OWNER=vmangos
-ARG VMANGOS_REPOSITORY_NAME=core
+ARG VMANGOS_REPOSITORY_URL=https://github.com/vmangos/core.git
 ARG VMANGOS_REVISION=development
 ARG VMANGOS_PATCHES_REPOSITORY_URL
 ARG VMANGOS_USER_ID=1000
@@ -29,8 +28,7 @@ FROM ubuntu:24.04 AS build
 
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_CLIENT_VERSION
-ARG VMANGOS_REPOSITORY_OWNER
-ARG VMANGOS_REPOSITORY_NAME
+ARG VMANGOS_REPOSITORY_URL
 ARG VMANGOS_REVISION
 ARG VMANGOS_PATCHES_REPOSITORY_URL
 
@@ -46,16 +44,16 @@ RUN \
     libssl-dev \
     libtbb-dev \
     zlib1g-dev && \
-  git clone https://github.com/${VMANGOS_REPOSITORY_OWNER}/${VMANGOS_REPOSITORY_NAME}.git /core && \
+  git clone "${VMANGOS_REPOSITORY_URL}" /core && \
   cd /core && \
-  git checkout ${VMANGOS_REVISION} && \
-  if [ -n "$VMANGOS_PATCHES_REPOSITORY_URL" ]; then \
-    echo "Cloning and applying patches from $VMANGOS_PATCHES_REPOSITORY_URL"; \
-    git clone "$VMANGOS_PATCHES_REPOSITORY_URL" /tmp/patches && \
+  git checkout "${VMANGOS_REVISION}" && \
+  if [ -n "${VMANGOS_PATCHES_REPOSITORY_URL}" ]; then \
+    echo "Cloning and applying patches from ${VMANGOS_PATCHES_REPOSITORY_URL}"; \
+    git clone "${VMANGOS_PATCHES_REPOSITORY_URL}" /tmp/patches && \
     for patch in /tmp/patches/*.patch; do \
-      if [ -f "$patch" ]; then \
-        echo "Applying patch $patch"; \
-        git apply "$patch"; \
+      if [ -f "${patch}" ]; then \
+        echo "Applying patch ${patch}"; \
+        git apply "${patch}"; \
       fi; \
     done; \
     rm -rf /tmp/patches; \
@@ -120,20 +118,20 @@ RUN \
   # GID of the user and group that should be used in the container, we need to
   # either rename the existing user and group or create a new user and group
   # with the specified name, UID and GID.
-  existing_group=$(getent group ${VMANGOS_GROUP_ID}) || true && \
-  existing_user=$(getent passwd ${VMANGOS_USER_ID}) || true && \
-  if [ -n "$existing_group" ]; then \
-    old_groupname=$(echo "$existing_group" | cut -d: -f1) && \
-    groupmod -n ${VMANGOS_GROUP_NAME} "$old_groupname"; \
+  existing_group=$(getent group "${VMANGOS_GROUP_ID}") || true && \
+  existing_user=$(getent passwd "${VMANGOS_USER_ID}") || true && \
+  if [ -n "${existing_group}" ]; then \
+    old_groupname=$(echo "${existing_group}" | cut -d: -f1) && \
+    groupmod -n "${VMANGOS_GROUP_NAME}" "${old_groupname}"; \
   else \
-    groupadd -g ${VMANGOS_GROUP_ID} ${VMANGOS_GROUP_NAME}; \
+    groupadd -g "${VMANGOS_GROUP_ID}" "${VMANGOS_GROUP_NAME}"; \
   fi && \
-  if [ -n "$existing_user" ]; then \
-    old_username=$(echo "$existing_user" | cut -d: -f1) && \
-    usermod -l ${VMANGOS_USER_NAME} -d "/home/${VMANGOS_USER_NAME}" "$old_username" && \
+  if [ -n "${existing_user}" ]; then \
+    old_username=$(echo "${existing_user}" | cut -d: -f1) && \
+    usermod -l "${VMANGOS_USER_NAME}" -d "/home/${VMANGOS_USER_NAME}" "${old_username}" && \
     mv "/home/${old_username}" "/home/${VMANGOS_USER_NAME}"; \
   else \
-    useradd -u ${VMANGOS_USER_ID} -g ${VMANGOS_GROUP_NAME} -d "/home/${VMANGOS_USER_NAME}" -s /bin/sh -m ${VMANGOS_USER_NAME}; \
+    useradd -u "${VMANGOS_USER_ID}" -g "${VMANGOS_GROUP_NAME}" -d "/home/${VMANGOS_USER_NAME}" -s /bin/sh -m "${VMANGOS_USER_NAME}"; \
   fi && \
   # See https://github.com/boxboat/fixuid
   curl -SsL https://github.com/boxboat/fixuid/releases/download/v0.6.0/fixuid-0.6.0-linux-${TARGETARCH}.tar.gz | tar -C /usr/local/bin -xzf - && \
