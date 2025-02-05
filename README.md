@@ -399,7 +399,7 @@ You are welcome to help out!
 [warden-modules]: https://github.com/vmangos/warden_modules
 [world-db-dump-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20-L34
 
-[actions-status]: https://github.com/mserajnik/vmangos-deploy/actions
+[actions-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml
 [actions-status-badge]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml/badge.svg
 [issues]: https://github.com/mserajnik/vmangos-deploy/issues
 [maintainer]: https://github.com/mserajnik
