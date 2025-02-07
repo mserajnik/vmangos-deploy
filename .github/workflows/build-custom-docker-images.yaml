@@ -147,11 +147,16 @@ jobs:
       - name: Set up QEMU
         if: inputs.architectures == 'Both x86_64 and aarch64' || inputs.architectures == 'aarch64 only'
         uses: docker/setup-qemu-action@v3
-        # Work around QEMU 7.x compilation issues by explicitly using 8.x,
-        # which is not yet the default for the action.
-        # See https://github.com/tonistiigi/binfmt/issues/215
+        # Use QEMU 9.2.0 instead of `tonistiigi/binfmt:latest`, which is
+        # currently still 7.0.0 and exhibits segfault issues during the VMaNGOS
+        # compilation.
+        # Both 8.1.5 and 9.2.0 work well, so we opt for the newer release
+        # (which might also become the new `tonistiigi/binfmt:latest` in the
+        # future).
+        # See https://github.com/tonistiigi/binfmt/issues/215 for more
+        # information.
         with:
-          image: tonistiigi/binfmt:qemu-v8.1.5
+          image: tonistiigi/binfmt:qemu-v9.2.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
