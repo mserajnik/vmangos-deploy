@@ -18,21 +18,30 @@
 
 create_database() {
   local db_name="$1"
-  echo "[vmangos-deploy]: Creating database $db_name"
+  local silent=${2:-false}
+  if [ "$silent" = false ]; then
+    echo "[vmangos-deploy]: Creating database $db_name"
+  fi
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "CREATE DATABASE IF NOT EXISTS \`$db_name\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
 }
 
 drop_database() {
   local db_name="$1"
-  echo "[vmangos-deploy]: Dropping database $db_name"
+  local silent=${2:-false}
+  if [ "$silent" = false ]; then
+    echo "[vmangos-deploy]: Dropping database $db_name"
+  fi
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "DROP DATABASE IF EXISTS \`$db_name\`;"
 }
 
 grant_permissions() {
   local db_name="$1"
-  echo "[vmangos-deploy]: Granting permissions to database user $MARIADB_USER for database $db_name"
+  local silent=${2:-false}
+  if [ "$silent" = false ]; then
+    echo "[vmangos-deploy]: Granting permissions to database user $MARIADB_USER for database $db_name"
+  fi
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "GRANT ALL ON \`$db_name\`.* TO '$MARIADB_USER'@'%'; \
     FLUSH PRIVILEGES;"
@@ -64,4 +73,37 @@ configure_realm() {
   echo "[vmangos-deploy]: Configuring realm $VMANGOS_REALMLIST_NAME"
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" realmd -e \
     "INSERT INTO \`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$VMANGOS_REALMLIST_NAME', '$VMANGOS_REALMLIST_ADDRESS', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
+}
+
+create_world_db_corrections_table() {
+  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" -e \
+    "CREATE TABLE IF NOT EXISTS \`world_db_corrections\` ( \
+      \`id\` INT NOT NULL, \
+      \`reason\` VARCHAR(255) NOT NULL, \
+      \`date\` DATE NOT NULL, \
+      \`is_applied\` BOOLEAN NOT NULL DEFAULT FALSE, \
+      PRIMARY KEY (\`id\`) \
+    );"
+}
+
+populate_world_db_corrections_table() {
+  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" -e \
+    "INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
+    SELECT 1, 'migration edits in vmangos/core@fe6fcb4', '2025-02-22' \
+    WHERE NOT EXISTS ( \
+      SELECT 1 FROM \`world_db_corrections\` WHERE \`id\` = 1 \
+    );"
+}
+
+check_if_world_db_correction_is_required() {
+  local result=$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" -N -s -e \
+    "SELECT CONCAT_WS('|', IF(\`is_applied\` = 0, 'true', 'false'), \`reason\`) \
+    FROM \`world_db_corrections\` \
+    WHERE \`id\` = (SELECT MAX(\`id\`) FROM \`world_db_corrections\`);")
+  echo "$result"
+}
+
+mark_world_db_corrections_as_applied() {
+  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" -e \
+    "UPDATE \`world_db_corrections\` SET \`is_applied\` = true;"
 }

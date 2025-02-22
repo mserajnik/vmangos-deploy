@@ -299,24 +299,21 @@ may be new features or changes that require manual intervention. Such breaking
 changes will be listed here (and removed again once they become irrelevant),
 sorted by newest first:
 
-+ __[2025-02-21] - Migration edits in__
-  __[`vmangos/core@fe6fcb4`](https://github.com/vmangos/core/commit/fe6fcb493687c61f0c6e57e0f96670c99cd5af0c):__
-  if you have already run the affected migration before it has been edited in
-  this commit, you will have to either manually edit your database to reflect
-  these changes or alternatively re-create the world database and run
-  migrations again. To do the latter, you can simply mount the initial database
-  dump as described [here][world-db-dump-mount]. Make sure your Docker images
-  are based on the commit the edits were made in or newer before re-creating
-  the database via this method.
-+ __[2024-12-26] - Migration edits in__
-  __[`vmangos/core@a722ebb`](https://github.com/vmangos/core/commit/a722ebb5f4a6c3d0fe4e242f2cf22a60f33cbec1):__
-  if you have already run the affected migration before it has been edited in
-  this commit, you will have to either manually edit your database to reflect
-  these changes or alternatively re-create the world database and run
-  migrations again. To do the latter, you can simply mount the initial database
-  dump as described [here][world-db-dump-mount]. Make sure your Docker images
-  are based on the commit the edits were made in or newer before re-creating
-  the database via this method.
++ __[2025-02-22] - Automatic world database corrections are now available and__
+  __enabled by default:__ vmangos-deploy now keeps track of certain, unusual
+  VMaNGOS code changes (such as migration edits) that lead to a faulty (or
+  out-of-sync) world database state when updating and would normally require
+  manual intervention by you to rectify. In such cases, vmangos-deploy can
+  automatically correct the state of your world database by re-creating it. It
+  is strongly suggested to keep this feature enabled, unless you apply custom
+  changes to your world database, in which case you may want to
+  [disable it][automatic-world-db-corrections] so your edits are not lost
+  whenever the database gets re-created automatically. If you do decide to
+  disable the feature, you yourself are responsible for monitoring VMaNGOS for
+  problematic code changes and taking appropriate actions (e.g., manually
+  triggering the re-creation of the world database by mounting a database dump,
+  as described [here][world-db-dump-mount]); no support will be provided in
+  that case and this section will no longer list such changes.
 + __[2024-10-31] - Removal of separate images with anticheat support:__
   As of
   [`vmangos/core@fbbc4ae`](https://github.com/vmangos/core/commit/fbbc4ae899f876a78a37d8fee805dce40a182331)
@@ -324,28 +321,6 @@ sorted by newest first:
   is always available and there is no longer a need for separate images. If
   you were using one of the anticheat images (which were suffixed with
   `-anticheat`), simply switch to the regular version of that image.
-+ __[2024-10-29] - Migration edits in__
-  __[`vmangos/core@e3f0547`](https://github.com/vmangos/core/commit/e3f0547b9973cbb72e250f04362ebf35db388939)__
-  __and__
-  __[`vmangos/core@ebf9cd8`](https://github.com/vmangos/core/commit/ebf9cd81f88de62dd85f8f127ed91cf7e690da3d):__
-  if you have already run the affected migrations before they have been edited
-  in these commits, you will have to either manually edit your database to
-  reflect these changes or alternatively re-create the world database and run
-  migrations again. To do the latter, you can simply mount the initial database
-  dump as described [here][world-db-dump-mount]. Make sure your Docker images
-  are based on the commit the edits were made in or newer before re-creating
-  the database via this method.
-+ __[2024-09-25] - Migration edits in__
-  __[`vmangos/core@4bad448`](https://github.com/vmangos/core/commit/4bad44863a1d079b62d79e4afc22da49b56cce80)__
-  __and__
-  __[`vmangos/core@8ab4fbf`](https://github.com/vmangos/core/commit/8ab4fbf3b2df90d84c8a98905da3371a1418ff47):__
-  if you have already run the affected migrations before they have been edited
-  in these commits, you will have to either manually edit your database to
-  reflect these changes or alternatively re-create the world database and run
-  migrations again. To do the latter, you can simply mount the initial database
-  dump as described [here][world-db-dump-mount]. Make sure your Docker images
-  are based on the commits the edits were made in or newer before re-creating
-  the database via this method.
 
 ### Creating database backups
 
@@ -392,6 +367,7 @@ You are welcome to help out!
 
 [AGPL-3.0-or-later](LICENSE) © Michael Serajnik
 
+[automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L40-L55
 [docker]: https://docs.docker.com/get-docker/
 [docker-compose]: https://docs.docker.com/compose/install/
 [hermesproxy]: https://github.com/WowLegacyCore/HermesProxy

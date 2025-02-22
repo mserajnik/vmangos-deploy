@@ -18,6 +18,30 @@
 
 . "/opt/scripts/db-functions.sh"
 
+if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
+  echo "[vmangos-deploy]: Automatic world database corrections are enabled"
+  create_database "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" true
+  grant_permissions "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" true
+  create_world_db_corrections_table
+  populate_world_db_corrections_table
+
+  result=$(check_if_world_db_correction_is_required)
+  requires_correction=$(echo "$result" | cut -d'|' -f1)
+  reason=$(echo "$result" | cut -d'|' -f2)
+
+  if [ "$requires_correction" = "true" ]; then
+    echo "[vmangos-deploy]: Applying automatic world database correction because of $reason"
+    drop_database "mangos"
+    create_database "mangos"
+    grant_permissions "mangos"
+    import_dump "mangos" "/sql/world.sql"
+    mark_world_db_corrections_as_applied
+  fi
+else
+  echo "[vmangos-deploy]: Automatic world database corrections are disabled"
+  drop_database "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" true
+fi
+
 if [ -e "$VMANGOS_WORLD_DB_DUMP_NEW_FILE" ]; then
   echo "[vmangos-deploy]: $VMANGOS_WORLD_DB_DUMP_NEW_FILE exists, re-creating world database"
   drop_database "mangos"

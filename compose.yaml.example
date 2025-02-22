@@ -30,13 +30,29 @@ services:
       # migrations to get skipped).
       # Therefore, this option is mainly here to have it available in case it
       # becomes necessary or desirable to re-create the world database (e.g.,
-      # because of later edits in migrations that have already been run).
+      # to cleanly get rid of any custom changes you may have made).
       # - /path/to/new/world.sql:/sql/world-new.sql:ro
     environment:
       - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
       - MARIADB_USER=mangos # Specifies the name for the database user utilized by VMaNGOS (must match the credentials in the VMaNGOS configuration files); please note that the name cannot be changed using this environment variable after the initial startup
       - MARIADB_PASSWORD=mangos # Specifies the password for the database user utilized by VMaNGOS (must match the credentials in the VMaNGOS configuration files); please note that the password cannot be changed using this environment variable after the initial startup
       - MARIADB_ROOT_PASSWORD=password # Specifies the password for the database's `root` user (not used by VMaNGOS itself, only for database creation/updates); please note that the password cannot be changed using this environment variable after the initial startup
+      # vmangos-deploy keeps track of certain, unusual VMaNGOS code changes
+      # (such as migration edits) that lead to a faulty (or out-of-sync) world
+      # database state when updating and would normally require manual
+      # intervention by you to rectify. In such cases, vmangos-deploy can
+      # automatically correct the state of your world database by re-creating
+      # it.
+      # It is strongly suggested to keep this feature enabled, unless you apply
+      # custom changes to your world database, in which case you may want to
+      # disable it (by setting this environment variable to `0`) so your edits
+      # are not lost whenever the database gets re-created automatically.
+      # If you do decide to disable the feature, you yourself are responsible
+      # for monitoring VMaNGOS for problematic code changes and taking
+      # appropriate actions (e.g., manually triggering the re-creation of the
+      # world database by mounting a database dump, as described further
+      # above); no support will be provided in that case.
+      - VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1
       # Only a subset covering the most important realmlist parameters is
       # exposed in this configuration file. Altering them here after the
       # database has been created will _not_ update them, but you can always
@@ -130,7 +146,7 @@ services:
     # before it kills the container. The Docker default is 10 seconds, which
     # might be too short for VMaNGOS servers with larger populations to
     # complete the shutdown tasks in time. Setting it to 2 minutes instead
-    # should be on the safe side and doesn't have any downsides except the
+    # should be on the safe side and does not have any downsides except the
     # longer wait time when the server actually hangs during shutdown. Feel
     # free to adjust this value based on the actual shutdown duration you
     # observe.
