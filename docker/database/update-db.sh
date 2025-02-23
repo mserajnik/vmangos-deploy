@@ -20,8 +20,8 @@
 
 if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
   echo "[vmangos-deploy]: Automatic world database corrections are enabled"
-  create_database "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" true
-  grant_permissions "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" true
+  create_database "maintenance" true
+  grant_permissions "maintenance" true
   create_world_db_corrections_table
   populate_world_db_corrections_table
 
@@ -39,7 +39,7 @@ if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
   fi
 else
   echo "[vmangos-deploy]: Automatic world database corrections are disabled"
-  drop_database "$VMANGOS_DEPLOY_MAINTENANCE_DB_NAME" true
+  drop_database "maintenance" true
 fi
 
 if [ -e "$VMANGOS_WORLD_DB_DUMP_NEW_FILE" ]; then
