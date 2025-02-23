@@ -30,7 +30,7 @@ if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
   reason=$(echo "$result" | cut -d'|' -f2)
 
   if [ "$requires_correction" = "true" ]; then
-    echo "[vmangos-deploy]: Applying automatic world database correction because of $reason"
+    echo "[vmangos-deploy]: World database correction required because of $reason, re-creating world database"
     drop_database "mangos"
     create_database "mangos"
     grant_permissions "mangos"
