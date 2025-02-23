@@ -43,7 +43,7 @@ else
 fi
 
 if [ -e "$VMANGOS_WORLD_DB_DUMP_NEW_FILE" ]; then
-  echo "[vmangos-deploy]: $VMANGOS_WORLD_DB_DUMP_NEW_FILE exists, re-creating world database"
+  echo "[vmangos-deploy]: '$VMANGOS_WORLD_DB_DUMP_NEW_FILE' exists, re-creating world database"
   drop_database "mangos"
   create_database "mangos"
   grant_permissions "mangos"

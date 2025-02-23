@@ -20,7 +20,7 @@ create_database() {
   local db_name="$1"
   local silent=${2:-false}
   if [ "$silent" = false ]; then
-    echo "[vmangos-deploy]: Creating database $db_name"
+    echo "[vmangos-deploy]: Creating database '$db_name'"
   fi
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "CREATE DATABASE IF NOT EXISTS \`$db_name\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
@@ -30,7 +30,7 @@ drop_database() {
   local db_name="$1"
   local silent=${2:-false}
   if [ "$silent" = false ]; then
-    echo "[vmangos-deploy]: Dropping database $db_name"
+    echo "[vmangos-deploy]: Dropping database '$db_name'"
   fi
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "DROP DATABASE IF EXISTS \`$db_name\`;"
@@ -40,7 +40,7 @@ grant_permissions() {
   local db_name="$1"
   local silent=${2:-false}
   if [ "$silent" = false ]; then
-    echo "[vmangos-deploy]: Granting permissions to database user $MARIADB_USER for database $db_name"
+    echo "[vmangos-deploy]: Granting permissions to database user '$MARIADB_USER' for database '$db_name'"
   fi
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "GRANT ALL ON \`$db_name\`.* TO '$MARIADB_USER'@'%'; \
@@ -56,7 +56,7 @@ import_data() {
 import_dump() {
   local db_name="$1"
   local dump_file="$2"
-  echo "[vmangos-deploy]: Importing initial data for database $db_name"
+  echo "[vmangos-deploy]: Importing initial data for database '$db_name'"
   import_data "$db_name" "$dump_file"
 }
 
@@ -64,13 +64,13 @@ import_updates() {
   local db_name="$1"
   local update_file="$2"
   if [ -e "$update_file" ]; then
-    echo "[vmangos-deploy]: Importing potential updates for database $db_name"
+    echo "[vmangos-deploy]: Importing potential updates for database '$db_name'"
     import_data "$db_name" "$update_file"
   fi
 }
 
 configure_realm() {
-  echo "[vmangos-deploy]: Configuring realm $VMANGOS_REALMLIST_NAME"
+  echo "[vmangos-deploy]: Configuring realm '$VMANGOS_REALMLIST_NAME'"
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" realmd -e \
     "INSERT INTO \`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$VMANGOS_REALMLIST_NAME', '$VMANGOS_REALMLIST_ADDRESS', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
 }
