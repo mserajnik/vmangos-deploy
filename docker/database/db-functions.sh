@@ -107,9 +107,26 @@ populate_world_db_corrections_table() {
 
 check_if_world_db_correction_is_required() {
   local result=$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -N -s -e \
-    "SELECT CONCAT_WS('|', IF(\`is_applied\` = 0, 'true', 'false'), \`reason\`) \
-    FROM \`world_db_corrections\` \
-    WHERE \`id\` = (SELECT MAX(\`id\`) FROM \`world_db_corrections\`);")
+    "WITH
+      db_creation AS (
+        SELECT MIN(\`CREATE_TIME\`) as world_db_created_at
+        FROM \`INFORMATION_SCHEMA\`.\`TABLES\`
+        WHERE \`TABLE_SCHEMA\` = 'mangos'
+      ),
+      latest_correction AS (
+        SELECT \`date\` as correction_date, \`reason\`, \`is_applied\`
+        FROM \`world_db_corrections\`
+        WHERE \`id\` = (SELECT MAX(\`id\`) FROM \`world_db_corrections\`)
+      )
+    SELECT CONCAT_WS('|',
+      IF(
+        NOT \`is_applied\` AND correction_date >= world_db_created_at,
+        'true',
+        'false'
+      ),
+      \`reason\`
+    )
+    FROM latest_correction, db_creation;")
   echo "$result"
 }
 
