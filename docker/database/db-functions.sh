@@ -109,12 +109,12 @@ check_if_world_db_correction_is_required() {
   local result=$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -N -s -e \
     "WITH
       db_creation AS (
-        SELECT MIN(\`CREATE_TIME\`) as world_db_created_at
+        SELECT DATE(CONVERT_TZ(MIN(\`CREATE_TIME\`), @@session.time_zone, '+00:00')) as world_db_created_at
         FROM \`INFORMATION_SCHEMA\`.\`TABLES\`
         WHERE \`TABLE_SCHEMA\` = 'mangos'
       ),
       latest_correction AS (
-        SELECT \`date\` as correction_date, \`reason\`, \`is_applied\`
+        SELECT DATE(\`date\`) as correction_date, \`reason\`, \`is_applied\`
         FROM \`world_db_corrections\`
         WHERE \`id\` = (SELECT MAX(\`id\`) FROM \`world_db_corrections\`)
       )
