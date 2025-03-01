@@ -82,6 +82,7 @@ ENV VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1
 COPY --from=setup /sql /sql
 
 RUN \
+  mkdir -p /opt/config && \
   mkdir -p /opt/scripts && \
   mkdir /always-initdb.d
 

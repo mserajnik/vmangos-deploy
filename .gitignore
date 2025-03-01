@@ -1,4 +1,5 @@
 /config/*
+!/config/ahbot.csv.example
 !/config/mangosd.conf.example
 !/config/realmd.conf.example
 /database-backups/*

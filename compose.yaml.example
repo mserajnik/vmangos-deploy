@@ -32,6 +32,16 @@ services:
       # becomes necessary or desirable to re-create the world database (e.g.,
       # to cleanly get rid of any custom changes you may have made).
       # - /path/to/new/world.sql:/sql/world-new.sql:ro
+      # If you plan to use the auction house bot and want it to populate the
+      # auction house with items other than the default ones, create a copy of
+      # `./config/ahbot.csv.example` (which contains
+      # all the current default item VMaNGOS provides) under
+      # `./config/ahbot.csv` and edit it to your liking. Then, uncomment the
+      # following bind mount which will automatically replace the current
+      # listings in the database with your custom ones every time you restart
+      # the container (and thus, the auction house bot, if enabled, will create
+      # listings using these items).
+      # ./config/ahbot.csv:/opt/config/ahbot.csv:ro
     environment:
       - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
       - MARIADB_USER=mangos # Specifies the name for the database user utilized by VMaNGOS (must match the credentials in the VMaNGOS configuration files); please note that the name cannot be changed using this environment variable after the initial startup

@@ -77,6 +77,19 @@ your desired setup. Configuration options relating to the database connection
 or directories (such as `DataDir` or `LogsDir`) should not be adjusted unless
 you know what you are doing and want/need to change the default setup.
 
+In addition, if you plan to use VMaNGOS' auction house bot and want it to
+populate the auction house with items other than the default ones, create a
+copy of the example CSV file containing the item list:
+
+```sh
+cp ./config/ahbot.csv.example ./config/ahbot.csv
+```
+
+The example includes all the current default items VMaNGOS provides for the
+auction house bot. You can remove any of the items you do not want to use or
+add your own. Note that you will also have to enable the respective bind mount
+as explained further below when adjusting the Docker Compose configuration.
+
 ### Adjusting the Docker Compose configuration
 
 Once you are done adjusting the VMaNGOS configuration, create a copy of the
@@ -138,6 +151,13 @@ Also take note of the `healthcheck` sections; if you are on a low end system
 you may have to adjust the `start_period` setting so that the initial database
 creation process will be able to complete in time before the healthcheck
 considers the container unhealthy and causes a restart.
+
+Finally, if you want to use custom items for the auction house bot (and have
+adjusted your copy of the CSV file that lists the items, as explained further
+above), make sure the [respective bind mount](compose.yaml.example#L35-L42) is
+uncommented. This will automatically replace the current items in the database
+with the ones from your CSV file every time you restart (and thus, the auction
+house bot, if enabled, will create listings using these items).
 
 Anything else that is not commented is likely something you do not not have to
 (or, in some cases, _must not_) adjust; this applies to everything including
