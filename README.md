@@ -163,10 +163,10 @@ creation process will be able to complete in time before the healthcheck
 considers the container unhealthy and causes a restart.
 
 > [!CAUTION]
-> Anything in your `compose.yaml` that is not commented, regardless of the
-> section, is likely something you do not not have to (or, in some cases,
-> _must not_) change. Doing so may lead to unexpected behavior and is not
-> supported.
+> Anything in your `compose.yaml` that is not commented or explicitly mentioned
+> in this README, regardless of the section, is likely something you do not
+> have to (or, in some cases, _must not_) change. Doing so may lead to
+> unexpected behavior and is not supported.
 
 ### Extracting the client data
 
