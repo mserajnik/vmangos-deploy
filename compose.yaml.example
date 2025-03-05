@@ -202,7 +202,7 @@ services:
   # # every day at 04:00 (change the `TIMEZONE` environment variable to your
   # # desired timezone). Backups older than a week will automatically get
   # # deleted.
-  # # Backups will be stored in `./database-backups`.
+  # # Backups will be stored in `./storage/database/backups`.
   # # See https://github.com/tiredofit/docker-db-backup#configuration for more
   # # information.
   # database-backup:
@@ -211,7 +211,7 @@ services:
   #     - database
   #   restart: unless-stopped
   #   volumes:
-  #     - ./database-backups:/backup
+  #     - ./storage/database/backups:/backup
   #   environment:
   #     - TIMEZONE=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
   #     - CONTAINER_ENABLE_MONITORING=FALSE
