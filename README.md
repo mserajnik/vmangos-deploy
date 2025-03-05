@@ -367,7 +367,7 @@ You are welcome to help out!
 
 [AGPL-3.0-or-later](LICENSE) © Michael Serajnik
 
-[automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L40-L55
+[automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L51-L66
 [docker]: https://docs.docker.com/get-docker/
 [docker-compose]: https://docs.docker.com/compose/install/
 [hermesproxy]: https://github.com/WowLegacyCore/HermesProxy

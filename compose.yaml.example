@@ -37,6 +37,17 @@ services:
       - MARIADB_USER=mangos # Specifies the name for the database user utilized by VMaNGOS (must match the credentials in the VMaNGOS configuration files); please note that the name cannot be changed using this environment variable after the initial startup
       - MARIADB_PASSWORD=mangos # Specifies the password for the database user utilized by VMaNGOS (must match the credentials in the VMaNGOS configuration files); please note that the password cannot be changed using this environment variable after the initial startup
       - MARIADB_ROOT_PASSWORD=password # Specifies the password for the database's `root` user (not used by VMaNGOS itself, only for database creation/updates); please note that the password cannot be changed using this environment variable after the initial startup
+      # Only a subset covering the most important realmlist parameters is
+      # exposed in this configuration file. Altering them here after the
+      # database has been created will _not_ update them, but you can always
+      # change them (and the other parameters not exposed here) manually in the
+      # database at any point (see the `phpmyadmin` service further below).
+      - VMANGOS_REALMLIST_NAME=VMaNGOS # Sets the name of the realm as it appears in the selection list and the character screen
+      - VMANGOS_REALMLIST_ADDRESS=127.0.0.1 # Sets the LAN or WAN address of the realm; this can also be a domain name
+      - VMANGOS_REALMLIST_PORT=8085 # Sets the port of the realm; changing this means it also needs to be changed in other places
+      - VMANGOS_REALMLIST_ICON=1 # Sets the icon of the realm; 0 = Normal, 1 = PvP, 6 = RP, 8 = RP PVP
+      - VMANGOS_REALMLIST_TIMEZONE=0 # Sets the timezone of the realm; some common values are: 2 = United States, 3 = Oceanic, 4 = Latin America, 8 = English, 9 = German, 10 = French, 11 = Spanish, 12 = Russian
+      - VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0 # Sets the minimum account security level required to log in to the realm; 0 = regular players
       # vmangos-deploy keeps track of certain, unusual VMaNGOS code changes
       # (such as migration edits) that lead to a faulty (or out-of-sync) world
       # database state when updating and would normally require manual
@@ -53,17 +64,6 @@ services:
       # world database by mounting a database dump, as described further
       # above); no support will be provided in that case.
       - VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1
-      # Only a subset covering the most important realmlist parameters is
-      # exposed in this configuration file. Altering them here after the
-      # database has been created will _not_ update them, but you can always
-      # change them (and the other parameters not exposed here) manually in the
-      # database at any point (see the `phpmyadmin` service further below).
-      - VMANGOS_REALMLIST_NAME=VMaNGOS # Sets the name of the realm as it appears in the selection list and the character screen
-      - VMANGOS_REALMLIST_ADDRESS=127.0.0.1 # Sets the LAN or WAN address of the realm; this can also be a domain name
-      - VMANGOS_REALMLIST_PORT=8085 # Sets the port of the realm; changing this means it also needs to be changed in other places
-      - VMANGOS_REALMLIST_ICON=1 # Sets the icon of the realm; 0 = Normal, 1 = PvP, 6 = RP, 8 = RP PVP
-      - VMANGOS_REALMLIST_TIMEZONE=0 # Sets the timezone of the realm; some common values are: 2 = United States, 3 = Oceanic, 4 = Latin America, 8 = English, 9 = German, 10 = French, 11 = Spanish, 12 = Russian
-      - VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0 # Sets the minimum account security level required to log in to the realm; 0 = regular players
 
   realmd:
     image: ghcr.io/mserajnik/vmangos-server:5875
