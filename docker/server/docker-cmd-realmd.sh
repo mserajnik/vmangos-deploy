@@ -25,4 +25,4 @@ if [ ! -f "$config_file" ]; then
   exit 1
 fi
 
-wait-for-db && exec /opt/vmangos/bin/realmd -c $config_file
+WAIT_LOGGER_LEVEL=error wait-for-db && exec /opt/vmangos/bin/realmd -c $config_file

@@ -14,7 +14,7 @@ services:
       interval: 1m
       timeout: 3s
       retries: 5
-      start_period: 5m # This is set relatively high to take the initial database creation into account
+      start_period: 5m # This is set relatively high to take the initial database creation into account; adjust as required
     volumes:
       - vmangos-database:/var/lib/mysql
       - ./storage/database/custom-sql:/sql/custom:ro
@@ -118,7 +118,7 @@ services:
       interval: 1m
       timeout: 3s
       retries: 5
-      start_period: 5m # This is set relatively high to take the initial database creation into account
+      start_period: 5m # This is set relatively high to take the initial database creation into account; adjust as required
     ports:
       - 3724:3724
     volumes:
@@ -127,7 +127,7 @@ services:
     environment:
       - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
       - WAIT_HOSTS=database:3306
-      - WAIT_TIMEOUT=600
+      - WAIT_TIMEOUT=600 # This is set relatively high to take the initial database creation into account; adjust as required
 
   mangosd:
     image: ghcr.io/mserajnik/vmangos-server:5875
@@ -178,7 +178,7 @@ services:
       interval: 1m
       timeout: 3s
       retries: 5
-      start_period: 5m # This is set relatively high to take the initial database creation into account
+      start_period: 5m # This is set relatively high to take the initial database creation into account; adjust as required
     ports:
       - 8085:8085
       # To enable SOAP API access, set `SOAP.Enabled` to `1` and make sure
@@ -208,7 +208,7 @@ services:
     environment:
       - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
       - WAIT_HOSTS=database:3306
-      - WAIT_TIMEOUT=600
+      - WAIT_TIMEOUT=600 # This is set relatively high to take the initial database creation into account; adjust as required
 
   # # Optional:
   # # Uncomment this service to enable periodic database backups.
