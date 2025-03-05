@@ -39,6 +39,8 @@ features that simplify managing a VMaNGOS setup:
     + [Adjusting the Docker Compose configuration](#adjusting-the-docker-compose-configuration)
     + [Extracting the client data](#extracting-the-client-data)
     + [Providing the Warden modules (optional)](#providing-the-warden-modules-optional)
+    + [Utilizing automatic world database corrections (optional)](#utilizing-automatic-world-database-corrections-optional)
+    + [Modifying the world database with custom changes (optional)](#modifying-the-world-database-with-custom-changes-optional)
 + [Usage](#usage)
   + [Starting VMaNGOS](#starting-vmangos)
   + [Observing the VMaNGOS output](#observing-the-vmangos-output)
@@ -228,14 +230,56 @@ docker run \
 
 ### Providing the Warden modules (optional)
 
-Optionally, if you want to use Warden, you have to provide the
-[Warden modules][warden-modules] yourself. See the `volumes` section of the
-`mangosd` service in your `compose.yaml` on how to do that.
+To use Warden, you have to provide the [Warden modules][warden-modules]
+yourself. See [here][compose-warden-modules] for details on how to do so.
 
 > [!WARNING]
 > Using [HermesProxy][hermesproxy] (or projects derived from it) to connect
 > `1.14.x` clients to VMaNGOS will likely not be possible (in a stable manner
 > without getting kicked off the server) when Warden is enabled.
+
+### Utilizing automatic world database corrections (optional)
+
+vmangos-deploy keeps track of certain, unusual VMaNGOS code changes (such as
+migration edits) that lead to a faulty (or out-of-sync) world database state
+when updating and would normally require manual intervention by you to rectify.
+
+By default, vmangos-deploy can automatically correct the state of your world
+database in such cases by re-creating it. It is strongly suggested to keep this
+feature enabled.
+
+If you do decide to [disable it][compose-automatic-world-db-corrections], you
+yourself are responsible for monitoring VMaNGOS for problematic code changes
+and taking appropriate actions (e.g., manually triggering the re-creation of
+the world database by mounting a database dump, as described
+[here][compose-world-db-dump-mount]).
+
+### Modifying the world database with custom changes (optional)
+
+If you want to make custom changes to the world database, it is recommended to
+do so using SQL files and placing them in
+[`./storage/database/custom-sql`](storage/database/custom-sql) (a bind mount
+for this directory is
+[configured out-of-the-box][compose-custom-sql-bind-mount]). This way, you can
+keep
+[automatic world database corrections](#utilizing-automatic-world-database-corrections-optional)
+enabled without having to worry about your changes getting lost.
+
+By default, all SQL files (files with a `.sql` extension) in that directory
+will be processed during each startup in alphabetical order (after the world
+database has been created and updated with the latest migrations). Thus, the
+SQL statements in your files have to be idempotent (i.e., they can be processed
+multiple times without causing issues).
+
+An example SQL file that shows how you can populate the `auctionhousebot` table
+with custom data
+[is provided](storage/database/custom-sql/auctionhousebot.sql.example). This
+SQL file will not be processed by default without removing the `.example`
+suffix from the file name. If you want to use it, it is recommended to first
+make a copy of the file and then adjust the copy to your liking instead of
+renaming the original file (to avoid dirtying the working tree).
+
+You can find further details about this feature [here][compose-custom-sql].
 
 ## Usage
 
@@ -282,7 +326,7 @@ After attaching, create the account and assign an account level:
 
 ```sh
 account create <account name> <account password>
-account set gmlevel <account name> <account level> # see https://github.com/vmangos/core/blob/bd9cca7b9d16d3e88c15ed378a893faebaf353f1/src/shared/Common.h#L183-L190
+account set gmlevel <account name> <account level> # see https://github.com/vmangos/core/blob/46183d287f80ab1ebf27bab12f37bc0b5b188c86/src/shared/Common.h#L183-L189
 ```
 
 When you are done, detach from the Docker container by pressing
@@ -333,15 +377,13 @@ they become irrelevant), sorted by newest first:
   out-of-sync) world database state when updating and would normally require
   manual intervention by you to rectify. In such cases, vmangos-deploy can
   automatically correct the state of your world database by re-creating it. It
-  is strongly suggested to keep this feature enabled, unless you apply custom
-  changes to your world database, in which case you may want to
-  [disable it][automatic-world-db-corrections] so your edits are not lost
-  whenever the database gets re-created automatically. If you do decide to
-  disable the feature, you yourself are responsible for monitoring VMaNGOS for
-  problematic code changes and taking appropriate actions (e.g., manually
-  triggering the re-creation of the world database by mounting a database dump,
-  as described [here][world-db-dump-mount]); no support will be provided in
-  that case and this section will no longer list such changes.
+  is strongly suggested to keep this feature enabled. If you do decide to
+  [disable it][compose-automatic-world-db-corrections] in your `compose.yaml`,
+  you yourself are responsible for monitoring VMaNGOS for problematic code
+  changes and taking appropriate actions (e.g., manually triggering the
+  re-creation of the world database by mounting a database dump, as described
+  [here][compose-world-db-dump-mount]). This section will no longer list such
+  changes.
 + __[2024-10-31] - Removal of separate images with anticheat support:__
   As of
   [`vmangos/core@fbbc4ae`](https://github.com/vmangos/core/commit/fbbc4ae899f876a78a37d8fee805dce40a182331)
@@ -356,8 +398,8 @@ It is recommended to perform regular database backups, particularly before
 updating.
 
 To automatically create database backups periodically, uncomment the
-`database-backup` service configuration in your `compose.yaml` and follow the
-comments there for further information.
+[`database-backup` service configuration][compose-database-backups] in your
+`compose.yaml` and follow the comments for further information.
 
 ### Accessing the database
 
@@ -367,8 +409,8 @@ client.
 
 A common web-based MySQL/MariaDB database administration tool called
 [phpMyAdmin][phpymadmin] is included and can be enabled by uncommenting the
-`phpmyadmin` service configuration in your `compose.yaml`. See the comments
-there for further information.
+[`phpmyadmin` service configuration][compose-phpmyadmin] in your
+`compose.yaml`. See the comments there for further information.
 
 ### Database security
 
@@ -397,7 +439,13 @@ You are welcome to help out!
 
 [AGPL-3.0-or-later](LICENSE) © Michael Serajnik
 
-[automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L51-L66
+[compose-automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L52-L63
+[compose-custom-sql]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L64-L81
+[compose-custom-sql-bind-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20
+[compose-database-backups]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L213-L248
+[compose-phpmyadmin]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L250-L269
+[compose-warden-modules]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L197-L207
+[compose-world-db-dump-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L21-L35
 [docker]: https://docs.docker.com/get-docker/
 [docker-compose]: https://docs.docker.com/compose/install/
 [hermesproxy]: https://github.com/WowLegacyCore/HermesProxy
@@ -408,7 +456,6 @@ You are welcome to help out!
 [vmangos-example-commit]: https://github.com/vmangos/core/commit/46183d287f80ab1ebf27bab12f37bc0b5b188c86
 [vmangos-revision-badge]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-revision%2Fbadge.json
 [warden-modules]: https://github.com/vmangos/warden_modules
-[world-db-dump-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20-L34
 
 [actions-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml
 [actions-status-badge]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml/badge.svg

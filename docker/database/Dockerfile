@@ -38,6 +38,7 @@ RUN \
   cd /core && \
   git checkout "${VMANGOS_REVISION}" && \
   git clone "${VMANGOS_WORLD_DB_REPOSITORY_URL}" /database && \
+  mkdir -p /sql/custom && \
   mkdir -p /sql/migrations && \
   cd /core/sql && \
   mv characters.sql /sql && \
@@ -78,6 +79,7 @@ ENV VMANGOS_REALMLIST_TIMEZONE=0
 ENV VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0
 ENV VMANGOS_WORLD_DB_DUMP_NEW_FILE=${VMANGOS_WORLD_DB_DUMP_NEW_FILE}
 ENV VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1
+ENV VMANGOS_PROCESS_CUSTOM_SQL=1
 
 COPY --from=setup /sql /sql
 

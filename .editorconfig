@@ -14,3 +14,6 @@ syntax = yaml
 
 [*.{conf,conf.example}]
 syntax = ini
+
+[*.sql.example]
+syntax = sql

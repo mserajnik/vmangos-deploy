@@ -17,7 +17,8 @@ services:
       start_period: 5m # This is set relatively high to take the initial database creation into account
     volumes:
       - vmangos-database:/var/lib/mysql
-      # Mount an SQL file as `/sql/world-new.sql` to force the re-creation of
+      - ./storage/database/custom-sql:/sql/custom:ro
+      # Mount a SQL file as `/sql/world-new.sql` to force the re-creation of
       # the world database (with the contents of the mounted file); make sure
       # to remove this bind mount again before you restart the database the
       # next time or it will continue to re-create the database each time you
@@ -53,17 +54,31 @@ services:
       # database state when updating and would normally require manual
       # intervention by you to rectify. In such cases, vmangos-deploy can
       # automatically correct the state of your world database by re-creating
-      # it.
-      # It is strongly suggested to keep this feature enabled, unless you apply
-      # custom changes to your world database, in which case you may want to
-      # disable it (by setting this environment variable to `0`) so your edits
-      # are not lost whenever the database gets re-created automatically.
-      # If you do decide to disable the feature, you yourself are responsible
-      # for monitoring VMaNGOS for problematic code changes and taking
-      # appropriate actions (e.g., manually triggering the re-creation of the
-      # world database by mounting a database dump, as described further
-      # above); no support will be provided in that case.
+      # it. It is strongly suggested to keep this feature enabled.
+      # If you do decide to disable it (by setting the following environment
+      # variable to `0`), you yourself are responsible for monitoring VMaNGOS
+      # for problematic code changes and taking appropriate actions (e.g.,
+      # manually triggering the re-creation of the world database by mounting a
+      # database dump, as described further above).
       - VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1
+      # If you want to make custom changes to the world database, it is
+      # recommended to do so using SQL files and placing them in
+      # `./storage/database/custom-sql` (a bind mount for this directory is
+      # configured out-of-the-box, as can be seen further above). This
+      # way, you can keep automatic world database corrections enabled without
+      # having to worry about your changes getting lost.
+      # By default, all SQL files (files with a `.sql` extension) in that
+      # directory will be processed during each startup in alphabetical order
+      # (after the world database has been created and updated with the latest
+      # migrations). Thus, the SQL statements in your files have to be
+      # idempotent (i.e., they can be processed multiple times without causing
+      # issues).
+      # If you want to disable this feature, set the following environment
+      # variable to `0`; while this also allows you to use SQL files containing
+      # non-idempotent statements (by setting the environment variable to `0`
+      # after the SQL files have been processed once), this is not
+      # recommended and should be avoided.
+      - VMANGOS_PROCESS_CUSTOM_SQL=1
 
   realmd:
     image: ghcr.io/mserajnik/vmangos-server:5875

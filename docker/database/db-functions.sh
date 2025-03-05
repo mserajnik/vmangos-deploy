@@ -51,6 +51,7 @@ import_data() {
   local db_name="$1"
   local file="$2"
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "$db_name" < "$file"
+  return $?
 }
 
 import_dump() {
@@ -58,6 +59,7 @@ import_dump() {
   local dump_file="$2"
   echo "[vmangos-deploy]: Importing initial data for database '$db_name'"
   import_data "$db_name" "$dump_file"
+  return $?
 }
 
 import_updates() {
@@ -66,7 +68,10 @@ import_updates() {
   if [ -e "$update_file" ]; then
     echo "[vmangos-deploy]: Importing potential updates for database '$db_name'"
     import_data "$db_name" "$update_file"
+    return $?
   fi
+  # The update file not existing is not an error, so we return 0 (success) here
+  return 0
 }
 
 configure_realm() {

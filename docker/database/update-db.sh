@@ -19,7 +19,18 @@
 . "/opt/scripts/db-functions.sh"
 
 if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
-  echo "[vmangos-deploy]: Automatic world database corrections are enabled"
+  echo "[vmangos-deploy]: [x] Automatic world database corrections are enabled"
+else
+  echo "[vmangos-deploy]: [ ] Automatic world database corrections are disabled"
+fi
+
+if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
+  echo "[vmangos-deploy]: [x] Custom SQL processing is enabled"
+else
+  echo "[vmangos-deploy]: [ ] Custom SQL processing is disabled"
+fi
+
+if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
   create_database "maintenance" true
   grant_permissions "maintenance" true
   create_world_db_corrections_table
@@ -54,3 +65,16 @@ import_updates "mangos" "/sql/migrations/world_db_updates.sql"
 import_updates "characters" "/sql/migrations/characters_db_updates.sql"
 import_updates "realmd" "/sql/migrations/logon_db_updates.sql"
 import_updates "logs" "/sql/migrations/logs_db_updates.sql"
+
+if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
+  if [ -d "/sql/custom" ]; then
+    find /sql/custom -name "*.sql" -type f | sort | while read -r sql_file; do
+      echo "[vmangos-deploy]: Processing custom SQL file '$(basename "$sql_file")'"
+
+      import_data "mangos" "$sql_file"
+      if [ $? -ne 0 ]; then
+        echo "[vmangos-deploy]: ERROR: Failed to process custom SQL file '$(basename "$sql_file")'" >&2
+      fi
+    done
+  fi
+fi
