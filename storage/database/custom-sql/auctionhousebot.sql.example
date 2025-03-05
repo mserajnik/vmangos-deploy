@@ -8,84 +8,84 @@ TRUNCATE `auctionhousebot`;
 -- issues if this example is accidentally enabled by removing the `.example`
 -- suffix from the file name)
 INSERT INTO `auctionhousebot` (`item`, `stack`, `bid`, `buyout`) VALUES
-(4687, 1, 1500, 5000),
-(2770, 20, 25000, 75000),
-(2881, 1, 5000, 150000),
-(2589, 20, 37500, 50000),
-(2592, 20, 100000, 150000),
-(4306, 20, 37500, 50000),
-(4338, 20, 200000, 300000),
-(14047, 20, 100000, 150000),
-(2318, 20, 30000, 200000),
-(2319, 20, 30000, 200000),
-(4234, 20, 100000, 150000),
-(4304, 20, 50000, 75000),
-(8170, 20, 200000, 300000),
-(2835, 20, 3750, 5000),
-(2836, 20, 5000, 15000),
-(2838, 20, 50000, 75000),
-(7912, 20, 10000, 15000),
-(12365, 20, 10000, 15000),
-(2770, 20, 50000, 75000),
-(2775, 1, 50000, 75000),
-(2771, 20, 100000, 150000),
-(2776, 1, 37500, 50000),
-(2772, 20, 200000, 300000),
-(7911, 1, 50000, 75000),
-(3858, 20, 400000, 600000),
-(10620, 20, 400000, 600000),
-(765, 20, 10000, 15000),
-(2447, 20, 20000, 30000),
-(785, 20, 100000, 150000),
-(2449, 20, 20000, 30000),
-(2452, 20, 100000, 150000),
-(2450, 20, 100000, 150000),
-(2453, 20, 100000, 150000),
-(3820, 20, 200000, 300000),
-(3355, 20, 200000, 300000),
-(3369, 20, 200000, 300000),
-(3356, 20, 100000, 150000),
-(3357, 20, 100000, 150000),
-(3818, 20, 200000, 300000),
-(3821, 20, 200000, 300000),
-(3358, 20, 200000, 300000),
-(3819, 20, 200000, 300000),
-(8153, 20, 200000, 300000),
-(4625, 20, 200000, 300000),
-(8831, 20, 200000, 300000),
-(8836, 20, 200000, 300000),
-(8838, 20, 200000, 300000),
-(8839, 20, 200000, 300000),
-(8845, 20, 200000, 300000),
-(8846, 20, 200000, 300000),
-(13463, 20, 200000, 300000),
-(13464, 20, 200000, 300000),
-(13465, 20, 200000, 300000),
-(13466, 20, 200000, 300000),
-(13467, 20, 200000, 300000),
-(13468, 1, 100000, 150000),
-(6338, 1, 10000, 15000),
-(11128, 1, 20000, 30000),
-(11144, 1, 100000, 150000),
-(16206, 1, 500000, 750000),
-(10978, 1, 3750, 5000),
-(11084, 1, 3750, 5000),
-(11138, 1, 3750, 5000),
-(11139, 1, 3750, 5000),
-(11177, 1, 50000, 75000),
-(11178, 1, 100000, 150000),
-(14343, 1, 10000, 15000),
-(14344, 1, 50000, 75000),
-(20725, 1, 10000, 15000),
-(10938, 10, 15000, 25000),
-(10998, 10, 20000, 30000),
-(11134, 10, 22500, 35000),
-(11174, 10, 300000, 450000),
-(16202, 10, 400000, 600000),
-(10940, 20, 50000, 75000),
-(11083, 20, 50000, 75000),
-(11137, 20, 200000, 300000),
-(11176, 20, 40000, 60000);
+(4687, 1, 1500, 5000),       -- https://www.wowhead.com/classic/item=4687/barbaric-cloth-belt
+(2770, 20, 25000, 75000),    -- https://www.wowhead.com/classic/item=2770/copper-ore
+(2881, 1, 5000, 150000),     -- https://www.wowhead.com/classic/item=2881/plans-runed-copper-breastplate
+(2589, 20, 37500, 50000),    -- https://www.wowhead.com/classic/item=2589/linen-cloth
+(2592, 20, 100000, 150000),  -- https://www.wowhead.com/classic/item=2592/wool-cloth
+(4306, 20, 37500, 50000),    -- https://www.wowhead.com/classic/item=4306/silk-cloth
+(4338, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=4338/mageweave-cloth
+(14047, 20, 100000, 150000), -- https://www.wowhead.com/classic/item=14047/runecloth
+(2318, 20, 30000, 200000),   -- https://www.wowhead.com/classic/item=2318/light-leather
+(2319, 20, 30000, 200000),   -- https://www.wowhead.com/classic/item=2319/medium-leather
+(4234, 20, 100000, 150000),  -- https://www.wowhead.com/classic/item=4234/heavy-leather
+(4304, 20, 50000, 75000),    -- https://www.wowhead.com/classic/item=4304/thick-leather
+(8170, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=8170/rugged-leather
+(2835, 20, 3750, 5000),      -- https://www.wowhead.com/classic/item=2835/rough-stone
+(2836, 20, 5000, 15000),     -- https://www.wowhead.com/classic/item=2836/coarse-stone
+(2838, 20, 50000, 75000),    -- https://www.wowhead.com/classic/item=2838/heavy-stone
+(7912, 20, 10000, 15000),    -- https://www.wowhead.com/classic/item=7912/solid-stone
+(12365, 20, 10000, 15000),   -- https://www.wowhead.com/classic/item=12365/dense-stone
+(2770, 20, 50000, 75000),    -- https://www.wowhead.com/classic/item=2770/copper-ore (this is a duplicate in the default data)
+(2775, 1, 50000, 75000),     -- https://www.wowhead.com/classic/item=2775/silver-ore
+(2771, 20, 100000, 150000),  -- https://www.wowhead.com/classic/item=2771/tin-ore
+(2776, 1, 37500, 50000),     -- https://www.wowhead.com/classic/item=2776/gold-ore
+(2772, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=2772/iron-ore
+(7911, 1, 50000, 75000),     -- https://www.wowhead.com/classic/item=7911/truesilver-ore
+(3858, 20, 400000, 600000),  -- https://www.wowhead.com/classic/item=3858/mithril-ore
+(10620, 20, 400000, 600000), -- https://www.wowhead.com/classic/item=10620/thorium-ore
+(765, 20, 10000, 15000),     -- https://www.wowhead.com/classic/item=765/silverleaf
+(2447, 20, 20000, 30000),    -- https://www.wowhead.com/classic/item=2447/peacebloom
+(785, 20, 100000, 150000),   -- https://www.wowhead.com/classic/item=785/mageroyal
+(2449, 20, 20000, 30000),    -- https://www.wowhead.com/classic/item=2449/earthroot
+(2452, 20, 100000, 150000),  -- https://www.wowhead.com/classic/item=2452/swiftthistle
+(2450, 20, 100000, 150000),  -- https://www.wowhead.com/classic/item=2450/briarthorn
+(2453, 20, 100000, 150000),  -- https://www.wowhead.com/classic/item=2453/bruiseweed
+(3820, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=3820/stranglekelp
+(3355, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=3355/wild-steelbloom
+(3369, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=3369/grave-moss
+(3356, 20, 100000, 150000),  -- https://www.wowhead.com/classic/item=3356/kingsblood
+(3357, 20, 100000, 150000),  -- https://www.wowhead.com/classic/item=3357/liferoot
+(3818, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=3818/fadeleaf
+(3821, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=3821/goldthorn
+(3358, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=3358/khadgars-whisker
+(3819, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=3819/wintersbite
+(8153, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=8153/wildvine
+(4625, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=4625/firebloom
+(8831, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=8831/purple-lotus
+(8836, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=8836/arthas-tears
+(8838, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=8838/sungrass
+(8839, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=8839/blindweed
+(8845, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=8845/ghost-mushroom
+(8846, 20, 200000, 300000),  -- https://www.wowhead.com/classic/item=8846/gromsblood
+(13463, 20, 200000, 300000), -- https://www.wowhead.com/classic/item=13463/dreamfoil
+(13464, 20, 200000, 300000), -- https://www.wowhead.com/classic/item=13464/golden-sansam
+(13465, 20, 200000, 300000), -- https://www.wowhead.com/classic/item=13465/mountain-silversage
+(13466, 20, 200000, 300000), -- https://www.wowhead.com/classic/item=13466/plaguebloom
+(13467, 20, 200000, 300000), -- https://www.wowhead.com/classic/item=13467/icecap
+(13468, 1, 100000, 150000),  -- https://www.wowhead.com/classic/item=13468/black-lotus
+(6338, 1, 10000, 15000),     -- https://www.wowhead.com/classic/item=6338/silver-rod
+(11128, 1, 20000, 30000),    -- https://www.wowhead.com/classic/item=11128/golden-rod
+(11144, 1, 100000, 150000),  -- https://www.wowhead.com/classic/item=11144/truesilver-rod
+(16206, 1, 500000, 750000),  -- https://www.wowhead.com/classic/item=16206/arcanite-rod
+(10978, 1, 3750, 5000),      -- https://www.wowhead.com/classic/item=10978/small-glimmering-shard
+(11084, 1, 3750, 5000),      -- https://www.wowhead.com/classic/item=11084/large-glimmering-shard
+(11138, 1, 3750, 5000),      -- https://www.wowhead.com/classic/item=11138/small-glowing-shard
+(11139, 1, 3750, 5000),      -- https://www.wowhead.com/classic/item=11139/large-glowing-shard
+(11177, 1, 50000, 75000),    -- https://www.wowhead.com/classic/item=11177/small-radiant-shard
+(11178, 1, 100000, 150000),  -- https://www.wowhead.com/classic/item=11178/large-radiant-shard
+(14343, 1, 10000, 15000),    -- https://www.wowhead.com/classic/item=14343/small-brilliant-shard
+(14344, 1, 50000, 75000),    -- https://www.wowhead.com/classic/item=14344/large-brilliant-shard
+(20725, 1, 10000, 15000),    -- https://www.wowhead.com/classic/item=20725/nexus-crystal
+(10938, 10, 15000, 25000),   -- https://www.wowhead.com/classic/item=10938/lesser-magic-essence
+(10998, 10, 20000, 30000),   -- https://www.wowhead.com/classic/item=10998/lesser-astral-essence
+(11134, 10, 22500, 35000),   -- https://www.wowhead.com/classic/item=11134/lesser-mystic-essence
+(11174, 10, 300000, 450000), -- https://www.wowhead.com/classic/item=11174/lesser-nether-essence
+(16202, 10, 400000, 600000), -- https://www.wowhead.com/classic/item=16202/lesser-eternal-essence
+(10940, 20, 50000, 75000),   -- https://www.wowhead.com/classic/item=10940/strange-dust
+(11083, 20, 50000, 75000),   -- https://www.wowhead.com/classic/item=11083/soul-dust
+(11137, 20, 200000, 300000), -- https://www.wowhead.com/classic/item=11137/vision-dust
+(11176, 20, 40000, 60000);   -- https://www.wowhead.com/classic/item=11176/dream-dust
 
 -- End the transaction
 COMMIT;
