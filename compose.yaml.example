@@ -23,11 +23,11 @@ services:
       # next time or it will continue to re-create the database each time you
       # restart.
       # This can be used to update to a world database dump newer than
-      # `world_full_14_june_2021`; however, to my knowledge, this should not be
-      # necessary as the database migrations will keep it up to date anyway
-      # (and thus, a newer dump would only reduce the time of the initial
-      # creation of a fresh database because it would cause potentially lengthy
-      # migrations to get skipped).
+      # `world_full_14_june_2021`; however, this should not be necessary as the
+      # database migrations will keep it up to date anyway (and thus, a newer
+      # dump would only reduce the time of the initial creation of a fresh
+      # database because it would cause potentially lengthy migrations to get
+      # skipped).
       # Therefore, this option is mainly here to have it available in case it
       # becomes necessary or desirable to re-create the world database (e.g.,
       # to cleanly get rid of any custom changes you may have made).
