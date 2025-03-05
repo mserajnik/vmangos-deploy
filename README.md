@@ -24,10 +24,11 @@ features that simplify managing a VMaNGOS setup:
   in [`./config`](config), everything else that is shared between the Docker
   containers and your host system lives inside [`./storage`](storage)
 
-The Docker images are built daily, unless there have been no new commits to
-VMaNGOS. Additionally, every Monday, the latest images are rebuilt to ensure
-that all included software and dependencies are up-to-date, even if there have
-been no updates to VMaNGOS itself.
+> [!NOTE]
+> The Docker images are built on a daily schedule, unless there have been no
+> new commits to VMaNGOS since the last build. Additionally, every Monday, the
+> latest images are rebuilt to ensure software and dependencies are up-to-date,
+> even if there have been no updates to VMaNGOS itself.
 
 ## Table of contents
 
@@ -62,7 +63,7 @@ been no updates to VMaNGOS itself.
 
 #### Cloning the repository and adjusting the VMaNGOS configuration
 
-First, clone the repository and create copies of the provided example
+First, clone the repository and create copies of the provided VMaNGOS example
 configuration files:
 
 ```sh
@@ -72,10 +73,21 @@ cp ./config/mangosd.conf.example ./config/mangosd.conf
 cp ./config/realmd.conf.example ./config/realmd.conf
 ```
 
-Next, you have to adjust the two configuration files you have just created for
-your desired setup. Configuration options relating to the database connection
-or directories (such as `DataDir` or `LogsDir`) should not be adjusted unless
-you know what you are doing and want/need to change the default setup.
+Next, adjust the two configuration files you have just created for your desired
+setup. The default configuration should work well as a starting point, but you
+may still want to adjust certain things such as the `GameType`, the `RealmZone`
+or `Anticheat.*` and `Warden.*` options. Descriptions are provided for each
+option in the configuration files, so you should be able to find your way
+around easily.
+
+> [!CAUTION]
+> Options relating to setup-specific things that vmangos-deploy relies on to
+> work correctly (like the database connections or configured directories such
+> as the `DataDir` or the `LogsDir`) should not be adjusted unless you
+> absolutely need to change them and are aware of the implications (e.g., which
+> other configuration options may need to be adjusted as well to avoid
+> discrepancies resulting in unexpected behavior). No support will be provided
+> for non-default setups.
 
 ### Adjusting the Docker Compose configuration
 
@@ -87,10 +99,10 @@ cp ./compose.yaml.example ./compose.yaml
 ```
 
 Next, adjust your `compose.yaml`. The first thing to decide on is the Docker
-image version you want to use based on the client version the server should
-support. You can choose from the following versions:
+images you want to use based on the client version the server should support.
+You can choose from the following versions:
 
-| Supported client version | Image tag                               |
+| Supported client version | Image                                   |
 | ------------------------ | --------------------------------------- |
 | `1.12.1.5875`            | `ghcr.io/mserajnik/vmangos-server:5875` |
 | `1.11.2.5464`            | `ghcr.io/mserajnik/vmangos-server:5464` |
@@ -100,48 +112,59 @@ support. You can choose from the following versions:
 | `1.7.1.4695`             | `ghcr.io/mserajnik/vmangos-server:4695` |
 | `1.6.1.4544`             | `ghcr.io/mserajnik/vmangos-server:4544` |
 
-Adjust the configured `image` for the `realmd` and `mangosd` services based on
-this table. E.g., if you want to run a server that supports client version
-`1.6.1.4544` you would use `ghcr.io/mserajnik/vmangos-server:4544`.
+Adjust the configured image for the `realmd` and `mangosd` services based on
+this table. E.g., if you wanted to run a server that supports client version
+`1.6.1.4544`, you would choose `ghcr.io/mserajnik/vmangos-server:4544`.
 
-Instead of using the latest build you can also use a specific VMaNGOS commit.
-To allow for this, the `vmangos-database` image is tagged with the commit hash
-(e.g., `vmangos-database:e87d583a5e50ad49f12a716fb408b393d3c21103`) and the
-`vmangos-server` image tag is suffixed with the commit hash (e.g.,
-`vmangos-server:5875-e87d583a5e50ad49f12a716fb408b393d3c21103`) so you can
-still select the supported client version.
+By default, the latest available images are used. Alternatively, you can also
+select specific ones via the VMaNGOS commit hash they have been built from. To
+allow for this, the `vmangos-server` image (used by the `realmd` and `mangos`
+services) and the `vmangos-database` image (used by the `database` service)
+have tags that include the respective commit hash. E.g., for commit
+[`46183d287f80ab1ebf27bab12f37bc0b5b188c86`][vmangos-example-commit]:
 
-When you decide to use a specific commit you should always make sure to use the
-same one for the `vmangos-server` and the `vmangos-database` images so there
-are no potential discrepancies between code and data. Note that it is _not_
-possible (or intended) to use this feature to perform a clean downgrade due to
-the database migrations.
+| `realmd`/`mangos` service image                                                  | `database` service image                                                      |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `ghcr.io/mserajnik/vmangos-server:5875-46183d287f80ab1ebf27bab12f37bc0b5b188c86` | `ghcr.io/mserajnik/vmangos-database:46183d287f80ab1ebf27bab12f37bc0b5b188c86` |
 
-Since the Docker images are built only once a day it is unlikely that there
-will be a build for every single VMaNGOS commit; you can find all the available
-versions for the `vmangos-server` and the `vmangos-database` images
-[here][image-vmangos-server-versions] and
-[here][image-vmangos-database-versions] respectively. Older images are
-automatically deleted; only the images from the last 45 builds are kept (which
-generally means the builds from the last 45 days, unless there have been builds
-outside of the normal daily schedule or there have been no VMaNGOS commits on
-some days).
+> [!IMPORTANT]
+> When you decide to select images via VMaNGOS commit hash you should always
+> make sure to use the same one for the `vmangos-server` and the
+> `vmangos-database` images so there are no potential discrepancies between
+> code and data. It is _not_ possible (or intended) to switch to images based
+> on an older commit than the previous ones you used to perform a clean
+> downgrade due to the database migrations.
 
-Aside from the Docker image version you mainly have to pay attention to the
-`environment` sections of each service configuration. In particular, you will
-want to adjust the `TZ` (time zone) environment variable for each service. The
-`VMANGOS_REALMLIST_*` environment variables of the `database` service should
-also be of interest; changing `VMANGOS_REALMLIST_ADDRESS` to a LAN IP, a WAN IP
-or a domain name is required if you want to allow non-local connections.
+Since the Docker images are generally built only once a day it, is unlikely
+that there will be a build for every single VMaNGOS commit. Older images are
+automatically deleted, roughly after 45 days; in practice, you should not rely
+on specific images staying available for any prolonged period of time. If you
+absolutely need images based on a specific VMaNGOS commit, you can always build
+them yourself instead.
+
+> [!TIP]
+> You can find all the available `vmangos-server` and `vmangos-database` images
+> [here][image-vmangos-server-versions] and
+> [here][image-vmangos-database-versions] respectively.
+
+Aside from which Docker images you want to use you mainly have to pay attention
+to the `environment` sections of each service configuration. In particular, you
+will want to adjust the `TZ` (time zone) environment variable for each service.
+The `VMANGOS_REALMLIST_*` environment variables of the `database` service
+should also be of interest; changing the `VMANGOS_REALMLIST_ADDRESS` to a LAN
+IP, a WAN IP or a domain name is required if you want to allow non-local
+connections.
 
 Also take note of the `healthcheck` sections; if you are on a low end system
 you may have to adjust the `start_period` setting so that the initial database
 creation process will be able to complete in time before the healthcheck
 considers the container unhealthy and causes a restart.
 
-Anything else that is not commented is likely something you do not not have to
-(or, in some cases, _must not_) adjust; this applies to everything including
-port mappings, volumes and environment variables.
+> [!CAUTION]
+> Anything in your `compose.yaml` that is not commented, regardless of the
+> section, is likely something you do not not have to (or, in some cases,
+> _must not_) change. Doing so may lead to unexpected behavior and is not
+> supported.
 
 ### Extracting the client data
 
@@ -172,15 +195,15 @@ There are two things to look out for here:
   change the `--user` argument to reflect your user's UID and GID. This will
   cause the user in the container to use the same UID and GID and prevent
   permission issues on the bind mounts. If you are on Windows or macOS, you can
-  ignore this (and even remove the `--user` argument altogether, if you want
-  to)
-+ The Docker image version must reflect the client version you want to extract
-  the data from; see the table further above in the
+  ignore this (or even remove the `--user` argument altogether, if you want to)
++ The Docker image must reflect the client version you want to extract the data
+  from; see the table further above in the
   [Docker Compose configuration section](#adjusting-the-docker-compose-configuration)
 
-Extracting the data can take many hours (depending on your hardware). Some
-notices/errors during the process are normal and usually nothing to worry
-about (as long as the execution continues afterwards).
+> [!IMPORTANT]
+> Extracting the data can take many hours (depending on your hardware). Some
+> notices/errors during the process are normal and usually nothing to worry
+> about (as long as the execution continues afterwards).
 
 Once the extraction is finished you can find the data in
 [`./storage/mangosd/extracted-data`](storage/mangosd/extracted-data). Note that
@@ -205,19 +228,20 @@ docker run \
 
 ### Providing the Warden modules (optional)
 
-Optionally, if want to use Warden you have to provide the
-[Warden modules][warden-modules]. See the `volumes` section of the `mangosd`
-service in your `compose.yaml` on how to do that.
+Optionally, if you want to use Warden, you have to provide the
+[Warden modules][warden-modules] yourself. See the `volumes` section of the
+`mangosd` service in your `compose.yaml` on how to do that.
 
-Note that using [HermesProxy][hermesproxy] (or projects derived from it) to
-connect `1.14.x` clients to VMaNGOS will likely not be possible (in a stable
-manner without getting kicked off the server) when Warden is enabled.
+> [!WARNING]
+> Using [HermesProxy][hermesproxy] (or projects derived from it) to connect
+> `1.14.x` clients to VMaNGOS will likely not be possible (in a stable manner
+> without getting kicked off the server) when Warden is enabled.
 
 ## Usage
 
 ### Starting VMaNGOS
 
-Once you are happy with the configuration and have extracted the client data
+Once you are happy with the configuration and have extracted the client data,
 you can start VMaNGOS for the first time. To do so, run:
 
 ```sh
@@ -225,11 +249,13 @@ docker compose up -d
 ```
 
 This pulls the Docker images first and afterwards automatically creates and
-starts the containers. Note that during the first startup it might take a
-little longer until the server becomes available due to the initial database
-creation. __Make sure to not (accidentally) stop VMaNGOS before the database__
-__creation process has finished;__ otherwise, you will likely end up with a
-broken database and will have to delete and re-create it.
+starts the containers. During the first startup it might take a little longer
+until the server becomes available due to the initial database creation.
+
+> [!CAUTION]
+> Make sure to not (accidentally) stop VMaNGOS before the database creation
+> process has finished; otherwise, you will likely end up with a broken
+> database and will have to delete and re-create it.
 
 ### Observing the VMaNGOS output
 
@@ -285,19 +311,21 @@ Afterwards, re-create the containers:
 docker compose up -d
 ```
 
-Note that using a specific VMaNGOS commit will obviously prevent you from
-updating (but attempting to do so is not harmful, it just will not have any
-effect).
+> [!NOTE]
+> Selecting specific images via VMaNGOS commit hash (as described further
+> above) will obviously prevent you from updating. Attempting to do so is not
+> harmful, it just will not have any effect.
 
 #### Breaking changes
 
 It is recommended to regularly check this repository (either manually or by
 updating your local repository via `git pull`). Usually, the commits here will
 just consist of maintenance and potentially new VMaNGOS configuration options
-(that you may want to incorporate into your configuration). Sometimes, there
-may be new features or changes that require manual intervention. Such breaking
-changes will be listed here (and removed again once they become irrelevant),
-sorted by newest first:
+(that you may want to incorporate into your configuration).
+
+Sometimes, there may be new features or changes that require manual
+intervention. Such breaking changes will be listed here (and removed again once
+they become irrelevant), sorted by newest first:
 
 + __[2025-02-22] - Automatic world database corrections are now available and__
   __enabled by default:__ vmangos-deploy now keeps track of certain, unusual
@@ -344,14 +372,16 @@ there for further information.
 
 ### Database security
 
-The default database users with full access to all VMaNGOS data (`root` and the
-user named via `MARIADB_USER` environment variable) do not have any
-restrictions in place in regards to which IPs/hosts can connect. Therefore, you
-should __never__ expose your database to the public (whether through direct
-port access, a WAN-accessible phpMyAdmin instance, or any other means). If you
-decide to do so, you will have to implement appropriate security measures.
-Please note that no further support or guidance regarding this will be provided
-here.
+It is not recommended to expose your database to the public (whether through
+direct port access, a WAN-accessible phpMyAdmin instance, or any other means).
+If you decide to do so, you will have to implement appropriate security
+measures. Please note that no further support or guidance regarding this will
+be provided here.
+
+> [!CAUTION]
+> The default database users with full access to all VMaNGOS data (`root` and
+> the user named via `MARIADB_USER` environment variable) do not have any
+> restrictions in place in regards to which IPs/hosts can connect.
 
 ## Maintainer
 
@@ -375,6 +405,7 @@ You are welcome to help out!
 [image-vmangos-server-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-server/versions?filters%5Bversion_type%5D=tagged
 [phpymadmin]: https://www.phpmyadmin.net/
 [vmangos]: https://github.com/vmangos/core
+[vmangos-example-commit]: https://github.com/vmangos/core/commit/46183d287f80ab1ebf27bab12f37bc0b5b188c86
 [vmangos-revision-badge]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-revision%2Fbadge.json
 [warden-modules]: https://github.com/vmangos/warden_modules
 [world-db-dump-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20-L34
