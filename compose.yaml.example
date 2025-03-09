@@ -127,7 +127,7 @@ services:
     environment:
       - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
       - WAIT_HOSTS=database:3306
-      - WAIT_TIMEOUT=600 # This is set relatively high to take the initial database creation into account; adjust as required
+      - WAIT_TIMEOUT=300 # This should match `start_period` in the `healthcheck` section (in seconds)
 
   mangosd:
     image: ghcr.io/mserajnik/vmangos-server:5875
@@ -208,7 +208,7 @@ services:
     environment:
       - TZ=Etc/UTC # Change this to your desired timezone (usually you want to match your host system's timezone)
       - WAIT_HOSTS=database:3306
-      - WAIT_TIMEOUT=600 # This is set relatively high to take the initial database creation into account; adjust as required
+      - WAIT_TIMEOUT=300 # This should match `start_period` in the `healthcheck` section (in seconds)
 
   # # Optional:
   # # Uncomment this service to enable periodic database backups.
