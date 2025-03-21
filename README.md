@@ -83,10 +83,10 @@ option in the configuration files, so you should be able to find your way
 around easily.
 
 > [!CAUTION]
-> Options relating to setup-specific things that vmangos-deploy relies on to
-> work correctly (like the database connections or configured directories such
-> as the `DataDir` or the `LogsDir`) should not be adjusted unless you
-> absolutely need to change them and are aware of the implications (e.g., which
+> Options relating to certain things that vmangos-deploy relies on to work
+> correctly (like the database connections or configured directories such as
+> the `DataDir` or the `LogsDir`) should not be adjusted unless you absolutely
+> need to change them and are aware of the implications (e.g., which
 > other configuration options may need to be adjusted as well to avoid
 > discrepancies resulting in unexpected behavior). No support will be provided
 > for non-default setups.
@@ -100,7 +100,7 @@ Docker Compose example configuration:
 cp ./compose.yaml.example ./compose.yaml
 ```
 
-Next, adjust your `compose.yaml`. The first thing to decide on is the Docker
+Next, adjust your `compose.yaml`. The first thing to decide on is which Docker
 images you want to use based on the client version the server should support.
 You can choose from the following versions:
 
@@ -145,8 +145,8 @@ absolutely need images based on a specific VMaNGOS commit, you can always build
 them yourself instead.
 
 > [!TIP]
-> You can find all the available `vmangos-server` and `vmangos-database` images
-> [here][image-vmangos-server-versions] and
+> You can find all the currently available `vmangos-server` and
+> `vmangos-database` images [here][image-vmangos-server-versions] and
 > [here][image-vmangos-database-versions] respectively.
 
 Aside from which Docker images you want to use you mainly have to pay attention
@@ -157,7 +157,7 @@ should also be of interest; changing the `VMANGOS_REALMLIST_ADDRESS` to a LAN
 IP, a WAN IP or a domain name is required if you want to allow non-local
 connections.
 
-Also take note of the `healthcheck` sections; if you are on a low end system
+Also take note of the `healthcheck` sections; if you are using a low end system
 you may have to adjust the `start_period` setting so that the initial database
 creation process will be able to complete in time before the healthcheck
 considers the container unhealthy and causes a restart.
@@ -171,7 +171,7 @@ considers the container unhealthy and causes a restart.
 ### Extracting the client data
 
 VMaNGOS uses data that is generated from extracted client data to handle things
-like movement and line of sight. If you have already acquired this data
+like mob movement and line of sight. If you have already acquired this data
 previously, you can place it directly into
 [`./storage/mangosd/extracted-data`](storage/mangosd/extracted-data) and skip
 the next steps.
@@ -210,7 +210,10 @@ There are two things to look out for here:
 Once the extraction is finished you can find the data in
 [`./storage/mangosd/extracted-data`](storage/mangosd/extracted-data). Note that
 you may want to re-run the process in the future if VMaNGOS makes changes (to
-benefit from potentially improved mob pathing etc.).
+benefit from potentially improved mob movement etc.). In case it becomes
+necessary to do so (e.g., if the extraction process changes), the
+[breaking changes section](#breaking-changes) further below will be updated
+accordingly.
 
 If you re-run the extraction, it will automatically detect previously extracted
 data and ask you if you want to continue (which will overwrite the old data).
@@ -357,8 +360,10 @@ docker compose up -d
 
 > [!NOTE]
 > Selecting specific images via VMaNGOS commit hash (as described further
-> above) will obviously prevent you from updating. Attempting to do so is not
-> harmful, it just will not have any effect.
+> above) will obviously prevent you from updating until you edit each
+> respective service in your `compose.yaml` to pull newer images. Attempting to
+> update without changing the configured images is not harmful, it will just
+> not have any effect.
 
 #### Breaking changes
 
