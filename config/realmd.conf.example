@@ -155,8 +155,8 @@ ConfVersion=2020010501
 ###################################################################################################################
 
 # Username and password must match the `MARIADB_USER` and `MARIADB_PASSWORD`
-# environment variables of the `database` service in `compose.yaml`
-# respectively
+# environment variables of the `database` service in your `compose.yaml`
+# respectively.
 LoginDatabaseInfo = "database;3306;mangos;mangos;realmd"
 LogsDir = "/opt/vmangos/storage/logs"
 PatchesDir = "./patches"

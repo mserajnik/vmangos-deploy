@@ -14,7 +14,7 @@ ConfVersion=2010100901
 #    DataDir
 #        Data directory setting.
 #        Important: DataDir needs to be quoted, as it is a string which may contain space characters.
-#        Example: "/opt/vmangos/share/mangos"
+#        Example: "@CMAKE_INSTALL_PREFIX@/share/mangos"
 #
 #    LogsDir
 #        Logs directory setting.
@@ -75,26 +75,26 @@ DataDir = "/opt/vmangos/storage/data"
 LogsDir = "/opt/vmangos/storage/logs"
 HonorDir = "/opt/vmangos/storage/honor"
 # Username and password must match the `MARIADB_USER` and `MARIADB_PASSWORD`
-# environment variables of the `database` service in `compose.yaml`
-# respectively
+# environment variables of the `database` service in your `compose.yaml`
+# respectively.
 LoginDatabase.Info              = "database;3306;mangos;mangos;realmd"
 LoginDatabase.Connections       = 1
 LoginDatabase.WorkerThreads     = 1
 # Username and password must match the `MARIADB_USER` and `MARIADB_PASSWORD`
-# environment variables of the `database` service in `compose.yaml`
-# respectively
+# environment variables of the `database` service in your `compose.yaml`
+# respectively.
 WorldDatabase.Info              = "database;3306;mangos;mangos;mangos"
 WorldDatabase.Connections       = 1
 WorldDatabase.WorkerThreads     = 1
 # Username and password must match the `MARIADB_USER` and `MARIADB_PASSWORD`
-# environment variables of the `database` service in `compose.yaml`
-# respectively
+# environment variables of the `database` service in your `compose.yaml`
+# respectively.
 CharacterDatabase.Info          = "database;3306;mangos;mangos;characters"
 CharacterDatabase.Connections   = 1
 CharacterDatabase.WorkerThreads = 1
 # Username and password must match the `MARIADB_USER` and `MARIADB_PASSWORD`
-# environment variables of the `database` service in `compose.yaml`
-# respectively
+# environment variables of the `database` service in your `compose.yaml`
+# respectively.
 LogsDatabase.Info               = "database;3306;mangos;mangos;logs"
 LogsDatabase.Connections        = 1
 LogsDatabase.WorkerThreads      = 1
@@ -538,6 +538,11 @@ DebuffLimit = 0
 #        Default: "Scripts.log"
 #                 "" - Empty name disable creating log file
 #
+#    LogFile.Movement
+#        Log file for movement errors and debug info
+#        Default: "Movement.log"
+#                 "" - Empty name disable creating log file
+#
 #    LogFile.Chat
 #        Log file for player chat.
 #        Default: "Chat.log"
@@ -677,6 +682,7 @@ LogFile.Timestamp = 0
 LogFile.Basic = "Server.log"
 LogFile.Anticheat = "Anticheat.log"
 LogFile.Scripts = "Scripts.log"
+LogFile.Movement = "Movement.log"
 LogFile.Chat = "Chat.log"
 LogFile.Bg = "Bg.log"
 LogFile.Char = "Char.log"
