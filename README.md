@@ -1,4 +1,4 @@
-# vmangos-deploy [![Latest VMaNGOS build][vmangos-revision-badge]][vmangos] [![GitHub Actions status][actions-status-badge]][actions-status]
+# vmangos-deploy [![Latest built VMaNGOS commit][badge-latest-vmangos-commit]][badge-latest-vmangos-commit-url] [![Latest build date][badge-latest-build-date]][badge-latest-build-date-url] [![GitHub Actions status][badge-actions-status]][badge-actions-status-url]
 
 > A Docker setup for VMaNGOS
 
@@ -444,6 +444,13 @@ You are welcome to help out!
 
 [AGPL-3.0-or-later](LICENSE) © Michael Serajnik
 
+[badge-actions-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml/badge.svg
+[badge-actions-status-url]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml
+[badge-latest-build-date]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fdate-badge.json
+[badge-latest-build-date-url]: https://github.com/mserajnik?tab=packages&repo_name=vmangos-deploy
+[badge-latest-vmangos-commit]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fcommit-badge.json
+[badge-latest-vmangos-commit-url]: https://github.com/vmangos/core/commits/development/
+
 [compose-automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L52-L63
 [compose-custom-sql]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L64-L81
 [compose-custom-sql-bind-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20
@@ -459,11 +466,8 @@ You are welcome to help out!
 [phpymadmin]: https://www.phpmyadmin.net/
 [vmangos]: https://github.com/vmangos/core
 [vmangos-example-commit]: https://github.com/vmangos/core/commit/46183d287f80ab1ebf27bab12f37bc0b5b188c86
-[vmangos-revision-badge]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-revision%2Fbadge.json
 [warden-modules]: https://github.com/vmangos/warden_modules
 
-[actions-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml
-[actions-status-badge]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml/badge.svg
 [issues]: https://github.com/mserajnik/vmangos-deploy/issues
 [maintainer]: https://github.com/mserajnik
 [pull-requests]: https://github.com/mserajnik/vmangos-deploy/pulls
