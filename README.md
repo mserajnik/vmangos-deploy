@@ -1,4 +1,6 @@
-# vmangos-deploy [![Latest built VMaNGOS commit][badge-latest-vmangos-commit]][badge-latest-vmangos-commit-url] [![Latest build date][badge-latest-build-date]][badge-latest-build-date-url] [![GitHub Actions status][badge-actions-status]][badge-actions-status-url]
+# vmangos-deploy
+
+[![Latest built VMaNGOS commit][badge-latest-vmangos-commit]][badge-latest-vmangos-commit-url] [![Latest build date][badge-latest-build-date]][badge-latest-build-date-url] [![GitHub Actions status][badge-actions-status]][badge-actions-status-url]
 
 > A Docker setup for VMaNGOS
 
