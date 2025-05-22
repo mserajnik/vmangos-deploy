@@ -78,7 +78,7 @@ jobs:
       - name: Check if MariaDB entrypoint script has been updated
         id: mariadb-entrypoint-check
         run: |
-          known_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/c5669903a1c1f711039de61e480fbfd3549e1f86/11.4/docker-entrypoint.sh
+          known_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/a272347802e1764dd8c0e15ba2b2abfeeadb3bb6/11.4/docker-entrypoint.sh
           latest_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/master/11.4/docker-entrypoint.sh
           curl -o known-entrypoint.sh $known_entrypoint
           curl -o latest-entrypoint.sh $latest_entrypoint
