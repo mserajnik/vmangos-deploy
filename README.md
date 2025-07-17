@@ -34,6 +34,7 @@ features that simplify managing a VMaNGOS setup:
 
 ## Table of contents
 
++ [Video guide](#video-guide)
 + [Install](#install)
   + [Dependencies](#dependencies)
   + [Instructions](#instructions)
@@ -56,6 +57,25 @@ features that simplify managing a VMaNGOS setup:
 + [Maintainer](#maintainer)
 + [Contribute](#contribute)
 + [License](#license)
+
+## Video guide
+
+[![Video guide by Digital Scriptorium][youtube-video-guide-thumbnail]][youtube-video-guide]
+
+The YouTube channel [Digital Scriptorium][youtube-digital-scriptorium] has
+created a [video guide][youtube-video-guide] that walks you through the
+installation and usage of vmangos-deploy. It is intended for Windows users (and
+as such also covers some Windows-specific topics like WSL2), but the steps for
+setting up vmangos-deploy itself are essentially the same for all operating
+systems and thus, the video should also be helpful for Linux and macOS users.
+
+The video covers everything you need to get started with a default setup. It is
+still recommended to read through this README as it contains additional
+information that may be useful, especially if you want to customize further.
+
+> [!NOTE]
+> In case the instructions provided in the video become outdated, it will be
+> mentioned here.
 
 ## Install
 
@@ -469,6 +489,9 @@ You are welcome to help out!
 [vmangos]: https://github.com/vmangos/core
 [vmangos-example-commit]: https://github.com/vmangos/core/commit/46183d287f80ab1ebf27bab12f37bc0b5b188c86
 [warden-modules]: https://github.com/vmangos/warden_modules
+[youtube-digital-scriptorium]: https://www.youtube.com/@Digital-Scriptorium
+[youtube-video-guide]: https://www.youtube.com/watch?v=XWVvT9lMy28
+[youtube-video-guide-thumbnail]: https://img.youtube.com/vi/XWVvT9lMy28/0.jpg
 
 [issues]: https://github.com/mserajnik/vmangos-deploy/issues
 [maintainer]: https://github.com/mserajnik
