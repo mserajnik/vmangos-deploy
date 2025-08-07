@@ -53,19 +53,5 @@ import_updates "logs" "/sql/migrations/logs_db_updates.sql"
 configure_realm
 
 if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
-  if [ -d "/sql/custom" ]; then
-    file_count=$(find /sql/custom -name "*.sql" -type f | wc -l)
-    echo "[vmangos-deploy]: Found $file_count custom SQL file(s) to process"
-
-    if [ "$file_count" -gt 0 ]; then
-      find /sql/custom -name "*.sql" -type f | sort | while read -r sql_file; do
-        echo "[vmangos-deploy]: Processing custom SQL file '$(basename "$sql_file")'"
-
-        import_data "mangos" "$sql_file"
-        if [ $? -ne 0 ]; then
-          echo "[vmangos-deploy]: ERROR: Failed to process custom SQL file '$(basename "$sql_file")'" >&2
-        fi
-      done
-    fi
-  fi
+  process_custom_sql "/sql/custom"
 fi

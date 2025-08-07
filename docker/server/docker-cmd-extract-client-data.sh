@@ -42,12 +42,12 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ ! -d "$client_data_dir" ] || [ ! -d "$client_data_dir/Data" ]; then
-  echo "[vmangos-deploy]: Client data not found in '$client_data_dir', aborting extraction" >&2
+  echo "[vmangos-deploy]: ERROR: Client data not found in '$client_data_dir', aborting extraction" >&2
   exit 1
 fi
 
 if [ ! -d "$extracted_data_dir" ]; then
-  echo "[vmangos-deploy]: Extracted data target directory '$extracted_data_dir' doesn't exist, aborting extraction" >&2
+  echo "[vmangos-deploy]: ERROR: Extracted data target directory '$extracted_data_dir' doesn't exist, aborting extraction" >&2
   exit 1
 fi
 
@@ -56,6 +56,7 @@ cd "$client_data_dir"
 if [ "$force" = false ]; then
   if [ -d "$extracted_data_dir/maps" ] || [ -d "$extracted_data_dir/mmaps" ] || [ -d "$extracted_data_dir/vmaps" ] || [ -d "$client_version_dir" ]; then
     echo "[vmangos-deploy]: Previously extracted data has been found in '$extracted_data_dir'; continue with the extraction (which will overwrite the old data)? [Y/n]"
+
     read -r choice
     choice=$(echo "${choice:-y}" | tr -d '[:space:]')
     if [ "$choice" = "n" ] || [ "$choice" = "N" ]; then

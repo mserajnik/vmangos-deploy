@@ -19,9 +19,11 @@
 create_database() {
   local db_name="$1"
   local silent=${2:-false}
+
   if [ "$silent" = false ]; then
     echo "[vmangos-deploy]: Creating database '$db_name'"
   fi
+
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "CREATE DATABASE IF NOT EXISTS \`$db_name\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
 }
@@ -29,9 +31,11 @@ create_database() {
 drop_database() {
   local db_name="$1"
   local silent=${2:-false}
+
   if [ "$silent" = false ]; then
     echo "[vmangos-deploy]: Dropping database '$db_name'"
   fi
+
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "DROP DATABASE IF EXISTS \`$db_name\`;"
 }
@@ -39,9 +43,11 @@ drop_database() {
 grant_permissions() {
   local db_name="$1"
   local silent=${2:-false}
+
   if [ "$silent" = false ]; then
     echo "[vmangos-deploy]: Granting permissions to database user '$MARIADB_USER' for database '$db_name'"
   fi
+
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "GRANT ALL ON \`$db_name\`.* TO '$MARIADB_USER'@'%'; \
     FLUSH PRIVILEGES;"
@@ -50,6 +56,7 @@ grant_permissions() {
 import_data() {
   local db_name="$1"
   local file="$2"
+
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "$db_name" < "$file"
   return $?
 }
@@ -57,7 +64,9 @@ import_data() {
 import_dump() {
   local db_name="$1"
   local dump_file="$2"
+
   echo "[vmangos-deploy]: Importing initial data for database '$db_name'"
+
   import_data "$db_name" "$dump_file"
   return $?
 }
@@ -65,17 +74,22 @@ import_dump() {
 import_updates() {
   local db_name="$1"
   local update_file="$2"
-  if [ -e "$update_file" ]; then
-    echo "[vmangos-deploy]: Importing potential updates for database '$db_name'"
-    import_data "$db_name" "$update_file"
-    return $?
+
+  if [ ! -e "$update_file" ]; then
+    # The update file not existing is not an error, so we return 0 (success)
+    # here
+    return 0
   fi
-  # The update file not existing is not an error, so we return 0 (success) here
-  return 0
+
+  echo "[vmangos-deploy]: Importing potential updates for database '$db_name'"
+
+  import_data "$db_name" "$update_file"
+  return $?
 }
 
 configure_realm() {
   echo "[vmangos-deploy]: Configuring realm '$VMANGOS_REALMLIST_NAME'"
+
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "realmd" -e \
     "INSERT INTO \`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$VMANGOS_REALMLIST_NAME', '$VMANGOS_REALMLIST_ADDRESS', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
 }
@@ -148,4 +162,27 @@ check_if_world_db_correction_is_required() {
 mark_world_db_corrections_as_applied() {
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
     "UPDATE \`world_db_corrections\` SET \`is_applied\` = true;"
+}
+
+process_custom_sql() {
+  local file_directory="$1"
+
+  if [ ! -d "$file_directory" ]; then
+    echo "[vmangos-deploy]: WARNING: Custom SQL file directory '$file_directory' does not exist" >&2
+    return 0
+  fi
+
+  file_count=$(find "$file_directory" -name "*.sql" -type f | wc -l)
+  echo "[vmangos-deploy]: Found $file_count custom SQL file(s) to process"
+
+  if [ "$file_count" -gt 0 ]; then
+    find "$file_directory" -name "*.sql" -type f | sort | while read -r sql_file; do
+      echo "[vmangos-deploy]: Processing custom SQL file '$(basename "$sql_file")'"
+
+      import_data "mangos" "$sql_file"
+      if [ $? -ne 0 ]; then
+        echo "[vmangos-deploy]: ERROR: Failed to process custom SQL file '$(basename "$sql_file")'" >&2
+      fi
+    done
+  fi
 }
