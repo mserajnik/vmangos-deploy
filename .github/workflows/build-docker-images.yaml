@@ -36,7 +36,7 @@ env:
   OCI_ANNOTATION_SERVER_BASE_NAME: ubuntu:24.04
   OCI_ANNOTATION_DATABASE_TITLE: vmangos-deploy - VMaNGOS database image
   OCI_ANNOTATION_DATABASE_DESCRIPTION: Database for the VMaNGOS server emulator.
-  OCI_ANNOTATION_DATABASE_BASE_NAME: mariadb:11.4
+  OCI_ANNOTATION_DATABASE_BASE_NAME: mariadb:11.8
 
 jobs:
   setup:
@@ -99,8 +99,8 @@ jobs:
       - name: Check if MariaDB entrypoint script has been updated
         id: mariadb-entrypoint-check
         run: |
-          known_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/a272347802e1764dd8c0e15ba2b2abfeeadb3bb6/11.4/docker-entrypoint.sh
-          latest_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/master/11.4/docker-entrypoint.sh
+          known_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/cdffb7d2fd712249f3f386497117825be6442afa/11.8/docker-entrypoint.sh
+          latest_entrypoint=https://raw.githubusercontent.com/MariaDB/mariadb-docker/master/11.8/docker-entrypoint.sh
           curl -o known-entrypoint.sh $known_entrypoint
           curl -o latest-entrypoint.sh $latest_entrypoint
           diff known-entrypoint.sh latest-entrypoint.sh

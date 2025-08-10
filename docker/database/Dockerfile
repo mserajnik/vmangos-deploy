@@ -21,7 +21,7 @@ ARG VMANGOS_WORLD_DB_REPOSITORY_URL=https://github.com/brotalnia/database.git
 ARG VMANGOS_WORLD_DB_DUMP_NAME=world_full_14_june_2021
 ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE=/sql/world-new.sql
 
-FROM mariadb:11.4 AS setup
+FROM mariadb:11.8 AS setup
 
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_REPOSITORY_URL
@@ -62,11 +62,11 @@ RUN \
   apt clean -y && \
   rm -rf /var/lib/apt/lists/*
 
-FROM mariadb:11.4
+FROM mariadb:11.8
 
 ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE
 
-# See https://github.com/MariaDB/mariadb-docker/blob/a272347802e1764dd8c0e15ba2b2abfeeadb3bb6/11.4/docker-entrypoint.sh#L594-L598
+# See https://github.com/MariaDB/mariadb-docker/blob/cdffb7d2fd712249f3f386497117825be6442afa/11.8/docker-entrypoint.sh#L594-L598
 ENV MARIADB_AUTO_UPGRADE=1
 ENV MARIADB_USER=mangos
 ENV MARIADB_PASSWORD=mangos
