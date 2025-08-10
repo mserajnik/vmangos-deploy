@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # vmangos-deploy
 # Copyright (C) 2023-2025  Michael Serajnik  https://github.com/mserajnik
