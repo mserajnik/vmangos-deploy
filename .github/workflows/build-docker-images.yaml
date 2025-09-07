@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Get latest commit hash
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: latest-commit-hash
         with:
           result-encoding: string
@@ -142,7 +142,7 @@ jobs:
       # We tag the newest build for client version 5875 with `latest` since
       # that can be considered the default.
       - name: Generate tags
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-tags
         env:
           COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
@@ -164,7 +164,7 @@ jobs:
 
       # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
       - name: Generate OCI annotations
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-annotations
         env:
           COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
@@ -206,7 +206,7 @@ jobs:
       # instead (which then results in data from the base images being shown if
       # we do not provide values for the respective labels ourselves).
       - name: Generate OCI labels
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-labels
         env:
           COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
@@ -290,7 +290,7 @@ jobs:
         run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
 
       - name: Generate tags
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-tags
         env:
           COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
@@ -307,7 +307,7 @@ jobs:
 
       # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
       - name: Generate OCI annotations
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-annotations
         env:
           COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
@@ -348,7 +348,7 @@ jobs:
       # instead (which then results in data from the base images being shown if
       # we do not provide values for the respective labels ourselves).
       - name: Generate OCI labels
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-labels
         env:
           COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}

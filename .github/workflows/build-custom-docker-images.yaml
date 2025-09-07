@@ -99,7 +99,7 @@ jobs:
       # - https://bitbucket.org/owner/repository.git
       - name: Parse repository URL
         id: parse-repository-url
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             function parseGitUrl (url) {
@@ -159,7 +159,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate tags
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-tags
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
@@ -189,7 +189,7 @@ jobs:
 
       # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
       - name: Generate OCI annotations
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-annotations
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
@@ -236,7 +236,7 @@ jobs:
       # instead (which then results in data from the base images being shown if
       # we do not provide values for the respective labels ourselves).
       - name: Generate OCI labels
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-labels
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
@@ -323,7 +323,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate tags
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-tags
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
@@ -352,7 +352,7 @@ jobs:
 
       # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
       - name: Generate OCI annotations
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-annotations
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
@@ -398,7 +398,7 @@ jobs:
       # instead (which then results in data from the base images being shown if
       # we do not provide values for the respective labels ourselves).
       - name: Generate OCI labels
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: generate-labels
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
