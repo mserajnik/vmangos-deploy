@@ -17,6 +17,7 @@
 ARG DEBIAN_FRONTEND=noninteractive
 ARG VMANGOS_REPOSITORY_URL=https://github.com/vmangos/core.git
 ARG VMANGOS_REVISION=development
+ARG VMANGOS_PATCHES_REPOSITORY_URL
 ARG VMANGOS_WORLD_DB_REPOSITORY_URL=https://github.com/brotalnia/database.git
 ARG VMANGOS_WORLD_DB_DUMP_NAME=world_full_14_june_2021
 ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE=/sql/world-new.sql
@@ -26,6 +27,7 @@ FROM mariadb:11.8 AS setup
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_REPOSITORY_URL
 ARG VMANGOS_REVISION
+ARG VMANGOS_PATCHES_REPOSITORY_URL
 ARG VMANGOS_WORLD_DB_REPOSITORY_URL
 ARG VMANGOS_WORLD_DB_DUMP_NAME
 
@@ -37,6 +39,19 @@ RUN \
   git clone "${VMANGOS_REPOSITORY_URL}" /core && \
   cd /core && \
   git checkout "${VMANGOS_REVISION}" && \
+  if [ -n "${VMANGOS_PATCHES_REPOSITORY_URL}" ]; then \
+    echo "Cloning and applying patches from ${VMANGOS_PATCHES_REPOSITORY_URL}"; \
+    git clone "${VMANGOS_PATCHES_REPOSITORY_URL}" /tmp/patches && \
+    for patch in /tmp/patches/*.patch; do \
+      if [ -f "${patch}" ]; then \
+        echo "Applying patch ${patch}"; \
+        git apply "${patch}"; \
+      fi; \
+    done; \
+    rm -rf /tmp/patches; \
+  else \
+    echo "No repository to apply patches from provided"; \
+  fi && \
   git clone "${VMANGOS_WORLD_DB_REPOSITORY_URL}" /database && \
   mkdir -p /sql/custom && \
   mkdir -p /sql/migrations && \

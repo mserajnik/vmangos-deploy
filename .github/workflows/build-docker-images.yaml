@@ -450,7 +450,7 @@ jobs:
     - name: Check if FTP secrets are available
       run: |
         if [[ -z "${{ secrets.BADGES_FTP_HOST }}" || -z "${{ secrets.BADGES_FTP_USERNAME }}" || -z "${{ secrets.BADGES_FTP_PASSWORD }}" ]]; then
-          echo "FTP secrets are missing, skipping job."
+          echo "FTP secrets are missing, skipping job"
           exit 0
         fi
 

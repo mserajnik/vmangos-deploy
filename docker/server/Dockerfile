@@ -58,7 +58,7 @@ RUN \
     done; \
     rm -rf /tmp/patches; \
   else \
-    echo "No repository to apply patches from provided."; \
+    echo "No repository to apply patches from provided"; \
   fi && \
   mkdir -p \
     /opt/vmangos/config \

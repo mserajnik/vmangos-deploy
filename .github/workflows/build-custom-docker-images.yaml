@@ -445,6 +445,7 @@ jobs:
           build-args: |
             VMANGOS_REPOSITORY_URL=${{ inputs.repository-url }}
             VMANGOS_REVISION=${{ inputs.revision }}
+            VMANGOS_PATCHES_REPOSITORY_URL=${{ inputs.patches-repository-url }}
             VMANGOS_WORLD_DB_REPOSITORY_URL=${{ inputs.world-db-repository-url }}
             VMANGOS_WORLD_DB_DUMP_NAME=${{ inputs.world-db-dump-name }}
           tags: ${{ steps.generate-tags.outputs.result }}
