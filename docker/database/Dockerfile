@@ -42,12 +42,17 @@ RUN \
   if [ -n "${VMANGOS_PATCHES_REPOSITORY_URL}" ]; then \
     echo "Cloning and applying patches from ${VMANGOS_PATCHES_REPOSITORY_URL}"; \
     git clone "${VMANGOS_PATCHES_REPOSITORY_URL}" /tmp/patches && \
+    patch_count=0 && \
     for patch in /tmp/patches/*.patch; do \
       if [ -f "${patch}" ]; then \
         echo "Applying patch ${patch}"; \
         git apply "${patch}"; \
+        patch_count=$((patch_count + 1)); \
       fi; \
     done; \
+    if [ ${patch_count} -eq 0 ]; then \
+      echo "No patches found"; \
+    fi; \
     rm -rf /tmp/patches; \
   else \
     echo "No repository to apply patches from provided"; \
