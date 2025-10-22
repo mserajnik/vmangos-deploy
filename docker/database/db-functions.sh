@@ -136,6 +136,11 @@ populate_world_db_corrections_table() {
     SELECT 6, 'a patch that fixes an issue with a migration in vmangos/core@a1f0a10', '2025-10-11' \
     WHERE NOT EXISTS ( \
       SELECT 6 FROM \`world_db_corrections\` WHERE \`id\` = 6 \
+    ); \
+    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
+    SELECT 7, 'migration edits in vmangos/core@4a82d07', '2025-10-22' \
+    WHERE NOT EXISTS ( \
+      SELECT 7 FROM \`world_db_corrections\` WHERE \`id\` = 7 \
     );"
 }
 
