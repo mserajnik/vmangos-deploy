@@ -18,7 +18,7 @@ services:
     volumes:
       - vmangos-database:/var/lib/mysql
       - ./storage/database/custom-sql:/sql/custom:ro
-      # Mount a SQL file as `/sql/world-new.sql` to force the re-creation of
+      # Mount an SQL file as `/sql/world-new.sql` to force the re-creation of
       # the world database (with the contents of the mounted file); make sure
       # to remove this bind mount again before you restart the database the
       # next time or it will continue to re-create the database each time you
