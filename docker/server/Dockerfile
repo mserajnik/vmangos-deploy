@@ -123,6 +123,7 @@ RUN \
   # GID of the user and group that should be used in the container, we need to
   # either rename the existing user and group or create a new user and group
   # with the specified name, UID and GID.
+  cd /tmp && \
   existing_group=$(getent group "${VMANGOS_GROUP_ID}") || true && \
   existing_user=$(getent passwd "${VMANGOS_USER_ID}") || true && \
   if [ -n "${existing_group}" ]; then \
@@ -166,5 +167,5 @@ RUN \
   chmod +x /usr/local/bin/extract-client-data
 
 USER ${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME}
-
+WORKDIR "/home/${VMANGOS_USER_NAME}"
 CMD ["mangosd"]
