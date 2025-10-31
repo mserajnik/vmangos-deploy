@@ -33,7 +33,7 @@ ARG VMANGOS_WORLD_DB_DUMP_NAME
 
 RUN \
   apt update -y && \
-  apt install -y \
+  apt install -y --no-install-recommends \
     git \
     p7zip-full && \
   git clone "${VMANGOS_REPOSITORY_URL}" /core && \

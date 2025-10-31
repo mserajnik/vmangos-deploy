@@ -34,8 +34,9 @@ ARG VMANGOS_PATCHES_REPOSITORY_URL
 
 RUN \
   apt update -y && \
-  apt install -y \
+  apt install -y --no-install-recommends \
     build-essential \
+    ca-certificates \
     cmake \
     git \
     libace-dev \
@@ -107,7 +108,8 @@ ENV VMANGOS_CLIENT_VERSION=${VMANGOS_CLIENT_VERSION}
 
 RUN \
   apt update -y && \
-  apt install -y \
+  apt install -y --no-install-recommends \
+    ca-certificates \
     curl \
     libace-7.1.2 \
     libcurl4 \
@@ -145,7 +147,8 @@ RUN \
   chmod 4755 /usr/local/bin/fixuid && \
   mkdir -p /etc/fixuid && \
   printf "user: ${VMANGOS_USER_NAME}\ngroup: ${VMANGOS_GROUP_NAME}\n" > /etc/fixuid/config.yml && \
-  apt remove -y curl && \
+  apt remove -y \
+    curl && \
   apt autoremove -y && \
   apt clean -y && \
   rm -rf /var/lib/apt/lists/*
