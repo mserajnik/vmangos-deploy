@@ -108,15 +108,10 @@ RUN \
   mkdir /always-initdb.d
 
 COPY ./docker/database/db-functions.sh /opt/scripts
-COPY ./docker/database/create-db.sh /docker-entrypoint-initdb.d
-COPY ./docker/database/update-db.sh /always-initdb.d
+COPY --chmod=755 ./docker/database/create-db.sh /docker-entrypoint-initdb.d
+COPY --chmod=755 ./docker/database/update-db.sh /always-initdb.d
 
-COPY ./docker/database/docker-entrypoint.sh /entrypoint.sh
-
-RUN \
-  chmod +x /docker-entrypoint-initdb.d/create-db.sh && \
-  chmod +x /always-initdb.d/update-db.sh && \
-  chmod +x /entrypoint.sh
+COPY --chmod=755 ./docker/database/docker-entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["mariadbd"]

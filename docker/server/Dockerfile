@@ -155,16 +155,13 @@ COPY --from=build --chown=${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME} /opt /opt
 # See https://github.com/ufoscout/docker-compose-wait
 COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /usr/local/bin/wait-for-db
 
-COPY ./docker/server/docker-cmd-mangosd.sh /usr/local/bin/mangosd
-COPY ./docker/server/docker-cmd-realmd.sh /usr/local/bin/realmd
-COPY ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bin/extract-client-data
+COPY --chmod=755 ./docker/server/docker-cmd-mangosd.sh /usr/local/bin/mangosd
+COPY --chmod=755 ./docker/server/docker-cmd-realmd.sh /usr/local/bin/realmd
+COPY --chmod=755 ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bin/extract-client-data
 
 RUN \
   chmod +x /opt/vmangos/bin/* && \
-  find /opt/vmangos/bin/Extractors/ -type f ! -regex ".*\.\(json\|txt\)$" -exec chmod +x {} + && \
-  chmod +x /usr/local/bin/mangosd && \
-  chmod +x /usr/local/bin/realmd && \
-  chmod +x /usr/local/bin/extract-client-data
+  find /opt/vmangos/bin/Extractors/ -type f ! -regex ".*\.\(json\|txt\)$" -exec chmod +x {} +
 
 USER ${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME}
 WORKDIR "/home/${VMANGOS_USER_NAME}"
