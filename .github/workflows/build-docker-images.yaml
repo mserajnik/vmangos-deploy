@@ -18,7 +18,7 @@ on:
     inputs:
       force-rebuild:
         type: boolean
-        description: Force rebuild (even if commit hash has already been built)
+        description: Force rebuild (even if images for the latest commit hash already exist)
         default: false
 
 env:
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       commit-hash: ${{ steps.latest-commit-hash.outputs.result }}
-      already-built: ${{ steps.already-built.outputs.result }}
+      images-already-exist: ${{ steps.images-already-exist.outputs.result }}
 
     steps:
       - name: Get latest commit hash
@@ -69,8 +69,8 @@ jobs:
       #
       # We also check if the "force rebuild" input is checked when the workflow
       # is triggered manually; if yes, we also want to (re)build.
-      - name: Determine if images for commit hash have already been built
-        id: already-built
+      - name: Determine if images for commit hash already exist
+        id: images-already-exist
         run: |
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             if [[ "$(date +%u)" -eq 1 ]]; then
@@ -109,7 +109,7 @@ jobs:
   build-and-push-server-images:
     name: Build and push server images
     needs: setup
-    if: ${{ needs.setup.outputs.already-built != 'true' }}
+    if: ${{ needs.setup.outputs.images-already-exist != 'true' }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: true
@@ -264,7 +264,7 @@ jobs:
   build-and-push-database-images:
     name: Build and push database images
     needs: [setup, build-and-push-server-images]
-    if: ${{ needs.setup.outputs.already-built != 'true' }}
+    if: ${{ needs.setup.outputs.images-already-exist != 'true' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -399,7 +399,7 @@ jobs:
   delete-old-package-versions:
     name: Delete old package versions
     needs: [setup, build-and-push-server-images, build-and-push-database-images]
-    if: ${{ needs.setup.outputs.already-built != 'true' && github.event_name != 'pull_request' }}
+    if: ${{ needs.setup.outputs.images-already-exist != 'true' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -446,7 +446,7 @@ jobs:
   update-badges:
     name: Update badges
     needs: [setup, build-and-push-server-images, build-and-push-database-images, delete-old-package-versions]
-    if: ${{ needs.setup.outputs.already-built != 'true' && github.event_name != 'pull_request' }}
+    if: ${{ needs.setup.outputs.images-already-exist != 'true' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
 
     steps:
