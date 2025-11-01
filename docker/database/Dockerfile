@@ -73,14 +73,7 @@ RUN \
   mv world_db_updates.sql /sql/migrations && \
   cd /database && \
   7z e ${VMANGOS_WORLD_DB_DUMP_NAME}.7z && \
-  mv ${VMANGOS_WORLD_DB_DUMP_NAME}.sql /sql/world.sql && \
-  rm -rf /core /database && \
-  apt remove -y \
-    git \
-    p7zip-full && \
-  apt autoremove -y && \
-  apt clean -y && \
-  rm -rf /var/lib/apt/lists/*
+  mv ${VMANGOS_WORLD_DB_DUMP_NAME}.sql /sql/world.sql
 
 FROM mariadb:11.8
 

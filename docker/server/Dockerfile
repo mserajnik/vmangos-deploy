@@ -86,10 +86,7 @@ RUN \
     -DSUPPORTED_CLIENT_BUILD=${VMANGOS_CLIENT_VERSION} \
     -DDEBUG_SYMBOLS=0 && \
   make -j$(nproc) && \
-  make install && \
-  rm -rf /core && \
-  apt clean -y && \
-  rm -rf /var/lib/apt/lists/*
+  make install
 
 FROM ubuntu:24.04
 
