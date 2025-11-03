@@ -451,7 +451,7 @@ You are welcome to help out!
 [badge-latest-build-date]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fdate-badge.json
 [badge-latest-build-date-url]: https://github.com/mserajnik?tab=packages&repo_name=vmangos-deploy
 [badge-latest-vmangos-commit]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fcommit-badge.json
-[badge-latest-vmangos-commit-url]: https://github.com/vmangos/core/commits/development/
+[badge-latest-vmangos-commit-url]: https://scripts.mser.at/vmangos-deploy-latest-built-commit/
 
 [compose-automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L52-L63
 [compose-custom-sql]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L64-L81
