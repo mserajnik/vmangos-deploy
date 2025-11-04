@@ -22,7 +22,7 @@ ARG VMANGOS_WORLD_DB_REPOSITORY_URL=https://github.com/brotalnia/database.git
 ARG VMANGOS_WORLD_DB_DUMP_NAME=world_full_14_june_2021
 ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE=/sql/world-new.sql
 
-FROM mariadb:11.8 AS setup
+FROM mariadb:11.8 AS build
 
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_REPOSITORY_URL
@@ -36,14 +36,14 @@ RUN \
   apt install -y --no-install-recommends \
     git \
     p7zip-full && \
-  git clone "${VMANGOS_REPOSITORY_URL}" /core && \
-  cd /core && \
+  git clone "${VMANGOS_REPOSITORY_URL}" /build/core && \
+  cd /build/core && \
   git checkout "${VMANGOS_REVISION}" && \
   if [ -n "${VMANGOS_PATCHES_REPOSITORY_URL}" ]; then \
     echo "Cloning and applying patches from ${VMANGOS_PATCHES_REPOSITORY_URL}"; \
-    git clone "${VMANGOS_PATCHES_REPOSITORY_URL}" /tmp/patches && \
+    git clone "${VMANGOS_PATCHES_REPOSITORY_URL}" /build/patches && \
     patch_count=0 && \
-    for patch in /tmp/patches/*.patch; do \
+    for patch in /build/patches/*.patch; do \
       if [ -f "${patch}" ]; then \
         echo "Applying patch ${patch}"; \
         git apply "${patch}"; \
@@ -53,25 +53,24 @@ RUN \
     if [ ${patch_count} -eq 0 ]; then \
       echo "No patches found"; \
     fi; \
-    rm -rf /tmp/patches; \
   else \
     echo "No repository to apply patches from provided"; \
   fi && \
-  git clone "${VMANGOS_WORLD_DB_REPOSITORY_URL}" /database && \
   mkdir -p /sql/custom && \
   mkdir -p /sql/migrations && \
-  cd /core/sql && \
+  cd /build/core/sql && \
   mv characters.sql /sql && \
   mv logon.sql /sql && \
   mv logs.sql /sql && \
-  cd /core/sql/migrations && \
+  cd /build/core/sql/migrations && \
   chmod +x merge.sh && \
   ./merge.sh && \
   mv characters_db_updates.sql /sql/migrations && \
   mv logon_db_updates.sql /sql/migrations && \
   mv logs_db_updates.sql /sql/migrations && \
   mv world_db_updates.sql /sql/migrations && \
-  cd /database && \
+  git clone "${VMANGOS_WORLD_DB_REPOSITORY_URL}" /build/database && \
+  cd /build/database && \
   7z e ${VMANGOS_WORLD_DB_DUMP_NAME}.7z && \
   mv ${VMANGOS_WORLD_DB_DUMP_NAME}.sql /sql/world.sql
 
@@ -94,7 +93,7 @@ ENV VMANGOS_WORLD_DB_DUMP_NEW_FILE=${VMANGOS_WORLD_DB_DUMP_NEW_FILE}
 ENV VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1
 ENV VMANGOS_PROCESS_CUSTOM_SQL=1
 
-COPY --from=setup /sql /sql
+COPY --from=build /sql /sql
 
 RUN \
   mkdir -p /opt/scripts && \

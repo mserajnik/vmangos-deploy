@@ -45,14 +45,14 @@ RUN \
     libssl-dev \
     libtbb-dev \
     zlib1g-dev && \
-  git clone "${VMANGOS_REPOSITORY_URL}" /core && \
-  cd /core && \
+  git clone "${VMANGOS_REPOSITORY_URL}" /build/core && \
+  cd /build/core && \
   git checkout "${VMANGOS_REVISION}" && \
   if [ -n "${VMANGOS_PATCHES_REPOSITORY_URL}" ]; then \
     echo "Cloning and applying patches from ${VMANGOS_PATCHES_REPOSITORY_URL}"; \
-    git clone "${VMANGOS_PATCHES_REPOSITORY_URL}" /tmp/patches && \
+    git clone "${VMANGOS_PATCHES_REPOSITORY_URL}" /build/patches && \
     patch_count=0 && \
-    for patch in /tmp/patches/*.patch; do \
+    for patch in /build/patches/*.patch; do \
       if [ -f "${patch}" ]; then \
         echo "Applying patch ${patch}"; \
         git apply "${patch}"; \
@@ -62,7 +62,6 @@ RUN \
     if [ ${patch_count} -eq 0 ]; then \
       echo "No patches found"; \
     fi; \
-    rm -rf /tmp/patches; \
   else \
     echo "No repository to apply patches from provided"; \
   fi && \
@@ -71,8 +70,8 @@ RUN \
     /opt/vmangos/storage/data \
     /opt/vmangos/storage/honor \
     /opt/vmangos/storage/logs && \
-  mkdir /core/build && \
-  cd /core/build && \
+  mkdir /build/core/build && \
+  cd /build/core/build && \
   cmake \
     -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ \
     -DUSE_PCH=1 \
