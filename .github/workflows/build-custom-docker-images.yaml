@@ -135,7 +135,11 @@ jobs:
   build-and-push-server-images:
     name: Build and push server images
     needs: setup
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        runner: ${{ fromJson(inputs.architectures == 'Both x86_64 and aarch64' && '["ubuntu-24.04", "ubuntu-24.04-arm"]' || inputs.architectures == 'aarch64 only' && '["ubuntu-24.04-arm"]' || '["ubuntu-24.04"]') }}
     permissions:
       contents: read
       packages: write
@@ -143,10 +147,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-
-      - name: Set up QEMU
-        if: inputs.architectures == 'Both x86_64 and aarch64' || inputs.architectures == 'aarch64 only'
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -158,9 +158,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate tags
+      - name: Determine platform
+        id: platform
+        run: |
+          if [ "${{ matrix.runner }}" == "ubuntu-24.04-arm" ]; then
+            echo "platform=linux/arm64" >> $GITHUB_OUTPUT
+            echo "arch=arm64" >> $GITHUB_OUTPUT
+          else
+            echo "platform=linux/amd64" >> $GITHUB_OUTPUT
+            echo "arch=amd64" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate single-arch tag
         uses: actions/github-script@v8
-        id: generate-tags
+        id: generate-tag
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
           REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
@@ -168,26 +179,20 @@ jobs:
           REVISION: ${{ inputs.revision }}
           CLIENT_VERSION: ${{ inputs.client-version }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
+          ARCH: ${{ steps.platform.outputs.arch }}
         with:
           result-encoding: string
           script: |
-            const tags = []
-
             if (process.env.CUSTOM_NAME.trim() !== '') {
-              tags.push(`${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}`)
-
-              return tags.join(',')
+              return `${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}-${process.env.ARCH}`
             }
 
-            tags.push(`${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`)
-
-            return tags.join(',')
+            return `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.CLIENT_VERSION}-${process.env.ARCH}`
 
       - name: Generate timestamp
         id: generate-timestamp
         run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
 
-      # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
       - name: Generate OCI annotations
         uses: actions/github-script@v8
         id: generate-annotations
@@ -198,7 +203,6 @@ jobs:
           REVISION: ${{ inputs.revision }}
           CLIENT_VERSION: ${{ inputs.client-version }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
-          MULTI_ARCH_BUILD: ${{ inputs.architectures == 'Both x86_64 and aarch64' }}
           TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
         with:
           result-encoding: string
@@ -221,20 +225,13 @@ jobs:
               { key: 'base.name', envKey: 'OCI_ANNOTATION_SERVER_BASE_NAME' },
             ].map(({ key, value, envKey }) => {
                 const resolvedValue = value ?? process.env[envKey] ?? ''
-                const prefixes = ['manifest:']
-                if (process.env.MULTI_ARCH_BUILD === 'true') prefixes.push('index:')
-                return prefixes.map(prefix => `${prefix}org.opencontainers.image.${key}=${resolvedValue}`)
+                const escapedValue = resolvedValue.replace(/'/g, "'\\''")
+                return `--annotation 'org.opencontainers.image.${key}=${escapedValue}'`
               })
-              .flat()
-              .join('\n')
+              .join(' ')
 
             return annotations
 
-      # We also add the generated OCI metadata as labels because the GitHub
-      # Container registry does not correctly pick up the OCI annotations in
-      # some cases and prefers to pull displayed data from the image labels
-      # instead (which then results in data from the base images being shown if
-      # we do not provide values for the respective labels ourselves).
       - name: Generate OCI labels
         uses: actions/github-script@v8
         id: generate-labels
@@ -273,11 +270,11 @@ jobs:
 
             return labels
 
-      - name: Build and push images
+      - name: Build and push single-arch image
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: ${{ inputs.architectures == 'Both x86_64 and aarch64' && 'linux/amd64, linux/arm64' || inputs.architectures == 'aarch64 only' && 'linux/arm64' || 'linux/amd64' }}
+          platforms: ${{ steps.platform.outputs.platform }}
           file: ./docker/server/Dockerfile
           push: true
           provenance: false
@@ -286,35 +283,20 @@ jobs:
             VMANGOS_REVISION=${{ inputs.revision }}
             VMANGOS_CLIENT_VERSION=${{ inputs.client-version }}
             VMANGOS_PATCHES_REPOSITORY_URL=${{ inputs.patches-repository-url }}
-          tags: ${{ steps.generate-tags.outputs.result }}
+          tags: ${{ steps.generate-tag.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
           labels: ${{ steps.generate-labels.outputs.result }}
 
-  # Since the database image builds only take a few minutes (and therefore
-  # always complete before the server image builds), we need to build after the
-  # server images; otherwise, we would push new database images without knowing
-  # if the server image builds will succeed (and if there is, e.g., a
-  # compilation error due to a bug upstream we would end up with a version
-  # mismatch between the latest database images and the latest server images).
-  build-and-push-database-images:
-    name: Build and push database images
+  create-server-manifests:
+    name: Create server multi-arch manifests
     needs: [setup, build-and-push-server-images]
+    if: ${{ inputs.architectures == 'Both x86_64 and aarch64' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up QEMU
-        if: inputs.architectures == 'Both x86_64 and aarch64' || inputs.architectures == 'aarch64 only'
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Log in to container registry
         uses: docker/login-action@v3
         with:
@@ -326,31 +308,154 @@ jobs:
         uses: actions/github-script@v8
         id: generate-tags
         env:
-          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
           REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
           REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
           REVISION: ${{ inputs.revision }}
+          CLIENT_VERSION: ${{ inputs.client-version }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
         with:
           result-encoding: string
           script: |
-            const tags = []
-
             if (process.env.CUSTOM_NAME.trim() !== '') {
-              tags.push(`${process.env.IMAGE}:${process.env.CUSTOM_NAME}`)
-
-              return tags.join(',')
+              return `${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}`
             }
 
-            tags.push(`${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}`)
+            return `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`
 
-            return tags.join(',')
+      - name: Generate source tags
+        uses: actions/github-script@v8
+        id: generate-source-tags
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CLIENT_VERSION: ${{ inputs.client-version }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+        with:
+          result-encoding: string
+          script: |
+            const base = process.env.CUSTOM_NAME.trim() !== ''
+              ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}`
+              : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`
+
+            return `${base}-amd64 ${base}-arm64`
 
       - name: Generate timestamp
         id: generate-timestamp
         run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
 
-      # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
+      - name: Generate OCI annotations for index
+        uses: actions/github-script@v8
+        id: generate-annotations
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CLIENT_VERSION: ${{ inputs.client-version }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
+        with:
+          result-encoding: string
+          script: |
+            const refName = process.env.CUSTOM_NAME.trim() !== ''
+              ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.CLIENT_VERSION}`
+              : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.CLIENT_VERSION}`
+
+            const annotations = [
+              { key: 'created', value: process.env.TIMESTAMP },
+              { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
+              { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
+              { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
+              { key: 'source', envKey: 'OCI_ANNOTATION_SOURCE' },
+              { key: 'vendor', envKey: 'OCI_ANNOTATION_VENDOR' },
+              { key: 'licenses', envKey: 'OCI_ANNOTATION_LICENSES' },
+              { key: 'ref.name', value: refName },
+              { key: 'title', envKey: 'OCI_ANNOTATION_SERVER_TITLE' },
+              { key: 'description', envKey: 'OCI_ANNOTATION_SERVER_DESCRIPTION' },
+              { key: 'base.name', envKey: 'OCI_ANNOTATION_SERVER_BASE_NAME' },
+            ].map(({ key, value, envKey }) => {
+                const resolvedValue = value ?? process.env[envKey] ?? ''
+                const escapedValue = resolvedValue.replace(/'/g, "'\\''")
+                return `--annotation 'org.opencontainers.image.${key}=${escapedValue}'`
+              })
+              .join(' ')
+
+            return annotations
+
+      - name: Create and push multi-arch manifest
+        run: |
+          docker buildx imagetools create \
+            ${{ steps.generate-annotations.outputs.result }} \
+            -t ${{ steps.generate-tags.outputs.result }} \
+            ${{ steps.generate-source-tags.outputs.result }}
+
+  build-and-push-database-images:
+    name: Build and push database images
+    needs: [setup, build-and-push-server-images, create-server-manifests]
+    if: |
+      always() &&
+      needs.build-and-push-server-images.result == 'success' &&
+      (needs.create-server-manifests.result == 'success' || needs.create-server-manifests.result == 'skipped')
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        runner: ${{ fromJson(inputs.architectures == 'Both x86_64 and aarch64' && '["ubuntu-24.04", "ubuntu-24.04-arm"]' || inputs.architectures == 'aarch64 only' && '["ubuntu-24.04-arm"]' || '["ubuntu-24.04"]') }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine platform
+        id: platform
+        run: |
+          if [ "${{ matrix.runner }}" == "ubuntu-24.04-arm" ]; then
+            echo "platform=linux/arm64" >> $GITHUB_OUTPUT
+            echo "arch=arm64" >> $GITHUB_OUTPUT
+          else
+            echo "platform=linux/amd64" >> $GITHUB_OUTPUT
+            echo "arch=amd64" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate single-arch tag
+        uses: actions/github-script@v8
+        id: generate-tag
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+          ARCH: ${{ steps.platform.outputs.arch }}
+        with:
+          result-encoding: string
+          script: |
+            if (process.env.CUSTOM_NAME.trim() !== '') {
+              return `${process.env.IMAGE}:${process.env.CUSTOM_NAME}-${process.env.ARCH}`
+            }
+
+            return `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}-${process.env.ARCH}`
+
+      - name: Generate timestamp
+        id: generate-timestamp
+        run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
       - name: Generate OCI annotations
         uses: actions/github-script@v8
         id: generate-annotations
@@ -360,7 +465,6 @@ jobs:
           REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
           REVISION: ${{ inputs.revision }}
           CUSTOM_NAME: ${{ inputs.custom-name }}
-          MULTI_ARCH_BUILD: ${{ inputs.architectures == 'Both x86_64 and aarch64' }}
           TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
         with:
           result-encoding: string
@@ -383,20 +487,13 @@ jobs:
               { key: 'base.name', envKey: 'OCI_ANNOTATION_DATABASE_BASE_NAME' },
             ].map(({ key, value, envKey }) => {
                 const resolvedValue = value ?? process.env[envKey] ?? ''
-                const prefixes = ['manifest:']
-                if (process.env.MULTI_ARCH_BUILD === 'true') prefixes.push('index:')
-                return prefixes.map(prefix => `${prefix}org.opencontainers.image.${key}=${resolvedValue}`)
+                const escapedValue = resolvedValue.replace(/'/g, "'\\''")
+                return `--annotation 'org.opencontainers.image.${key}=${escapedValue}'`
               })
-              .flat()
-              .join('\n')
+              .join(' ')
 
             return annotations
 
-      # We also add the generated OCI metadata as labels because the GitHub
-      # Container registry does not correctly pick up the OCI annotations in
-      # some cases and prefers to pull displayed data from the image labels
-      # instead (which then results in data from the base images being shown if
-      # we do not provide values for the respective labels ourselves).
       - name: Generate OCI labels
         uses: actions/github-script@v8
         id: generate-labels
@@ -434,11 +531,11 @@ jobs:
 
             return labels
 
-      - name: Build and push images
+      - name: Build and push single-arch image
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: ${{ inputs.architectures == 'Both x86_64 and aarch64' && 'linux/amd64, linux/arm64' || inputs.architectures == 'aarch64 only' && 'linux/arm64' || 'linux/amd64' }}
+          platforms: ${{ steps.platform.outputs.platform }}
           file: ./docker/database/Dockerfile
           push: true
           provenance: false
@@ -448,6 +545,108 @@ jobs:
             VMANGOS_PATCHES_REPOSITORY_URL=${{ inputs.patches-repository-url }}
             VMANGOS_WORLD_DB_REPOSITORY_URL=${{ inputs.world-db-repository-url }}
             VMANGOS_WORLD_DB_DUMP_NAME=${{ inputs.world-db-dump-name }}
-          tags: ${{ steps.generate-tags.outputs.result }}
+          tags: ${{ steps.generate-tag.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
           labels: ${{ steps.generate-labels.outputs.result }}
+
+  create-database-manifests:
+    name: Create database multi-arch manifests
+    needs: [setup, build-and-push-database-images]
+    if: ${{ inputs.architectures == 'Both x86_64 and aarch64' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate tags
+        uses: actions/github-script@v8
+        id: generate-tags
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+        with:
+          result-encoding: string
+          script: |
+            if (process.env.CUSTOM_NAME.trim() !== '') {
+              return `${process.env.IMAGE}:${process.env.CUSTOM_NAME}`
+            }
+
+            return `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}`
+
+      - name: Generate source tags
+        uses: actions/github-script@v8
+        id: generate-source-tags
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+        with:
+          result-encoding: string
+          script: |
+            const base = process.env.CUSTOM_NAME.trim() !== ''
+              ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}`
+              : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}`
+
+            return `${base}-amd64 ${base}-arm64`
+
+      - name: Generate timestamp
+        id: generate-timestamp
+        run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      - name: Generate OCI annotations for index
+        uses: actions/github-script@v8
+        id: generate-annotations
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DATABASE }}
+          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
+          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
+          REVISION: ${{ inputs.revision }}
+          CUSTOM_NAME: ${{ inputs.custom-name }}
+          TIMESTAMP: ${{ steps.generate-timestamp.outputs.timestamp }}
+        with:
+          result-encoding: string
+          script: |
+            const refName = process.env.CUSTOM_NAME.trim() !== ''
+              ? `${process.env.IMAGE}:${process.env.CUSTOM_NAME}`
+              : `${process.env.IMAGE}:${process.env.REPOSITORY_OWNER}-${process.env.REPOSITORY_NAME}-${process.env.REVISION}`
+
+            const annotations = [
+              { key: 'created', value: process.env.TIMESTAMP },
+              { key: 'authors', envKey: 'OCI_ANNOTATION_AUTHORS' },
+              { key: 'url', envKey: 'OCI_ANNOTATION_URL' },
+              { key: 'documentation', envKey: 'OCI_ANNOTATION_DOCUMENTATION' },
+              { key: 'source', envKey: 'OCI_ANNOTATION_SOURCE' },
+              { key: 'vendor', envKey: 'OCI_ANNOTATION_VENDOR' },
+              { key: 'licenses', envKey: 'OCI_ANNOTATION_LICENSES' },
+              { key: 'ref.name', value: refName },
+              { key: 'title', envKey: 'OCI_ANNOTATION_DATABASE_TITLE' },
+              { key: 'description', envKey: 'OCI_ANNOTATION_DATABASE_DESCRIPTION' },
+              { key: 'base.name', envKey: 'OCI_ANNOTATION_DATABASE_BASE_NAME' },
+            ].map(({ key, value, envKey }) => {
+                const resolvedValue = value ?? process.env[envKey] ?? ''
+                const escapedValue = resolvedValue.replace(/'/g, "'\\''")
+                return `--annotation 'org.opencontainers.image.${key}=${escapedValue}'`
+              })
+              .join(' ')
+
+            return annotations
+
+      - name: Create and push multi-arch manifest
+        run: |
+          docker buildx imagetools create \
+            ${{ steps.generate-annotations.outputs.result }} \
+            -t ${{ steps.generate-tags.outputs.result }} \
+            ${{ steps.generate-source-tags.outputs.result }}
