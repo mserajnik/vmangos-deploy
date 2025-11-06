@@ -18,7 +18,7 @@ on:
     inputs:
       force-rebuild:
         type: boolean
-        description: Force rebuild (even if images for the latest commit hash already exist)
+        description: Force rebuild (even if images for the latest commit already exist)
         default: false
 
 env:
@@ -69,7 +69,7 @@ jobs:
       #
       # We also check if the "force rebuild" input is checked when the workflow
       # is triggered manually; if yes, we also want to (re)build.
-      - name: Determine if images for commit hash already exist
+      - name: Determine if images for commit already exist
         id: images-already-exist
         run: |
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
