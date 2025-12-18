@@ -78,7 +78,7 @@ FROM mariadb:11.8
 
 ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE
 
-# See https://github.com/MariaDB/mariadb-docker/blob/e95d4eddd8f5b3644a7c163e1363ff2bbd07d3e6/11.8/docker-entrypoint.sh#L594-L598
+# See https://github.com/MariaDB/mariadb-docker/blob/4ef487565005c1acf62dcfaa87110a39262b8150/11.8/docker-entrypoint.sh#L594-L598
 ENV MARIADB_AUTO_UPGRADE=1
 ENV MARIADB_USER=mangos
 ENV MARIADB_PASSWORD=mangos
