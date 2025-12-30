@@ -43,7 +43,6 @@ RUN \
     libcurl4-openssl-dev \
     libmysqlclient-dev \
     libssl-dev \
-    libtbb-dev \
     zlib1g-dev && \
   git clone "${VMANGOS_REPOSITORY_URL}" /build/core && \
   cd /build/core && \
@@ -75,9 +74,8 @@ RUN \
   cmake \
     -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ \
     -DUSE_PCH=1 \
-    -DUSE_STD_MALLOC=0 \
+    -DUSE_STD_MALLOC=1 \
     -DBUILD_FOR_HOST_CPU=0 \
-    -DTBB_DEBUG=0 \
     -DUSE_SCRIPTS=1 \
     -DUSE_EXTRACTORS=1 \
     -DUSE_REALMMERGE=0 \
@@ -111,7 +109,6 @@ RUN \
     libcurl4 \
     libmysqlclient21 \
     libssl3 \
-    libtbb12 \
     netcat-openbsd \
     python3 \
     python-is-python3 \
