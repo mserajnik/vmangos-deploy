@@ -57,7 +57,7 @@ env:
   OCI_ANNOTATION_VENDOR: ${{ vars.OCI_ANNOTATION_VENDOR || github.repository_owner }}
   OCI_ANNOTATION_LICENSES: GPL-2.0
   OCI_ANNOTATION_SERVER_TITLE: vmangos-deploy - Custom VMaNGOS server image
-  OCI_ANNOTATION_SERVER_DESCRIPTION: VMaNGOS is a server emulator supporting versions 1.6.1 to 1.12.1.
+  OCI_ANNOTATION_SERVER_DESCRIPTION: VMaNGOS is a server emulator supporting versions 1.5.1 to 1.12.1.
   OCI_ANNOTATION_SERVER_BASE_NAME: ubuntu:24.04
   OCI_ANNOTATION_DATABASE_TITLE: vmangos-deploy - Custom VMaNGOS database image
   OCI_ANNOTATION_DATABASE_DESCRIPTION: Database for the VMaNGOS server emulator.

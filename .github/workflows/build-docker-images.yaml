@@ -33,7 +33,7 @@ env:
   OCI_ANNOTATION_VENDOR: ${{ vars.OCI_ANNOTATION_VENDOR || github.repository_owner }}
   OCI_ANNOTATION_LICENSES: GPL-2.0
   OCI_ANNOTATION_SERVER_TITLE: vmangos-deploy - VMaNGOS server image
-  OCI_ANNOTATION_SERVER_DESCRIPTION: VMaNGOS is a server emulator supporting versions 1.6.1 to 1.12.1.
+  OCI_ANNOTATION_SERVER_DESCRIPTION: VMaNGOS is a server emulator supporting versions 1.5.1 to 1.12.1.
   OCI_ANNOTATION_SERVER_BASE_NAME: ubuntu:24.04
   OCI_ANNOTATION_DATABASE_TITLE: vmangos-deploy - VMaNGOS database image
   OCI_ANNOTATION_DATABASE_DESCRIPTION: Database for the VMaNGOS server emulator.
@@ -114,7 +114,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        client-version: [5875, 5464, 5302, 5086, 4878, 4695, 4544]
+        client-version: [5875, 5464, 5302, 5086, 4878, 4695, 4544, 4449]
     permissions:
       contents: read
       packages: write
@@ -418,30 +418,30 @@ jobs:
           # npm packages, but let's be safe and make sure we don't keep more
           # than 1,000.
           #
-          # We have 7 different server versions per build. For each server
+          # We have 8 different server versions per build. For each server
           # version, we have the image index plus two image manifests, making a
-          # total of 21 packages.
+          # total of 24 packages.
           #
           # This means, to stay below the assumed limit of 1,000 packages, we
-          # can keep a maximum of 47 builds worth of server images; let's make
-          # that 45 to have a nice and round number:
-          # 21 * 45 = 945 packages
-          min-versions-to-keep: 945
+          # can keep a maximum of 41 builds worth of server images; let's make
+          # that 40 to have a nice and round number:
+          # 24 * 40 = 960 packages
+          min-versions-to-keep: 960
 
       - name: Delete old database package versions
         uses: actions/delete-package-versions@v5
         with:
           package-name: vmangos-database
           package-type: container
-          # Above, we have set it up to keep 45 builds worth of server images
+          # Above, we have set it up to keep 40 builds worth of server images
           # (to stay below that supposed 1,000 packages limit). We want to keep
           # all the matching database images.
           #
           # Per database build we have 3 packages in total (the image index
           # plus two image manifests).
           #
-          # 3 * 45 = 135 packages
-          min-versions-to-keep: 135
+          # 3 * 40 = 120 packages
+          min-versions-to-keep: 120
 
   update-badges:
     name: Update badges

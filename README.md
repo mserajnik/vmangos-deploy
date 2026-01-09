@@ -13,7 +13,7 @@ features that simplify managing a VMaNGOS setup:
   size, performance and stability instead of having to re-compile VMaNGOS
   yourself every time you want to update
 + __The ability to run VMaNGOS configured for any of its supported client__
-  __versions:__ prebuilt images for all versions ranging from `1.6.1.4544` to
+  __versions:__ prebuilt images for all versions ranging from `1.5.1.4449` to
   `1.12.1.5875` are provided
 + __Seamless, automated database migrations:__ when pulling the latest Docker
   images and re-creating the containers, migrations are applied automatically
@@ -115,10 +115,11 @@ You can choose from the following versions:
 | `1.8.4.4878`             | `ghcr.io/mserajnik/vmangos-server:4878` |
 | `1.7.1.4695`             | `ghcr.io/mserajnik/vmangos-server:4695` |
 | `1.6.1.4544`             | `ghcr.io/mserajnik/vmangos-server:4544` |
+| `1.5.1.4449`             | `ghcr.io/mserajnik/vmangos-server:4449` |
 
 Adjust the configured image for the `realmd` and `mangosd` services based on
 this table. E.g., if you wanted to run a server that supports client version
-`1.6.1.4544`, you would choose `ghcr.io/mserajnik/vmangos-server:4544`.
+`1.5.1.4449`, you would choose `ghcr.io/mserajnik/vmangos-server:4449`.
 
 By default, the latest available images are used. Alternatively, you can also
 select specific ones via the VMaNGOS commit hash they have been built from. To
