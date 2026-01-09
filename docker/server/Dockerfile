@@ -73,7 +73,6 @@ RUN \
   cmake \
     -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ \
     -DUSE_PCH=1 \
-    -DUSE_STD_MALLOC=1 \
     -DBUILD_FOR_HOST_CPU=0 \
     -DUSE_SCRIPTS=1 \
     -DUSE_EXTRACTORS=1 \
