@@ -457,9 +457,9 @@ You are welcome to help out!
 [compose-automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L52-L63
 [compose-custom-sql]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L64-L81
 [compose-custom-sql-bind-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20
-[compose-database-backups]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L213-L248
-[compose-phpmyadmin]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L250-L269
-[compose-warden-modules]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L197-L207
+[compose-database-backups]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L185-L220
+[compose-phpmyadmin]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L222-L241
+[compose-warden-modules]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L169-L179
 [compose-world-db-dump-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L21-L35
 [docker]: https://docs.docker.com/get-docker/
 [docker-compose]: https://docs.docker.com/compose/install/
