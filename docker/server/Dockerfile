@@ -154,8 +154,12 @@ COPY --chmod=755 ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bi
 
 RUN \
   # These files are not needed in the final image
+  echo "###BEFORE_CLEANUP###" && \
+  ls -la /opt/vmangos && \
   rm -rf /opt/vmangos/include && \
   rm -rf /opt/vmangos/lib && \
+  echo "###AFTER_CLEANUP###" && \
+  ls -la /opt/vmangos && \
   chmod +x /opt/vmangos/bin/* && \
   find /opt/vmangos/bin/Extractors/ -type f ! -regex ".*\.\(json\|txt\)$" -exec chmod +x {} +
 
