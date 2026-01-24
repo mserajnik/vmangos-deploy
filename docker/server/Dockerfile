@@ -143,7 +143,8 @@ RUN \
   apt clean -y && \
   rm -rf /var/lib/apt/lists/*
 
-COPY --from=build --chown=${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME} /opt /opt
+# The `include` and `lib` directories are not needed at runtime
+COPY --from=build --exclude=vmangos/include* --exclude=vmangos/lib* --chown=${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME} /opt /opt
 
 # See https://github.com/ufoscout/docker-compose-wait
 COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /usr/local/bin/wait-for-db
@@ -153,9 +154,6 @@ COPY --chmod=755 ./docker/server/docker-cmd-realmd.sh /usr/local/bin/realmd
 COPY --chmod=755 ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bin/extract-client-data
 
 RUN \
-  # These files are not needed in the final image
-  rm -rf /opt/vmangos/include && \
-  rm -rf /opt/vmangos/lib && \
   chmod +x /opt/vmangos/bin/* && \
   find /opt/vmangos/bin/Extractors/ -type f ! -regex ".*\.\(json\|txt\)$" -exec chmod +x {} +
 
