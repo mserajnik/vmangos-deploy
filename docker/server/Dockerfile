@@ -157,6 +157,6 @@ RUN \
   chmod +x /opt/vmangos/bin/* && \
   find /opt/vmangos/bin/Extractors/ -type f ! -regex ".*\.\(json\|txt\)$" -exec chmod +x {} +
 
-USER ${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME}
+USER ${VMANGOS_USER_NAME}
 WORKDIR "/home/${VMANGOS_USER_NAME}"
 CMD ["mangosd"]
