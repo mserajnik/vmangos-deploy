@@ -8,12 +8,3 @@ trim_trailing_whitespace = true
 
 [*.md]
 trim_trailing_whitespace = false
-
-[compose.yaml.example]
-syntax = yaml
-
-[*.{conf,conf.example}]
-syntax = ini
-
-[*.sql.example]
-syntax = sql
