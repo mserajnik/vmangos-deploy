@@ -325,7 +325,7 @@ To create the first account, attach to the `mangosd` container (make sure
 [that the server is ready](#observing-the-vmangos-output) before attaching):
 
 ```sh
-docker attach vmangos-deploy-mangosd-1
+docker compose attach mangosd
 ```
 
 After attaching, create the account and assign an account level:
