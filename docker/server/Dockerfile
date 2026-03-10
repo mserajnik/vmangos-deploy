@@ -143,8 +143,9 @@ RUN \
   apt clean -y && \
   rm -rf /var/lib/apt/lists/*
 
-# The `etc`, `include` and `lib` directories are not needed at runtime
-COPY --from=build --exclude=vmangos/etc* --exclude=vmangos/include* --exclude=vmangos/lib* --chown=${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME} /opt /opt
+# The `etc` directory is not needed at runtime since we provide the
+# configuration files via a bind mount
+COPY --from=build --exclude=vmangos/etc* --chown=${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME} /opt /opt
 
 # See https://github.com/ufoscout/docker-compose-wait
 COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /usr/local/bin/wait-for-db
