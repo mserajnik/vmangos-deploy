@@ -251,6 +251,7 @@ jobs:
             VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
             VMANGOS_CLIENT_VERSION=${{ matrix.client-version }}
             VMANGOS_PATCHES_REPOSITORY_URL=${{ env.PATCHES_REPOSITORY_URL }}
+            VMANGOS_FAIL_ON_PATCH_ERROR=1
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
           labels: ${{ steps.generate-labels.outputs.result }}
@@ -392,6 +393,7 @@ jobs:
           build-args: |
             VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
             VMANGOS_PATCHES_REPOSITORY_URL=${{ env.PATCHES_REPOSITORY_URL }}
+            VMANGOS_FAIL_ON_PATCH_ERROR=1
           tags: ${{ steps.generate-tags.outputs.result }}
           annotations: ${{ steps.generate-annotations.outputs.result }}
           labels: ${{ steps.generate-labels.outputs.result }}

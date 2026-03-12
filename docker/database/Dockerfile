@@ -18,6 +18,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG VMANGOS_REPOSITORY_URL=https://github.com/vmangos/core.git
 ARG VMANGOS_REVISION=development
 ARG VMANGOS_PATCHES_REPOSITORY_URL
+ARG VMANGOS_FAIL_ON_PATCH_ERROR=0
 ARG VMANGOS_WORLD_DB_REPOSITORY_URL=https://github.com/brotalnia/database.git
 ARG VMANGOS_WORLD_DB_DUMP_NAME=world_full_14_june_2021
 ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE=/sql/world-new.sql
@@ -28,6 +29,7 @@ ARG DEBIAN_FRONTEND
 ARG VMANGOS_REPOSITORY_URL
 ARG VMANGOS_REVISION
 ARG VMANGOS_PATCHES_REPOSITORY_URL
+ARG VMANGOS_FAIL_ON_PATCH_ERROR
 ARG VMANGOS_WORLD_DB_REPOSITORY_URL
 ARG VMANGOS_WORLD_DB_DUMP_NAME
 
@@ -46,7 +48,12 @@ RUN \
     for patch in /build/patches/*.patch; do \
       if [ -f "${patch}" ]; then \
         echo "Applying patch ${patch}"; \
-        git apply "${patch}"; \
+        if ! git apply "${patch}"; then \
+          echo "Failed to apply patch ${patch}"; \
+          if [ "${VMANGOS_FAIL_ON_PATCH_ERROR}" = "1" ]; then \
+            exit 1; \
+          fi; \
+        fi; \
         patch_count=$((patch_count + 1)); \
       fi; \
     done; \

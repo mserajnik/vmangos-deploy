@@ -19,6 +19,7 @@ ARG VMANGOS_CLIENT_VERSION=5875
 ARG VMANGOS_REPOSITORY_URL=https://github.com/vmangos/core.git
 ARG VMANGOS_REVISION=development
 ARG VMANGOS_PATCHES_REPOSITORY_URL
+ARG VMANGOS_FAIL_ON_PATCH_ERROR=0
 ARG VMANGOS_USER_ID=1000
 ARG VMANGOS_GROUP_ID=1000
 ARG VMANGOS_USER_NAME=vmangos
@@ -31,6 +32,7 @@ ARG VMANGOS_CLIENT_VERSION
 ARG VMANGOS_REPOSITORY_URL
 ARG VMANGOS_REVISION
 ARG VMANGOS_PATCHES_REPOSITORY_URL
+ARG VMANGOS_FAIL_ON_PATCH_ERROR
 
 RUN \
   apt update -y && \
@@ -53,7 +55,12 @@ RUN \
     for patch in /build/patches/*.patch; do \
       if [ -f "${patch}" ]; then \
         echo "Applying patch ${patch}"; \
-        git apply "${patch}"; \
+        if ! git apply "${patch}"; then \
+          echo "Failed to apply patch ${patch}"; \
+          if [ "${VMANGOS_FAIL_ON_PATCH_ERROR}" = "1" ]; then \
+            exit 1; \
+          fi; \
+        fi; \
         patch_count=$((patch_count + 1)); \
       fi; \
     done; \
