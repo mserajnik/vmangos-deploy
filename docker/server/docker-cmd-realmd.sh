@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-eval $(fixuid -q)
+set -eu
+
+eval "$(fixuid -q)"
 
 config_file="/opt/vmangos/config/realmd.conf"
 
@@ -25,4 +27,4 @@ if [ ! -f "$config_file" ]; then
   exit 1
 fi
 
-WAIT_LOGGER_LEVEL=error wait-for-db && exec /opt/vmangos/bin/realmd -c $config_file
+WAIT_LOGGER_LEVEL=error wait-for-db && exec /opt/vmangos/bin/realmd -c "$config_file"

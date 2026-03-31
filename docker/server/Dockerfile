@@ -35,7 +35,7 @@ ARG VMANGOS_PATCHES_REPOSITORY_URL
 ARG VMANGOS_FAIL_ON_PATCH_ERROR
 
 RUN \
-  apt update -y && \
+  apt update && \
   apt install -y --no-install-recommends \
     build-essential \
     ca-certificates \
@@ -45,26 +45,26 @@ RUN \
     libmysqlclient-dev \
     libssl-dev \
     zlib1g-dev && \
-  git clone "${VMANGOS_REPOSITORY_URL}" /build/core && \
+  git clone "$VMANGOS_REPOSITORY_URL" /build/core && \
   cd /build/core && \
-  git checkout "${VMANGOS_REVISION}" && \
-  if [ -n "${VMANGOS_PATCHES_REPOSITORY_URL}" ]; then \
-    echo "Cloning and applying patches from ${VMANGOS_PATCHES_REPOSITORY_URL}"; \
-    git clone "${VMANGOS_PATCHES_REPOSITORY_URL}" /build/patches && \
+  git checkout "$VMANGOS_REVISION" && \
+  if [ -n "$VMANGOS_PATCHES_REPOSITORY_URL" ]; then \
+    echo "Cloning and applying patches from $VMANGOS_PATCHES_REPOSITORY_URL"; \
+    git clone "$VMANGOS_PATCHES_REPOSITORY_URL" /build/patches && \
     patch_count=0 && \
     for patch in /build/patches/*.patch; do \
-      if [ -f "${patch}" ]; then \
-        echo "Applying patch ${patch}"; \
-        if ! git apply "${patch}"; then \
-          echo "Failed to apply patch ${patch}"; \
-          if [ "${VMANGOS_FAIL_ON_PATCH_ERROR}" = "1" ]; then \
+      if [ -f "$patch" ]; then \
+        echo "Applying patch $patch"; \
+        if ! git apply "$patch"; then \
+          echo "Failed to apply patch $patch"; \
+          if [ "$VMANGOS_FAIL_ON_PATCH_ERROR" = "1" ]; then \
             exit 1; \
           fi; \
         fi; \
         patch_count=$((patch_count + 1)); \
       fi; \
     done; \
-    if [ ${patch_count} -eq 0 ]; then \
+    if [ $patch_count -eq 0 ]; then \
       echo "No patches found"; \
     fi; \
   else \
@@ -86,7 +86,7 @@ RUN \
     -DUSE_REALMMERGE=0 \
     -DENABLE_MAILSENDER=1 \
     -DENABLE_CPPTRACE=0 \
-    -DSUPPORTED_CLIENT_BUILD=${VMANGOS_CLIENT_VERSION} \
+    -DSUPPORTED_CLIENT_BUILD=$VMANGOS_CLIENT_VERSION \
     -DDEBUG_SYMBOLS=0 && \
   make -j$(nproc) && \
   make install
@@ -102,12 +102,12 @@ ARG VMANGOS_USER_NAME
 ARG VMANGOS_GROUP_NAME
 
 # Force the Python stdout and stderr streams to be unbuffered so we can see the
-# output from the mmap_extract.py script while it is running
+# output from the mmap_extract.py script while it is running.
 ENV PYTHONUNBUFFERED=1
-ENV VMANGOS_CLIENT_VERSION=${VMANGOS_CLIENT_VERSION}
+ENV VMANGOS_CLIENT_VERSION=$VMANGOS_CLIENT_VERSION
 
 RUN \
-  apt update -y && \
+  apt update && \
   apt install -y --no-install-recommends \
     ca-certificates \
     curl \
@@ -124,27 +124,27 @@ RUN \
   # either rename the existing user and group or create a new user and group
   # with the specified name, UID and GID.
   cd /tmp && \
-  existing_group=$(getent group "${VMANGOS_GROUP_ID}") || true && \
-  existing_user=$(getent passwd "${VMANGOS_USER_ID}") || true && \
-  if [ -n "${existing_group}" ]; then \
-    old_groupname=$(echo "${existing_group}" | cut -d: -f1) && \
-    groupmod -n "${VMANGOS_GROUP_NAME}" "${old_groupname}"; \
+  existing_group=$(getent group "$VMANGOS_GROUP_ID") || true && \
+  existing_user=$(getent passwd "$VMANGOS_USER_ID") || true && \
+  if [ -n "$existing_group" ]; then \
+    old_groupname=$(echo "$existing_group" | cut -d':' -f1) && \
+    groupmod -n "$VMANGOS_GROUP_NAME" "$old_groupname"; \
   else \
-    groupadd -g "${VMANGOS_GROUP_ID}" "${VMANGOS_GROUP_NAME}"; \
+    groupadd -g "$VMANGOS_GROUP_ID" "$VMANGOS_GROUP_NAME"; \
   fi && \
-  if [ -n "${existing_user}" ]; then \
-    old_username=$(echo "${existing_user}" | cut -d: -f1) && \
-    usermod -l "${VMANGOS_USER_NAME}" -d "/home/${VMANGOS_USER_NAME}" "${old_username}" && \
-    mv "/home/${old_username}" "/home/${VMANGOS_USER_NAME}"; \
+  if [ -n "$existing_user" ]; then \
+    old_username=$(echo "$existing_user" | cut -d':' -f1) && \
+    usermod -l "$VMANGOS_USER_NAME" -d "/home/$VMANGOS_USER_NAME" "$old_username" && \
+    mv "/home/$old_username" "/home/$VMANGOS_USER_NAME"; \
   else \
-    useradd -u "${VMANGOS_USER_ID}" -g "${VMANGOS_GROUP_NAME}" -d "/home/${VMANGOS_USER_NAME}" -s /bin/sh -m "${VMANGOS_USER_NAME}"; \
+    useradd -u "$VMANGOS_USER_ID" -g "$VMANGOS_GROUP_NAME" -d "/home/$VMANGOS_USER_NAME" -s /bin/sh -m "$VMANGOS_USER_NAME"; \
   fi && \
   # See https://github.com/boxboat/fixuid
-  curl -SsL https://github.com/boxboat/fixuid/releases/download/v0.6.0/fixuid-0.6.0-linux-${TARGETARCH}.tar.gz | tar -C /usr/local/bin -xzf - && \
+  curl -SsL https://github.com/boxboat/fixuid/releases/download/v0.6.0/fixuid-0.6.0-linux-$TARGETARCH.tar.gz | tar -C /usr/local/bin -xzf - && \
   chown root:root /usr/local/bin/fixuid && \
   chmod 4755 /usr/local/bin/fixuid && \
   mkdir -p /etc/fixuid && \
-  printf "user: ${VMANGOS_USER_NAME}\ngroup: ${VMANGOS_GROUP_NAME}\n" > /etc/fixuid/config.yml && \
+  printf 'user: %s\ngroup: %s\n' "$VMANGOS_USER_NAME" "$VMANGOS_GROUP_NAME" > /etc/fixuid/config.yml && \
   apt remove -y \
     curl && \
   apt autoremove -y && \
@@ -152,8 +152,8 @@ RUN \
   rm -rf /var/lib/apt/lists/*
 
 # The `etc` directory is not needed at runtime since we provide the
-# configuration files via a bind mount
-COPY --from=build --exclude=vmangos/etc* --chown=${VMANGOS_USER_NAME}:${VMANGOS_GROUP_NAME} /opt /opt
+# configuration files via a bind mount.
+COPY --from=build --exclude=vmangos/etc* --chown=$VMANGOS_USER_NAME:$VMANGOS_GROUP_NAME /opt /opt
 
 # See https://github.com/ufoscout/docker-compose-wait
 COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /usr/local/bin/wait-for-db
@@ -164,8 +164,8 @@ COPY --chmod=755 ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bi
 
 RUN \
   chmod +x /opt/vmangos/bin/* && \
-  find /opt/vmangos/bin/Extractors/ -type f ! -regex ".*\.\(json\|txt\)$" -exec chmod +x {} +
+  find /opt/vmangos/bin/Extractors/ -type f ! -regex '.*\.\(json\|txt\)$' -exec chmod +x {} +
 
-USER ${VMANGOS_USER_NAME}
-WORKDIR "/home/${VMANGOS_USER_NAME}"
+USER $VMANGOS_USER_NAME
+WORKDIR "/home/$VMANGOS_USER_NAME"
 CMD ["mangosd"]

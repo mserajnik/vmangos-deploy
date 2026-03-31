@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-eval $(fixuid -q)
+set -eu
+
+eval "$(fixuid -q)"
 
 client_data_dir="/opt/vmangos/storage/client-data"
 extracted_data_dir="/opt/vmangos/storage/extracted-data"
@@ -31,7 +33,7 @@ force=false
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -f|--force)
-      # If user passes `-f` or `--force`, set 'force' to true
+      # If user passes `-f` or `--force`, set 'force' to true.
       force=true
       shift
       ;;
@@ -57,7 +59,9 @@ if [ "$force" = false ]; then
   if [ -d "$extracted_data_dir/maps" ] || [ -d "$extracted_data_dir/mmaps" ] || [ -d "$extracted_data_dir/vmaps" ] || [ -d "$client_version_dir" ]; then
     echo "[vmangos-deploy]: Previously extracted data has been found in '$extracted_data_dir'; continue with the extraction (which will overwrite the old data)? [Y/n]"
 
-    read -r choice
+    if ! read -r choice; then
+      choice="y"
+    fi
     choice=$(echo "${choice:-y}" | tr -d '[:space:]')
     if [ "$choice" = "n" ] || [ "$choice" = "N" ]; then
       echo "[vmangos-deploy]: Aborting extraction"
@@ -66,7 +70,7 @@ if [ "$force" = false ]; then
   fi
 fi
 
-# Remove any potentially previously extracted data from the client directory
+# Remove any potentially previously extracted data from the client directory.
 rm -rf ./Buildings ./Cameras ./dbc ./maps ./mmaps ./vmaps
 
 "$extractors_dir/MapExtractor"
@@ -77,11 +81,11 @@ rm -rf ./Buildings ./Cameras ./dbc ./maps ./mmaps ./vmaps
   --offMeshInput "$extractors_dir/offmesh.txt"
 
 # Delete extracted data that is no longer needed after processing it to avoid
-# confusion
+# confusion.
 rm -rf ./Buildings ./Cameras
 
 # Remove any potentially already existing data from the extracted data
-# directory before moving the new data there
+# directory before moving the new data there.
 rm -rf "$extracted_data_dir"/*
 
 mkdir -p "$client_version_dir"

@@ -77,7 +77,7 @@ import_updates() {
 
   if [ ! -e "$update_file" ]; then
     # The update file not existing is not an error, so we return 0 (success)
-    # here
+    # here.
     return 0
   fi
 

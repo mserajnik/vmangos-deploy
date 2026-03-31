@@ -34,30 +34,30 @@ ARG VMANGOS_WORLD_DB_REPOSITORY_URL
 ARG VMANGOS_WORLD_DB_DUMP_NAME
 
 RUN \
-  apt update -y && \
+  apt update && \
   apt install -y --no-install-recommends \
     git \
     p7zip-full && \
-  git clone "${VMANGOS_REPOSITORY_URL}" /build/core && \
+  git clone "$VMANGOS_REPOSITORY_URL" /build/core && \
   cd /build/core && \
-  git checkout "${VMANGOS_REVISION}" && \
-  if [ -n "${VMANGOS_PATCHES_REPOSITORY_URL}" ]; then \
-    echo "Cloning and applying patches from ${VMANGOS_PATCHES_REPOSITORY_URL}"; \
-    git clone "${VMANGOS_PATCHES_REPOSITORY_URL}" /build/patches && \
+  git checkout "$VMANGOS_REVISION" && \
+  if [ -n "$VMANGOS_PATCHES_REPOSITORY_URL" ]; then \
+    echo "Cloning and applying patches from $VMANGOS_PATCHES_REPOSITORY_URL"; \
+    git clone "$VMANGOS_PATCHES_REPOSITORY_URL" /build/patches && \
     patch_count=0 && \
     for patch in /build/patches/*.patch; do \
-      if [ -f "${patch}" ]; then \
-        echo "Applying patch ${patch}"; \
-        if ! git apply "${patch}"; then \
-          echo "Failed to apply patch ${patch}"; \
-          if [ "${VMANGOS_FAIL_ON_PATCH_ERROR}" = "1" ]; then \
+      if [ -f "$patch" ]; then \
+        echo "Applying patch $patch"; \
+        if ! git apply "$patch"; then \
+          echo "Failed to apply patch $patch"; \
+          if [ "$VMANGOS_FAIL_ON_PATCH_ERROR" = "1" ]; then \
             exit 1; \
           fi; \
         fi; \
         patch_count=$((patch_count + 1)); \
       fi; \
     done; \
-    if [ ${patch_count} -eq 0 ]; then \
+    if [ $patch_count -eq 0 ]; then \
       echo "No patches found"; \
     fi; \
   else \
@@ -76,10 +76,10 @@ RUN \
   mv logon_db_updates.sql /sql/migrations && \
   mv logs_db_updates.sql /sql/migrations && \
   mv world_db_updates.sql /sql/migrations && \
-  git clone "${VMANGOS_WORLD_DB_REPOSITORY_URL}" /build/database && \
+  git clone "$VMANGOS_WORLD_DB_REPOSITORY_URL" /build/database && \
   cd /build/database && \
-  7z e ${VMANGOS_WORLD_DB_DUMP_NAME}.7z && \
-  mv ${VMANGOS_WORLD_DB_DUMP_NAME}.sql /sql/world.sql
+  7z e "$VMANGOS_WORLD_DB_DUMP_NAME.7z" && \
+  mv "$VMANGOS_WORLD_DB_DUMP_NAME.sql" /sql/world.sql
 
 FROM mariadb:11.8
 
@@ -96,7 +96,7 @@ ENV VMANGOS_REALMLIST_PORT=8085
 ENV VMANGOS_REALMLIST_ICON=1
 ENV VMANGOS_REALMLIST_TIMEZONE=0
 ENV VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0
-ENV VMANGOS_WORLD_DB_DUMP_NEW_FILE=${VMANGOS_WORLD_DB_DUMP_NEW_FILE}
+ENV VMANGOS_WORLD_DB_DUMP_NEW_FILE=$VMANGOS_WORLD_DB_DUMP_NEW_FILE
 ENV VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1
 ENV VMANGOS_PROCESS_CUSTOM_SQL=1
 
