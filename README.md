@@ -332,12 +332,25 @@ After attaching, create the account and assign an account level:
 
 ```sh
 account create <account name> <account password>
-account set gmlevel <account name> <account level> # see https://github.com/vmangos/core/blob/46183d287f80ab1ebf27bab12f37bc0b5b188c86/src/shared/Common.h#L183-L189
+account set gmlevel <account name> <account level> # See https://github.com/vmangos/core/blob/28818aabd89c8d34df696edc7e49808865fffe97/src/shared/Common.h#L138-L144
 ```
+
+E.g., to create an administrator account, set the account level to `6`.
+
+> [!NOTE]
+> Setting an account level of `1` or higher means that some Game
+> Master-specific behavior will begin to apply to characters on that account.
+> Exactly which behavior applies depends on the account level; you can modify
+> some of this via the [`GM.*` options][mangosd-gm-options] in your
+> `mangosd.conf`.
+> In particular, if you use an account level of `3` or higher, you will
+> probably want to set [`GM.CheatGod = 0`][mangosd-gm-options-cheat-god] if you
+> intend to actually play normally with the account, because otherwise your
+> characters will be invulnerable.
 
 When you are done, detach from the Docker container by pressing
 <kbd>Ctrl</kbd>+<kbd>P</kbd> and <kbd>Ctrl</kbd>+<kbd>Q</kbd>. You should
-now be able to log in with your newly created account.
+now be able to log in to the game client with your newly created account.
 
 ### Stopping VMaNGOS
 
@@ -466,6 +479,8 @@ You are welcome to help out!
 [hermesproxy]: https://github.com/WowLegacyCore/HermesProxy
 [image-vmangos-database-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-database/versions?filters%5Bversion_type%5D=tagged
 [image-vmangos-server-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-server/versions?filters%5Bversion_type%5D=tagged
+[mangosd-gm-options]: https://github.com/mserajnik/vmangos-deploy/blob/master/config/mangosd.conf.example#L2256-L2364
+[mangosd-gm-options-cheat-god]: https://github.com/mserajnik/vmangos-deploy/blob/master/config/mangosd.conf.example#L2364
 [phpymadmin]: https://www.phpmyadmin.net/
 [vmangos]: https://github.com/vmangos/core
 [vmangos-example-commit]: https://github.com/vmangos/core/commit/46183d287f80ab1ebf27bab12f37bc0b5b188c86
