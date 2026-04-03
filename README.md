@@ -36,6 +36,7 @@ features that simplify managing a VMaNGOS setup:
 
 + [Install](#install)
   + [Dependencies](#dependencies)
+  + [Using a coding agent](#using-a-coding-agent)
   + [Instructions](#instructions)
     + [Cloning the repository and adjusting the VMaNGOS configuration](#cloning-the-repository-and-adjusting-the-vmangos-configuration)
     + [Adjusting the Docker Compose configuration](#adjusting-the-docker-compose-configuration)
@@ -62,6 +63,45 @@ features that simplify managing a VMaNGOS setup:
 ### Dependencies
 
 + [Docker][docker] (including [Compose V2][docker-compose])
+
+### Using a coding agent
+
+If you have a coding agent like [Claude Code][claude-code] or [Codex][codex]
+installed, you can try a prompt similar to the following one to have it assist
+you with the installation process:
+
+```
+Help me install and set up https://github.com/mserajnik/vmangos-deploy.
+First, clone the repository and read the README carefully.
+Then guide me through the installation process step by step, following the
+README closely.
+Do as much of the setup yourself as you safely can so that I only have to step
+in when a manual action or personal preference is required.
+Ask me about my preferences whenever a choice has to be made, explain the
+relevant options clearly, and tailor your instructions to the OS I am using.
+Assume that I am not familiar with VMaNGOS or Docker and that I have not read
+the README myself.
+For steps that I need to perform manually, give me clear instructions and exact
+commands where appropriate.
+Do not assume user-facing choices such as the client version, optional
+services, or networking-related preferences. Ask me whenever the README
+presents a meaningful choice.
+For settings that the README, the Docker Compose configuration, or the VMaNGOS
+example configuration files indicate should generally be left alone, keep the
+documented defaults unless I explicitly ask for something else.
+Do not change settings that the README, the Docker Compose configuration, or
+the VMaNGOS example configuration files indicate should not be changed.
+```
+
+The exact prompt that works best may vary depending on the coding agent and
+model you use.
+
+> [!CAUTION]
+> You use coding agents at your own risk. You are responsible for the
+> permissions and access you give them. The maintainer of this project is not
+> liable for any damage or data loss resulting from their use. Take appropriate
+> precautions such as sandboxed access and limited permissions, and do not run
+> them with `--yolo` or similar options that bypass safety checks.
 
 ### Instructions
 
@@ -467,6 +507,8 @@ You are welcome to help out!
 [badge-latest-vmangos-commit]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fcommit-badge.json
 [badge-latest-vmangos-commit-url]: https://scripts.mser.at/vmangos-deploy-latest-built-commit/
 
+[claude-code]: https://www.anthropic.com/product/claude-code
+[codex]: https://openai.com/codex
 [compose-automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L52-L63
 [compose-custom-sql]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L64-L81
 [compose-custom-sql-bind-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20
