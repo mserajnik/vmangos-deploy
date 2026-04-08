@@ -80,6 +80,25 @@ sanitize_docker_tag_fragment() {
 package_versions_endpoint() {
   local owner="$1"
   local package_name="$2"
+
+  printf '%s/packages/container/%s/versions' \
+    "$(package_owner_endpoint "$owner")" \
+    "$package_name"
+}
+
+package_version_endpoint() {
+  local owner="$1"
+  local package_name="$2"
+  local package_version_id="$3"
+
+  printf '%s/packages/container/%s/versions/%s' \
+    "$(package_owner_endpoint "$owner")" \
+    "$package_name" \
+    "$package_version_id"
+}
+
+package_owner_endpoint() {
+  local owner="$1"
   local owner_type
   local namespace
 
@@ -97,5 +116,5 @@ package_versions_endpoint() {
       ;;
   esac
 
-  printf '/%s/%s/packages/container/%s/versions' "$namespace" "$owner" "$package_name"
+  printf '/%s/%s' "$namespace" "$owner"
 }

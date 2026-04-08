@@ -35,36 +35,49 @@ timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 architectures="$(trim "$ARCHITECTURES")"
 
 declare -a tags=()
-declare -a prefixes=()
 declare -a mode_metadata_entries=()
 declare -a label_only_entries=()
 declare -a metadata_entries=()
 declare -a label_lines=()
-declare -a annotation_lines=()
+declare -a manifest_annotation_lines=()
+declare -a index_annotation_lines=()
+declare -a build_args=()
 
-platforms=""
-needs_qemu="false"
+build_amd64="false"
+build_arm64="false"
+is_multi_arch="false"
 title=""
 description=""
 base_name=""
 ref_name=""
 image_name=""
+dockerfile=""
+
+normalize_tag_fragment() {
+  local label="$1"
+  local value="$2"
+  local normalized_value=""
+
+  normalized_value="$(sanitize_docker_tag_fragment "$value")"
+
+  if [[ "$normalized_value" != "$value" ]]; then
+    echo "Normalized $label tag fragment '$value' to '$normalized_value'"
+  fi
+
+  printf '%s' "$normalized_value"
+}
 
 case "$architectures" in
-  both|"Both x86_64 and aarch64")
-    platforms="linux/amd64,linux/arm64"
-    needs_qemu="true"
-    prefixes=("manifest" "index")
+  both|"Both amd64 and arm64")
+    build_amd64="true"
+    build_arm64="true"
+    is_multi_arch="true"
     ;;
-  amd64|"x86_64 only")
-    platforms="linux/amd64"
-    needs_qemu="false"
-    prefixes=("manifest")
+  amd64|"amd64 only")
+    build_amd64="true"
     ;;
-  arm64|"aarch64 only")
-    platforms="linux/arm64"
-    needs_qemu="true"
-    prefixes=("manifest")
+  arm64|"arm64 only")
+    build_arm64="true"
     ;;
   *)
     fail "Unsupported architectures value '$architectures'"
@@ -77,10 +90,12 @@ case "$IMAGE_KIND" in
   server)
     require_env IMAGE_NAME_SERVER
     image_name="$IMAGE_NAME_SERVER"
+    dockerfile="./docker/server/Dockerfile"
     ;;
   database)
     require_env IMAGE_NAME_DATABASE
     image_name="$IMAGE_NAME_DATABASE"
+    dockerfile="./docker/database/Dockerfile"
     ;;
   *)
     fail "Unsupported image kind '$IMAGE_KIND'"
@@ -111,6 +126,13 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
       "$image:$CLIENT_VERSION-$COMMIT_HASH"
     )
 
+    build_args+=(
+      "VMANGOS_REVISION=$COMMIT_HASH"
+      "VMANGOS_CLIENT_VERSION=$CLIENT_VERSION"
+      "VMANGOS_PATCHES_REPOSITORY_URL=$VMANGOS_PATCHES_REPOSITORY_URL"
+      "VMANGOS_FAIL_ON_PATCH_ERROR=1"
+    )
+
     mode_metadata_entries+=(
       "version=$COMMIT_HASH"
       "revision=$COMMIT_HASH"
@@ -130,6 +152,12 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
     tags+=(
       "$image:latest"
       "$image:$COMMIT_HASH"
+    )
+
+    build_args+=(
+      "VMANGOS_REVISION=$COMMIT_HASH"
+      "VMANGOS_PATCHES_REPOSITORY_URL=$VMANGOS_PATCHES_REPOSITORY_URL"
+      "VMANGOS_FAIL_ON_PATCH_ERROR=1"
     )
 
     mode_metadata_entries+=(
@@ -153,24 +181,21 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
     custom_name="$(trim "${CUSTOM_NAME:-}")"
 
     if [[ -n "$custom_name" ]]; then
-      sanitized_custom_name="$(sanitize_docker_tag_fragment "$custom_name")"
-
-      if [[ "$sanitized_custom_name" != "$custom_name" ]]; then
-        echo "Normalized custom tag fragment '$custom_name' to '$sanitized_custom_name'"
-      fi
-
+      sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
       ref_name="$image:$sanitized_custom_name-$CLIENT_VERSION"
     else
-      sanitized_revision="$(sanitize_docker_tag_fragment "$REVISION")"
-
-      if [[ "$sanitized_revision" != "$REVISION" ]]; then
-        echo "Normalized revision tag fragment '$REVISION' to '$sanitized_revision'"
-      fi
-
+      sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
       ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision-$CLIENT_VERSION"
     fi
 
     tags+=("$ref_name")
+
+    build_args+=(
+      "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
+      "VMANGOS_REVISION=$REVISION"
+      "VMANGOS_CLIENT_VERSION=$CLIENT_VERSION"
+      "VMANGOS_PATCHES_REPOSITORY_URL=${VMANGOS_PATCHES_REPOSITORY_URL:-}"
+    )
     ;;
   custom:database)
     require_env REPOSITORY_OWNER
@@ -187,24 +212,22 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
     custom_name="$(trim "${CUSTOM_NAME:-}")"
 
     if [[ -n "$custom_name" ]]; then
-      sanitized_custom_name="$(sanitize_docker_tag_fragment "$custom_name")"
-
-      if [[ "$sanitized_custom_name" != "$custom_name" ]]; then
-        echo "Normalized custom tag fragment '$custom_name' to '$sanitized_custom_name'"
-      fi
-
+      sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
       ref_name="$image:$sanitized_custom_name"
     else
-      sanitized_revision="$(sanitize_docker_tag_fragment "$REVISION")"
-
-      if [[ "$sanitized_revision" != "$REVISION" ]]; then
-        echo "Normalized revision tag fragment '$REVISION' to '$sanitized_revision'"
-      fi
-
+      sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
       ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision"
     fi
 
     tags+=("$ref_name")
+
+    build_args+=(
+      "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
+      "VMANGOS_REVISION=$REVISION"
+      "VMANGOS_PATCHES_REPOSITORY_URL=${VMANGOS_PATCHES_REPOSITORY_URL:-}"
+      "VMANGOS_WORLD_DB_REPOSITORY_URL=${VMANGOS_WORLD_DB_REPOSITORY_URL:-}"
+      "VMANGOS_WORLD_DB_DUMP_NAME=${VMANGOS_WORLD_DB_DUMP_NAME:-}"
+    )
     ;;
   *)
     fail "Unsupported workflow/image combination '$WORKFLOW_MODE:$IMAGE_KIND'"
@@ -243,30 +266,49 @@ for entry in "${metadata_entries[@]}"; do
   value="${entry#*=}"
 
   label_lines+=("org.opencontainers.image.$key=$value")
+  manifest_annotation_lines+=("manifest:org.opencontainers.image.$key=$value")
 
-  for prefix in "${prefixes[@]}"; do
-    annotation_lines+=("$prefix:org.opencontainers.image.$key=$value")
+  if [[ "$is_multi_arch" == "true" ]]; then
+    index_annotation_lines+=("index:org.opencontainers.image.$key=$value")
+  fi
+done
+
+if ((${#label_only_entries[@]} > 0)); then
+  for entry in "${label_only_entries[@]}"; do
+    key="${entry%%=*}"
+    value="${entry#*=}"
+
+    label_lines+=("org.opencontainers.image.$key=$value")
   done
-done
-
-for entry in "${label_only_entries[@]}"; do
-  key="${entry%%=*}"
-  value="${entry#*=}"
-
-  label_lines+=("org.opencontainers.image.$key=$value")
-done
+fi
 
 printf -v tags_output '%s,' "${tags[@]}"
 tags_output="${tags_output%,}"
 
-printf -v annotations_output '%s\n' "${annotation_lines[@]}"
-annotations_output="${annotations_output%$'\n'}"
+printf -v manifest_annotations_output '%s\n' "${manifest_annotation_lines[@]}"
+manifest_annotations_output="${manifest_annotations_output%$'\n'}"
+
+if ((${#index_annotation_lines[@]} > 0)); then
+  printf -v index_annotations_output '%s\n' "${index_annotation_lines[@]}"
+  index_annotations_output="${index_annotations_output%$'\n'}"
+else
+  index_annotations_output=""
+fi
 
 printf -v labels_output '%s\n' "${label_lines[@]}"
 labels_output="${labels_output%$'\n'}"
 
-write_output platforms "$platforms"
-write_output needs_qemu "$needs_qemu"
+printf -v build_args_output '%s\n' "${build_args[@]}"
+build_args_output="${build_args_output%$'\n'}"
+
+write_output image "$image"
+write_output package_name "${image_name##*/}"
+write_output dockerfile "$dockerfile"
+write_output build_amd64 "$build_amd64"
+write_output build_arm64 "$build_arm64"
+write_output is_multi_arch "$is_multi_arch"
 write_output tags "$tags_output"
-write_multiline_output annotations "$annotations_output"
+write_multiline_output build_args "$build_args_output"
+write_multiline_output manifest_annotations "$manifest_annotations_output"
+write_multiline_output index_annotations "$index_annotations_output"
 write_multiline_output labels "$labels_output"

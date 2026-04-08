@@ -27,15 +27,15 @@ require_env PACKAGE_OWNER
 require_env PACKAGE_NAME
 require_env VMANGOS_REPOSITORY_OWNER
 require_env VMANGOS_REPOSITORY_NAME
-require_env VMANGOS_REPOSITORY_REF
+require_env VMANGOS_REVISION
 
 vmangos_repository_owner="$VMANGOS_REPOSITORY_OWNER"
 vmangos_repository_name="$VMANGOS_REPOSITORY_NAME"
-vmangos_repository_ref="$VMANGOS_REPOSITORY_REF"
+vmangos_revision="$VMANGOS_REVISION"
 force_rebuild="${FORCE_REBUILD:-false}"
 images_already_exist="false"
 
-commit_hash="$(gh api "/repos/$vmangos_repository_owner/$vmangos_repository_name/commits/$vmangos_repository_ref" --jq '.sha')"
+commit_hash="$(gh api "/repos/$vmangos_repository_owner/$vmangos_repository_name/commits/$vmangos_revision" --jq '.sha')"
 
 if [[ "$GITHUB_EVENT_NAME" == "schedule" && "$(date +%u)" -eq 1 ]]; then
   images_already_exist="false"

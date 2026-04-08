@@ -3,7 +3,7 @@ name: Build and push custom Docker images
 on:
   workflow_dispatch:
     inputs:
-      repository-url:
+      repository_url:
         type: string
         required: true
         description: The URL of the VMaNGOS code repository to use
@@ -13,26 +13,26 @@ on:
         required: true
         description: The VMaNGOS code repository revision to use
         default: development
-      client-version:
+      client_version:
         type: number
         required: true
         description: The client version for which to build VMaNGOS
         default: 5875
-      world-db-repository-url:
+      world_db_repository_url:
         type: string
         required: true
         description: The URL of the VMaNGOS world database repository to use
         default: https://github.com/brotalnia/database.git
-      world-db-dump-name:
+      world_db_dump_name:
         type: string
         required: true
         description: The name of the VMaNGOS world database dump to use
         default: world_full_14_june_2021
-      patches-repository-url:
+      patches_repository_url:
         type: string
         required: false
         description: (Optional) A URL to a repository that contains patches to apply to the VMaNGOS code (patches have to end in `.patch` and be located in the root of the repository)
-      custom-name:
+      custom_name:
         type: string
         required: false
         description: (Optional) A custom name to use as part of the image tags (when provided, this overrides the default `{ owner }-{ repository }-{ revision }` naming scheme)
@@ -41,27 +41,10 @@ on:
         required: true
         description: Which architectures should images be built for?
         options:
-          - "Both x86_64 and aarch64"
-          - "x86_64 only"
-          - "aarch64 only"
-        default: "Both x86_64 and aarch64"
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME_SERVER: ${{ github.repository_owner }}/vmangos-server-custom
-  IMAGE_NAME_DATABASE: ${{ github.repository_owner }}/vmangos-database-custom
-  OCI_ANNOTATION_AUTHORS: ${{ vars.OCI_ANNOTATION_AUTHORS || github.repository_owner }}
-  OCI_ANNOTATION_URL: https://github.com/${{ github.repository }}
-  OCI_ANNOTATION_DOCUMENTATION: https://github.com/${{ github.repository }}/blob/master/README.md
-  OCI_ANNOTATION_SOURCE: https://github.com/${{ github.repository }}
-  OCI_ANNOTATION_VENDOR: ${{ vars.OCI_ANNOTATION_VENDOR || github.repository_owner }}
-  OCI_ANNOTATION_LICENSES: GPL-2.0
-  OCI_ANNOTATION_SERVER_TITLE: vmangos-deploy - Custom VMaNGOS server image
-  OCI_ANNOTATION_SERVER_DESCRIPTION: VMaNGOS is a server emulator supporting versions 1.5.1 to 1.12.1.
-  OCI_ANNOTATION_SERVER_BASE_NAME: ubuntu:24.04
-  OCI_ANNOTATION_DATABASE_TITLE: vmangos-deploy - Custom VMaNGOS database image
-  OCI_ANNOTATION_DATABASE_DESCRIPTION: Database for the VMaNGOS server emulator.
-  OCI_ANNOTATION_DATABASE_BASE_NAME: mariadb:11.8
+          - "Both amd64 and arm64"
+          - "amd64 only"
+          - "arm64 only"
+        default: "Both amd64 and arm64"
 
 jobs:
   setup:
@@ -70,8 +53,8 @@ jobs:
     permissions:
       contents: read
     outputs:
-      repository-owner: ${{ steps.parse-repository-url.outputs.owner }}
-      repository-name: ${{ steps.parse-repository-url.outputs.name }}
+      repository_owner: ${{ steps.parse-repository-url.outputs.repository_owner }}
+      repository_name: ${{ steps.parse-repository-url.outputs.repository_name }}
 
     steps:
       - name: Checkout repository
@@ -103,123 +86,48 @@ jobs:
       - name: Parse repository URL
         id: parse-repository-url
         env:
-          REPOSITORY_URL: ${{ inputs.repository-url }}
+          REPOSITORY_URL: ${{ inputs.repository_url }}
         run: ./.github/scripts/parse-repository-url.sh
 
   build-and-push-server-images:
     name: Build and push server images
     needs: setup
-    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
+    uses: ./.github/workflows/build-and-push-image.yaml
+    with:
+      workflow_mode: custom
+      image_kind: server
+      architectures: ${{ inputs.architectures }}
+      push_images: true
+      repository_url: ${{ inputs.repository_url }}
+      repository_owner: ${{ needs.setup.outputs.repository_owner }}
+      repository_name: ${{ needs.setup.outputs.repository_name }}
+      revision: ${{ inputs.revision }}
+      client_version: ${{ inputs.client_version }}
+      patches_repository_url: ${{ inputs.patches_repository_url }}
+      custom_name: ${{ inputs.custom_name }}
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Prepare build metadata
-        id: prepare-build-metadata
-        env:
-          WORKFLOW_MODE: custom
-          IMAGE_KIND: server
-          ARCHITECTURES: ${{ inputs.architectures }}
-          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
-          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
-          REVISION: ${{ inputs.revision }}
-          CLIENT_VERSION: ${{ inputs.client-version }}
-          CUSTOM_NAME: ${{ inputs.custom-name }}
-        run: ./.github/scripts/prepare-image-build.sh
-
-      - name: Set up QEMU
-        if: steps.prepare-build-metadata.outputs.needs_qemu == 'true'
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to container registry
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
-      - name: Build and push images
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: ${{ steps.prepare-build-metadata.outputs.platforms }}
-          file: ./docker/server/Dockerfile
-          push: true
-          provenance: false
-          build-args: |
-            VMANGOS_REPOSITORY_URL=${{ inputs.repository-url }}
-            VMANGOS_REVISION=${{ inputs.revision }}
-            VMANGOS_CLIENT_VERSION=${{ inputs.client-version }}
-            VMANGOS_PATCHES_REPOSITORY_URL=${{ inputs.patches-repository-url }}
-          tags: ${{ steps.prepare-build-metadata.outputs.tags }}
-          annotations: ${{ steps.prepare-build-metadata.outputs.annotations }}
-          labels: ${{ steps.prepare-build-metadata.outputs.labels }}
-
-  # Since the database image builds only take a few minutes (and therefore
-  # always complete before the server image builds), we need to build after the
-  # server images; otherwise, we would push new database images without knowing
-  # if the server image builds will succeed (and if there is, e.g., a
-  # compilation error due to a bug upstream we would end up with a version
-  # mismatch between the latest database images and the latest server images).
+  # We build database images only after the server build succeeds; otherwise, a
+  # failure there could leave the latest database images out of sync.
   build-and-push-database-images:
     name: Build and push database images
     needs: [setup, build-and-push-server-images]
-    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Prepare build metadata
-        id: prepare-build-metadata
-        env:
-          WORKFLOW_MODE: custom
-          IMAGE_KIND: database
-          ARCHITECTURES: ${{ inputs.architectures }}
-          REPOSITORY_OWNER: ${{ needs.setup.outputs.repository-owner }}
-          REPOSITORY_NAME: ${{ needs.setup.outputs.repository-name }}
-          REVISION: ${{ inputs.revision }}
-          CUSTOM_NAME: ${{ inputs.custom-name }}
-        run: ./.github/scripts/prepare-image-build.sh
-
-      - name: Set up QEMU
-        if: steps.prepare-build-metadata.outputs.needs_qemu == 'true'
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to container registry
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
-      - name: Build and push images
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: ${{ steps.prepare-build-metadata.outputs.platforms }}
-          file: ./docker/database/Dockerfile
-          push: true
-          provenance: false
-          build-args: |
-            VMANGOS_REPOSITORY_URL=${{ inputs.repository-url }}
-            VMANGOS_REVISION=${{ inputs.revision }}
-            VMANGOS_PATCHES_REPOSITORY_URL=${{ inputs.patches-repository-url }}
-            VMANGOS_WORLD_DB_REPOSITORY_URL=${{ inputs.world-db-repository-url }}
-            VMANGOS_WORLD_DB_DUMP_NAME=${{ inputs.world-db-dump-name }}
-          tags: ${{ steps.prepare-build-metadata.outputs.tags }}
-          annotations: ${{ steps.prepare-build-metadata.outputs.annotations }}
-          labels: ${{ steps.prepare-build-metadata.outputs.labels }}
+    uses: ./.github/workflows/build-and-push-image.yaml
+    with:
+      workflow_mode: custom
+      image_kind: database
+      architectures: ${{ inputs.architectures }}
+      push_images: true
+      repository_url: ${{ inputs.repository_url }}
+      repository_owner: ${{ needs.setup.outputs.repository_owner }}
+      repository_name: ${{ needs.setup.outputs.repository_name }}
+      revision: ${{ inputs.revision }}
+      world_db_repository_url: ${{ inputs.world_db_repository_url }}
+      world_db_dump_name: ${{ inputs.world_db_dump_name }}
+      patches_repository_url: ${{ inputs.patches_repository_url }}
+      custom_name: ${{ inputs.custom_name }}

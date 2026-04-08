@@ -8,7 +8,7 @@ This is a Docker-based solution for running [VMaNGOS][vmangos] that focuses on
 providing a streamlined and user-friendly experience. It offers a range of
 features that simplify managing a VMaNGOS setup:
 
-+ __Prebuilt Docker images for both `x86_64` and `aarch64`, leveraging GitHub__
++ __Prebuilt Docker images for both `amd64` and `arm64`, leveraging GitHub__
   __Actions:__ simply pull the provided images that have been optimized for
   size, performance and stability instead of having to re-compile VMaNGOS
   yourself every time you want to update

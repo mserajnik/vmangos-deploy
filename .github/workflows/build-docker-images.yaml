@@ -10,6 +10,7 @@ on:
     paths:
       - .dockerignore
       - .github/scripts/**
+      - .github/workflows/build-and-push-image.yaml
       - .github/workflows/build-docker-images.yaml
       - .github/workflows/build-custom-docker-images.yaml
       - docker/**
@@ -19,33 +20,16 @@ on:
     paths:
       - .dockerignore
       - .github/scripts/**
+      - .github/workflows/build-and-push-image.yaml
       - .github/workflows/build-docker-images.yaml
       - .github/workflows/build-custom-docker-images.yaml
       - docker/**
   workflow_dispatch:
     inputs:
-      force-rebuild:
+      force_rebuild:
         type: boolean
         description: Force rebuild (even if images for the latest commit already exist)
         default: false
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME_SERVER: ${{ github.repository_owner }}/vmangos-server
-  IMAGE_NAME_DATABASE: ${{ github.repository_owner }}/vmangos-database
-  PATCHES_REPOSITORY_URL: https://github.com/mserajnik/vmangos-deploy-patches.git
-  OCI_ANNOTATION_AUTHORS: ${{ vars.OCI_ANNOTATION_AUTHORS || github.repository_owner }}
-  OCI_ANNOTATION_URL: https://github.com/${{ github.repository }}
-  OCI_ANNOTATION_DOCUMENTATION: https://github.com/${{ github.repository }}/blob/master/README.md
-  OCI_ANNOTATION_SOURCE: https://github.com/${{ github.repository }}
-  OCI_ANNOTATION_VENDOR: ${{ vars.OCI_ANNOTATION_VENDOR || github.repository_owner }}
-  OCI_ANNOTATION_LICENSES: GPL-2.0
-  OCI_ANNOTATION_SERVER_TITLE: vmangos-deploy - VMaNGOS server image
-  OCI_ANNOTATION_SERVER_DESCRIPTION: VMaNGOS is a server emulator supporting versions 1.5.1 to 1.12.1.
-  OCI_ANNOTATION_SERVER_BASE_NAME: ubuntu:24.04
-  OCI_ANNOTATION_DATABASE_TITLE: vmangos-deploy - VMaNGOS database image
-  OCI_ANNOTATION_DATABASE_DESCRIPTION: Database for the VMaNGOS server emulator.
-  OCI_ANNOTATION_DATABASE_BASE_NAME: mariadb:11.8
 
 jobs:
   setup:
@@ -55,8 +39,8 @@ jobs:
       contents: read
       packages: read
     outputs:
-      commit-hash: ${{ steps.prepare-default-build.outputs.commit_hash }}
-      images-already-exist: ${{ steps.prepare-default-build.outputs.images_already_exist }}
+      commit_hash: ${{ steps.prepare-default-build.outputs.commit_hash }}
+      images_already_exist: ${{ steps.prepare-default-build.outputs.images_already_exist }}
 
     steps:
       - name: Checkout repository
@@ -87,130 +71,51 @@ jobs:
           PACKAGE_NAME: vmangos-database
           VMANGOS_REPOSITORY_OWNER: vmangos
           VMANGOS_REPOSITORY_NAME: core
-          VMANGOS_REPOSITORY_REF: development
-          FORCE_REBUILD: ${{ inputs.force-rebuild }}
+          VMANGOS_REVISION: development
+          FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: ./.github/scripts/prepare-default-build.sh
 
   build-and-push-server-images:
     name: Build and push server images
     needs: setup
-    if: ${{ needs.setup.outputs.images-already-exist != 'true' }}
-    runs-on: ubuntu-24.04
+    if: ${{ needs.setup.outputs.images_already_exist != 'true' }}
     strategy:
       fail-fast: true
       matrix:
-        client-version: [5875, 5464, 5302, 5086, 4878, 4695, 4544, 4449]
+        client_version: [5875, 5464, 5302, 5086, 4878, 4695, 4544, 4449]
     permissions:
       contents: read
       packages: write
+    uses: ./.github/workflows/build-and-push-image.yaml
+    with:
+      workflow_mode: default
+      image_kind: server
+      architectures: both
+      push_images: ${{ github.event_name != 'pull_request' }}
+      commit_hash: ${{ needs.setup.outputs.commit_hash }}
+      client_version: ${{ matrix.client_version }}
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Prepare build metadata
-        id: prepare-build-metadata
-        env:
-          WORKFLOW_MODE: default
-          IMAGE_KIND: server
-          ARCHITECTURES: both
-          COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
-          CLIENT_VERSION: ${{ matrix.client-version }}
-        run: ./.github/scripts/prepare-image-build.sh
-
-      - name: Set up QEMU
-        if: steps.prepare-build-metadata.outputs.needs_qemu == 'true'
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to container registry
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
-      - name: Build and push images
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: ${{ steps.prepare-build-metadata.outputs.platforms }}
-          file: ./docker/server/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          provenance: false
-          build-args: |
-            VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
-            VMANGOS_CLIENT_VERSION=${{ matrix.client-version }}
-            VMANGOS_PATCHES_REPOSITORY_URL=${{ env.PATCHES_REPOSITORY_URL }}
-            VMANGOS_FAIL_ON_PATCH_ERROR=1
-          tags: ${{ steps.prepare-build-metadata.outputs.tags }}
-          annotations: ${{ steps.prepare-build-metadata.outputs.annotations }}
-          labels: ${{ steps.prepare-build-metadata.outputs.labels }}
-
-  # Since the database image builds only take a few minutes (and therefore
-  # always complete before the server image builds), we need to build after the
-  # server images; otherwise, we would push new database images without knowing
-  # if the server image builds will succeed (and if there is, e.g., a
-  # compilation error due to a bug upstream we would end up with a version
-  # mismatch between the latest database images and the latest server images).
+  # We build database images only after the server build succeeds; otherwise, a
+  # failure there could leave the latest database images out of sync.
   build-and-push-database-images:
     name: Build and push database images
     needs: [setup, build-and-push-server-images]
-    if: ${{ needs.setup.outputs.images-already-exist != 'true' }}
-    runs-on: ubuntu-24.04
+    if: ${{ needs.setup.outputs.images_already_exist != 'true' }}
     permissions:
       contents: read
       packages: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Prepare build metadata
-        id: prepare-build-metadata
-        env:
-          WORKFLOW_MODE: default
-          IMAGE_KIND: database
-          ARCHITECTURES: both
-          COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
-        run: ./.github/scripts/prepare-image-build.sh
-
-      - name: Set up QEMU
-        if: steps.prepare-build-metadata.outputs.needs_qemu == 'true'
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to container registry
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
-      - name: Build and push images
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: ${{ steps.prepare-build-metadata.outputs.platforms }}
-          file: ./docker/database/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          provenance: false
-          build-args: |
-            VMANGOS_REVISION=${{ needs.setup.outputs.commit-hash }}
-            VMANGOS_PATCHES_REPOSITORY_URL=${{ env.PATCHES_REPOSITORY_URL }}
-            VMANGOS_FAIL_ON_PATCH_ERROR=1
-          tags: ${{ steps.prepare-build-metadata.outputs.tags }}
-          annotations: ${{ steps.prepare-build-metadata.outputs.annotations }}
-          labels: ${{ steps.prepare-build-metadata.outputs.labels }}
+    uses: ./.github/workflows/build-and-push-image.yaml
+    with:
+      workflow_mode: default
+      image_kind: database
+      architectures: both
+      push_images: ${{ github.event_name != 'pull_request' }}
+      commit_hash: ${{ needs.setup.outputs.commit_hash }}
 
   delete-old-package-versions:
     name: Delete old package versions
     needs: [setup, build-and-push-server-images, build-and-push-database-images]
-    if: ${{ needs.setup.outputs.images-already-exist != 'true' && github.event_name != 'pull_request' }}
+    if: ${{ needs.setup.outputs.images_already_exist != 'true' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -257,7 +162,7 @@ jobs:
   update-badges:
     name: Update badges
     needs: [setup, build-and-push-server-images, build-and-push-database-images, delete-old-package-versions]
-    if: ${{ needs.setup.outputs.images-already-exist != 'true' && github.event_name != 'pull_request' }}
+    if: ${{ needs.setup.outputs.images_already_exist != 'true' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -266,7 +171,7 @@ jobs:
 
       - name: Upload badge JSON files to web server
         env:
-          COMMIT_HASH: ${{ needs.setup.outputs.commit-hash }}
+          COMMIT_HASH: ${{ needs.setup.outputs.commit_hash }}
           BADGES_FTP_HOST: ${{ secrets.BADGES_FTP_HOST }}
           BADGES_FTP_USERNAME: ${{ secrets.BADGES_FTP_USERNAME }}
           BADGES_FTP_PASSWORD: ${{ secrets.BADGES_FTP_PASSWORD }}

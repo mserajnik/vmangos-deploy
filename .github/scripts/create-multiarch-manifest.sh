@@ -21,25 +21,42 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$script_dir/helpers.sh"
 
-require_env REPOSITORY_URL
+require_env IMAGE
+require_env TAGS
+require_env DIGEST_AMD64
+require_env DIGEST_ARM64
 
-repository_url="$(trim "$REPOSITORY_URL")"
-repository_owner=""
-repository_name=""
+image="$(trim "$IMAGE")"
+tags_csv="$(trim "$TAGS")"
+digest_amd64="$(trim "$DIGEST_AMD64")"
+digest_arm64="$(trim "$DIGEST_ARM64")"
 
-if [[ "$repository_url" =~ ^git@[^:]+:([^/]+)/([^/]+)$ ]]; then
-  repository_owner="${BASH_REMATCH[1]}"
-  repository_name="${BASH_REMATCH[2]}"
-elif [[ "$repository_url" =~ ^[[:alpha:]][[:alnum:].+-]*://[^/]+/([^/]+)/([^/]+)/?$ ]]; then
-  repository_owner="${BASH_REMATCH[1]}"
-  repository_name="${BASH_REMATCH[2]}"
-fi
+declare -a command=()
+declare -a tags=()
+declare -a index_annotations=()
 
-repository_name="${repository_name%.git}"
+IFS=',' read -r -a tags <<< "$tags_csv"
 
-if [[ -z "$repository_owner" || -z "$repository_name" ]]; then
-  fail "Failed to parse repository URL '$repository_url'"
-fi
+while IFS= read -r line; do
+  if [[ -n "$line" ]]; then
+    index_annotations+=("$line")
+  fi
+done <<< "${INDEX_ANNOTATIONS:-}"
 
-write_output repository_owner "$repository_owner"
-write_output repository_name "$repository_name"
+command=(docker buildx imagetools create)
+
+for tag in "${tags[@]}"; do
+  command+=(--tag "$tag")
+done
+
+for annotation in "${index_annotations[@]}"; do
+  command+=(--annotation "$annotation")
+done
+
+command+=(
+  "$image@$digest_amd64"
+  "$image@$digest_arm64"
+)
+
+printf 'Creating multi-platform image index for %s\n' "$image"
+"${command[@]}"
