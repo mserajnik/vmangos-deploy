@@ -95,6 +95,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     uses: ./.github/workflows/build-and-push-image.yaml
     with:
       workflow_mode: custom
@@ -117,6 +118,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     uses: ./.github/workflows/build-and-push-image.yaml
     with:
       workflow_mode: custom

@@ -34,18 +34,15 @@ require_env OCI_ANNOTATION_LICENSES
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 architectures="$(trim "$ARCHITECTURES")"
 
-declare -a tags=()
+declare -a platforms=()
+declare -a meta_tags=()
 declare -a mode_metadata_entries=()
 declare -a label_only_entries=()
 declare -a metadata_entries=()
 declare -a label_lines=()
-declare -a manifest_annotation_lines=()
-declare -a index_annotation_lines=()
+declare -a annotation_lines=()
 declare -a build_args=()
 
-build_amd64="false"
-build_arm64="false"
-is_multi_arch="false"
 title=""
 description=""
 base_name=""
@@ -69,15 +66,16 @@ normalize_tag_fragment() {
 
 case "$architectures" in
   both|"Both amd64 and arm64")
-    build_amd64="true"
-    build_arm64="true"
-    is_multi_arch="true"
+    platforms=(
+      "linux/amd64"
+      "linux/arm64"
+    )
     ;;
   amd64|"amd64 only")
-    build_amd64="true"
+    platforms=("linux/amd64")
     ;;
   arm64|"arm64 only")
-    build_arm64="true"
+    platforms=("linux/arm64")
     ;;
   *)
     fail "Unsupported architectures value '$architectures'"
@@ -118,12 +116,12 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
     ref_name="$image:$CLIENT_VERSION-$COMMIT_HASH"
 
     if [[ "$CLIENT_VERSION" == "5875" ]]; then
-      tags+=("$image:latest")
+      meta_tags+=("type=raw,value=latest")
     fi
 
-    tags+=(
-      "$image:$CLIENT_VERSION"
-      "$image:$CLIENT_VERSION-$COMMIT_HASH"
+    meta_tags+=(
+      "type=raw,value=$CLIENT_VERSION"
+      "type=raw,value=$CLIENT_VERSION-$COMMIT_HASH"
     )
 
     build_args+=(
@@ -149,9 +147,9 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
     base_name="$OCI_ANNOTATION_DATABASE_BASE_NAME"
     ref_name="$image:$COMMIT_HASH"
 
-    tags+=(
-      "$image:latest"
-      "$image:$COMMIT_HASH"
+    meta_tags+=(
+      "type=raw,value=latest"
+      "type=raw,value=$COMMIT_HASH"
     )
 
     build_args+=(
@@ -182,13 +180,14 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
 
     if [[ -n "$custom_name" ]]; then
       sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
-      ref_name="$image:$sanitized_custom_name-$CLIENT_VERSION"
+      tag_name="$sanitized_custom_name-$CLIENT_VERSION"
     else
       sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
-      ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision-$CLIENT_VERSION"
+      tag_name="$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision-$CLIENT_VERSION"
     fi
 
-    tags+=("$ref_name")
+    ref_name="$image:$tag_name"
+    meta_tags+=("type=raw,value=$tag_name")
 
     build_args+=(
       "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
@@ -213,13 +212,14 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
 
     if [[ -n "$custom_name" ]]; then
       sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
-      ref_name="$image:$sanitized_custom_name"
+      tag_name="$sanitized_custom_name"
     else
       sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
-      ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision"
+      tag_name="$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision"
     fi
 
-    tags+=("$ref_name")
+    ref_name="$image:$tag_name"
+    meta_tags+=("type=raw,value=$tag_name")
 
     build_args+=(
       "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
@@ -236,7 +236,7 @@ esac
 
 if [[ "$WORKFLOW_MODE" == "custom" ]]; then
   # Custom images do not define an OCI version, so clear the inherited base
-  # image version label without adding a matching manifest/index annotation.
+  # image version label without adding a matching annotation.
   label_only_entries+=("version=")
 fi
 
@@ -266,11 +266,7 @@ for entry in "${metadata_entries[@]}"; do
   value="${entry#*=}"
 
   label_lines+=("org.opencontainers.image.$key=$value")
-  manifest_annotation_lines+=("manifest:org.opencontainers.image.$key=$value")
-
-  if [[ "$is_multi_arch" == "true" ]]; then
-    index_annotation_lines+=("index:org.opencontainers.image.$key=$value")
-  fi
+  annotation_lines+=("manifest:org.opencontainers.image.$key=$value")
 done
 
 if ((${#label_only_entries[@]} > 0)); then
@@ -282,18 +278,14 @@ if ((${#label_only_entries[@]} > 0)); then
   done
 fi
 
-printf -v tags_output '%s,' "${tags[@]}"
-tags_output="${tags_output%,}"
+printf -v platforms_output '%s,' "${platforms[@]}"
+platforms_output="${platforms_output%,}"
 
-printf -v manifest_annotations_output '%s\n' "${manifest_annotation_lines[@]}"
-manifest_annotations_output="${manifest_annotations_output%$'\n'}"
+printf -v meta_tags_output '%s\n' "${meta_tags[@]}"
+meta_tags_output="${meta_tags_output%$'\n'}"
 
-if ((${#index_annotation_lines[@]} > 0)); then
-  printf -v index_annotations_output '%s\n' "${index_annotation_lines[@]}"
-  index_annotations_output="${index_annotations_output%$'\n'}"
-else
-  index_annotations_output=""
-fi
+printf -v annotations_output '%s\n' "${annotation_lines[@]}"
+annotations_output="${annotations_output%$'\n'}"
 
 printf -v labels_output '%s\n' "${label_lines[@]}"
 labels_output="${labels_output%$'\n'}"
@@ -302,13 +294,9 @@ printf -v build_args_output '%s\n' "${build_args[@]}"
 build_args_output="${build_args_output%$'\n'}"
 
 write_output image "$image"
-write_output package_name "${image_name##*/}"
 write_output dockerfile "$dockerfile"
-write_output build_amd64 "$build_amd64"
-write_output build_arm64 "$build_arm64"
-write_output is_multi_arch "$is_multi_arch"
-write_output tags "$tags_output"
+write_output platforms "$platforms_output"
+write_multiline_output meta_tags "$meta_tags_output"
 write_multiline_output build_args "$build_args_output"
-write_multiline_output manifest_annotations "$manifest_annotations_output"
-write_multiline_output index_annotations "$index_annotations_output"
+write_multiline_output annotations "$annotations_output"
 write_multiline_output labels "$labels_output"
