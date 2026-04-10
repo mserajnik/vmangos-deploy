@@ -32,14 +32,14 @@ force=false
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    -f|--force)
-      # If user passes `-f` or `--force`, set 'force' to true.
-      force=true
-      shift
-      ;;
-    *)
-      shift
-      ;;
+  -f | --force)
+    # If user passes `-f` or `--force`, set 'force' to true.
+    force=true
+    shift
+    ;;
+  *)
+    shift
+    ;;
   esac
 done
 
@@ -86,7 +86,7 @@ rm -rf ./Buildings ./Cameras
 
 # Remove any potentially already existing data from the extracted data
 # directory before moving the new data there.
-rm -rf "$extracted_data_dir"/*
+find "$extracted_data_dir" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
 
 mkdir -p "$client_version_dir"
 mv ./dbc "$client_version_dir/"

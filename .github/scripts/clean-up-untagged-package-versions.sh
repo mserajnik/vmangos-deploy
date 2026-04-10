@@ -52,7 +52,7 @@ for digest in "${!requested_digests[@]}"; do
          .name == $digest and
          ((.metadata.container.tags // []) | length == 0)
        ) |
-       .id' <<< "$package_versions_json"
+       .id' <<<"$package_versions_json"
   )
 
   if ((${#version_ids[@]} == 0)); then

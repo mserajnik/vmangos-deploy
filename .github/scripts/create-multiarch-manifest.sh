@@ -35,13 +35,13 @@ declare -a command=()
 declare -a tags=()
 declare -a index_annotations=()
 
-IFS=',' read -r -a tags <<< "$tags_csv"
+IFS=',' read -r -a tags <<<"$tags_csv"
 
 while IFS= read -r line; do
   if [[ -n "$line" ]]; then
     index_annotations+=("$line")
   fi
-done <<< "${INDEX_ANNOTATIONS:-}"
+done <<<"${INDEX_ANNOTATIONS:-}"
 
 command=(docker buildx imagetools create)
 

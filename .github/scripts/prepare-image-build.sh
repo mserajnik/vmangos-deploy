@@ -68,170 +68,170 @@ normalize_tag_fragment() {
 }
 
 case "$architectures" in
-  both|"Both amd64 and arm64")
-    build_amd64="true"
-    build_arm64="true"
-    is_multi_arch="true"
-    ;;
-  amd64|"amd64 only")
-    build_amd64="true"
-    ;;
-  arm64|"arm64 only")
-    build_arm64="true"
-    ;;
-  *)
-    fail "Unsupported architectures value '$architectures'"
-    ;;
+both | "Both amd64 and arm64")
+  build_amd64="true"
+  build_arm64="true"
+  is_multi_arch="true"
+  ;;
+amd64 | "amd64 only")
+  build_amd64="true"
+  ;;
+arm64 | "arm64 only")
+  build_arm64="true"
+  ;;
+*)
+  fail "Unsupported architectures value '$architectures'"
+  ;;
 esac
 
 require_env REGISTRY
 
 case "$IMAGE_KIND" in
-  server)
-    require_env IMAGE_NAME_SERVER
-    image_name="$IMAGE_NAME_SERVER"
-    dockerfile="./docker/server/Dockerfile"
-    ;;
-  database)
-    require_env IMAGE_NAME_DATABASE
-    image_name="$IMAGE_NAME_DATABASE"
-    dockerfile="./docker/database/Dockerfile"
-    ;;
-  *)
-    fail "Unsupported image kind '$IMAGE_KIND'"
-    ;;
+server)
+  require_env IMAGE_NAME_SERVER
+  image_name="$IMAGE_NAME_SERVER"
+  dockerfile="./docker/server/Dockerfile"
+  ;;
+database)
+  require_env IMAGE_NAME_DATABASE
+  image_name="$IMAGE_NAME_DATABASE"
+  dockerfile="./docker/database/Dockerfile"
+  ;;
+*)
+  fail "Unsupported image kind '$IMAGE_KIND'"
+  ;;
 esac
 
 image="$REGISTRY/$image_name"
 
 case "$WORKFLOW_MODE:$IMAGE_KIND" in
-  default:server)
-    require_env COMMIT_HASH
-    require_env CLIENT_VERSION
-    require_env OCI_ANNOTATION_SERVER_TITLE
-    require_env OCI_ANNOTATION_SERVER_DESCRIPTION
-    require_env OCI_ANNOTATION_SERVER_BASE_NAME
+default:server)
+  require_env COMMIT_HASH
+  require_env CLIENT_VERSION
+  require_env OCI_ANNOTATION_SERVER_TITLE
+  require_env OCI_ANNOTATION_SERVER_DESCRIPTION
+  require_env OCI_ANNOTATION_SERVER_BASE_NAME
 
-    title="$OCI_ANNOTATION_SERVER_TITLE"
-    description="$OCI_ANNOTATION_SERVER_DESCRIPTION"
-    base_name="$OCI_ANNOTATION_SERVER_BASE_NAME"
-    ref_name="$image:$CLIENT_VERSION-$COMMIT_HASH"
+  title="$OCI_ANNOTATION_SERVER_TITLE"
+  description="$OCI_ANNOTATION_SERVER_DESCRIPTION"
+  base_name="$OCI_ANNOTATION_SERVER_BASE_NAME"
+  ref_name="$image:$CLIENT_VERSION-$COMMIT_HASH"
 
-    if [[ "$CLIENT_VERSION" == "5875" ]]; then
-      tags+=("$image:latest")
-    fi
+  if [[ "$CLIENT_VERSION" == "5875" ]]; then
+    tags+=("$image:latest")
+  fi
 
-    tags+=(
-      "$image:$CLIENT_VERSION"
-      "$image:$CLIENT_VERSION-$COMMIT_HASH"
-    )
+  tags+=(
+    "$image:$CLIENT_VERSION"
+    "$image:$CLIENT_VERSION-$COMMIT_HASH"
+  )
 
-    build_args+=(
-      "VMANGOS_REVISION=$COMMIT_HASH"
-      "VMANGOS_CLIENT_VERSION=$CLIENT_VERSION"
-      "VMANGOS_PATCHES_REPOSITORY_URL=$VMANGOS_PATCHES_REPOSITORY_URL"
-      "VMANGOS_FAIL_ON_PATCH_ERROR=1"
-    )
+  build_args+=(
+    "VMANGOS_REVISION=$COMMIT_HASH"
+    "VMANGOS_CLIENT_VERSION=$CLIENT_VERSION"
+    "VMANGOS_PATCHES_REPOSITORY_URL=$VMANGOS_PATCHES_REPOSITORY_URL"
+    "VMANGOS_FAIL_ON_PATCH_ERROR=1"
+  )
 
-    mode_metadata_entries+=(
-      "version=$COMMIT_HASH"
-      "revision=$COMMIT_HASH"
-    )
-    ;;
-  default:database)
-    require_env COMMIT_HASH
-    require_env OCI_ANNOTATION_DATABASE_TITLE
-    require_env OCI_ANNOTATION_DATABASE_DESCRIPTION
-    require_env OCI_ANNOTATION_DATABASE_BASE_NAME
+  mode_metadata_entries+=(
+    "version=$COMMIT_HASH"
+    "revision=$COMMIT_HASH"
+  )
+  ;;
+default:database)
+  require_env COMMIT_HASH
+  require_env OCI_ANNOTATION_DATABASE_TITLE
+  require_env OCI_ANNOTATION_DATABASE_DESCRIPTION
+  require_env OCI_ANNOTATION_DATABASE_BASE_NAME
 
-    title="$OCI_ANNOTATION_DATABASE_TITLE"
-    description="$OCI_ANNOTATION_DATABASE_DESCRIPTION"
-    base_name="$OCI_ANNOTATION_DATABASE_BASE_NAME"
-    ref_name="$image:$COMMIT_HASH"
+  title="$OCI_ANNOTATION_DATABASE_TITLE"
+  description="$OCI_ANNOTATION_DATABASE_DESCRIPTION"
+  base_name="$OCI_ANNOTATION_DATABASE_BASE_NAME"
+  ref_name="$image:$COMMIT_HASH"
 
-    tags+=(
-      "$image:latest"
-      "$image:$COMMIT_HASH"
-    )
+  tags+=(
+    "$image:latest"
+    "$image:$COMMIT_HASH"
+  )
 
-    build_args+=(
-      "VMANGOS_REVISION=$COMMIT_HASH"
-      "VMANGOS_PATCHES_REPOSITORY_URL=$VMANGOS_PATCHES_REPOSITORY_URL"
-      "VMANGOS_FAIL_ON_PATCH_ERROR=1"
-    )
+  build_args+=(
+    "VMANGOS_REVISION=$COMMIT_HASH"
+    "VMANGOS_PATCHES_REPOSITORY_URL=$VMANGOS_PATCHES_REPOSITORY_URL"
+    "VMANGOS_FAIL_ON_PATCH_ERROR=1"
+  )
 
-    mode_metadata_entries+=(
-      "version=$COMMIT_HASH"
-      "revision=$COMMIT_HASH"
-    )
-    ;;
-  custom:server)
-    require_env REPOSITORY_OWNER
-    require_env REPOSITORY_NAME
-    require_env REVISION
-    require_env CLIENT_VERSION
-    require_env OCI_ANNOTATION_SERVER_TITLE
-    require_env OCI_ANNOTATION_SERVER_DESCRIPTION
-    require_env OCI_ANNOTATION_SERVER_BASE_NAME
+  mode_metadata_entries+=(
+    "version=$COMMIT_HASH"
+    "revision=$COMMIT_HASH"
+  )
+  ;;
+custom:server)
+  require_env REPOSITORY_OWNER
+  require_env REPOSITORY_NAME
+  require_env REVISION
+  require_env CLIENT_VERSION
+  require_env OCI_ANNOTATION_SERVER_TITLE
+  require_env OCI_ANNOTATION_SERVER_DESCRIPTION
+  require_env OCI_ANNOTATION_SERVER_BASE_NAME
 
-    title="$OCI_ANNOTATION_SERVER_TITLE"
-    description="$OCI_ANNOTATION_SERVER_DESCRIPTION"
-    base_name="$OCI_ANNOTATION_SERVER_BASE_NAME"
+  title="$OCI_ANNOTATION_SERVER_TITLE"
+  description="$OCI_ANNOTATION_SERVER_DESCRIPTION"
+  base_name="$OCI_ANNOTATION_SERVER_BASE_NAME"
 
-    custom_name="$(trim "${CUSTOM_NAME:-}")"
+  custom_name="$(trim "${CUSTOM_NAME:-}")"
 
-    if [[ -n "$custom_name" ]]; then
-      sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
-      ref_name="$image:$sanitized_custom_name-$CLIENT_VERSION"
-    else
-      sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
-      ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision-$CLIENT_VERSION"
-    fi
+  if [[ -n "$custom_name" ]]; then
+    sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
+    ref_name="$image:$sanitized_custom_name-$CLIENT_VERSION"
+  else
+    sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
+    ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision-$CLIENT_VERSION"
+  fi
 
-    tags+=("$ref_name")
+  tags+=("$ref_name")
 
-    build_args+=(
-      "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
-      "VMANGOS_REVISION=$REVISION"
-      "VMANGOS_CLIENT_VERSION=$CLIENT_VERSION"
-      "VMANGOS_PATCHES_REPOSITORY_URL=${VMANGOS_PATCHES_REPOSITORY_URL:-}"
-    )
-    ;;
-  custom:database)
-    require_env REPOSITORY_OWNER
-    require_env REPOSITORY_NAME
-    require_env REVISION
-    require_env OCI_ANNOTATION_DATABASE_TITLE
-    require_env OCI_ANNOTATION_DATABASE_DESCRIPTION
-    require_env OCI_ANNOTATION_DATABASE_BASE_NAME
+  build_args+=(
+    "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
+    "VMANGOS_REVISION=$REVISION"
+    "VMANGOS_CLIENT_VERSION=$CLIENT_VERSION"
+    "VMANGOS_PATCHES_REPOSITORY_URL=${VMANGOS_PATCHES_REPOSITORY_URL:-}"
+  )
+  ;;
+custom:database)
+  require_env REPOSITORY_OWNER
+  require_env REPOSITORY_NAME
+  require_env REVISION
+  require_env OCI_ANNOTATION_DATABASE_TITLE
+  require_env OCI_ANNOTATION_DATABASE_DESCRIPTION
+  require_env OCI_ANNOTATION_DATABASE_BASE_NAME
 
-    title="$OCI_ANNOTATION_DATABASE_TITLE"
-    description="$OCI_ANNOTATION_DATABASE_DESCRIPTION"
-    base_name="$OCI_ANNOTATION_DATABASE_BASE_NAME"
+  title="$OCI_ANNOTATION_DATABASE_TITLE"
+  description="$OCI_ANNOTATION_DATABASE_DESCRIPTION"
+  base_name="$OCI_ANNOTATION_DATABASE_BASE_NAME"
 
-    custom_name="$(trim "${CUSTOM_NAME:-}")"
+  custom_name="$(trim "${CUSTOM_NAME:-}")"
 
-    if [[ -n "$custom_name" ]]; then
-      sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
-      ref_name="$image:$sanitized_custom_name"
-    else
-      sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
-      ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision"
-    fi
+  if [[ -n "$custom_name" ]]; then
+    sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
+    ref_name="$image:$sanitized_custom_name"
+  else
+    sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
+    ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision"
+  fi
 
-    tags+=("$ref_name")
+  tags+=("$ref_name")
 
-    build_args+=(
-      "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
-      "VMANGOS_REVISION=$REVISION"
-      "VMANGOS_PATCHES_REPOSITORY_URL=${VMANGOS_PATCHES_REPOSITORY_URL:-}"
-      "VMANGOS_WORLD_DB_REPOSITORY_URL=${VMANGOS_WORLD_DB_REPOSITORY_URL:-}"
-      "VMANGOS_WORLD_DB_DUMP_NAME=${VMANGOS_WORLD_DB_DUMP_NAME:-}"
-    )
-    ;;
-  *)
-    fail "Unsupported workflow/image combination '$WORKFLOW_MODE:$IMAGE_KIND'"
-    ;;
+  build_args+=(
+    "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
+    "VMANGOS_REVISION=$REVISION"
+    "VMANGOS_PATCHES_REPOSITORY_URL=${VMANGOS_PATCHES_REPOSITORY_URL:-}"
+    "VMANGOS_WORLD_DB_REPOSITORY_URL=${VMANGOS_WORLD_DB_REPOSITORY_URL:-}"
+    "VMANGOS_WORLD_DB_DUMP_NAME=${VMANGOS_WORLD_DB_DUMP_NAME:-}"
+  )
+  ;;
+*)
+  fail "Unsupported workflow/image combination '$WORKFLOW_MODE:$IMAGE_KIND'"
+  ;;
 esac
 
 if [[ "$WORKFLOW_MODE" == "custom" ]]; then

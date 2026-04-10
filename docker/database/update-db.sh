@@ -16,7 +16,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-. "/opt/scripts/db-functions.sh"
+# shellcheck source=docker/database/db-functions.sh
+source "/opt/scripts/db-functions.sh"
 
 if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
   echo "[vmangos-deploy]: [x] Automatic world database corrections are enabled"

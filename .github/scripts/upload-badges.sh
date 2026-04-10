@@ -31,7 +31,7 @@ require_env COMMIT_HASH
 short_hash="${COMMIT_HASH:0:7}"
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-cat > commit-badge.json <<EOF
+cat >commit-badge.json <<EOF
 {
   "schemaVersion": 1,
   "label": "Latest built VMaNGOS commit",
@@ -40,7 +40,7 @@ cat > commit-badge.json <<EOF
 }
 EOF
 
-cat > date-badge.json <<EOF
+cat >date-badge.json <<EOF
 {
   "schemaVersion": 1,
   "label": "Latest build date",

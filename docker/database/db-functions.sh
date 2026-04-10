@@ -57,7 +57,7 @@ import_data() {
   local db_name="$1"
   local file="$2"
 
-  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "$db_name" < "$file"
+  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "$db_name" <"$file"
   return $?
 }
 
@@ -170,7 +170,8 @@ populate_world_db_corrections_table() {
 }
 
 check_if_world_db_correction_is_required() {
-  local result=$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -N -s -e \
+  local result
+  result=$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -N -s -e \
     "WITH
       db_creation AS (
         SELECT DATE(CONVERT_TZ(MIN(\`CREATE_TIME\`), @@session.time_zone, '+00:00')) as world_db_created_at
@@ -214,8 +215,7 @@ process_custom_sql() {
     find "$file_directory" -name "*.sql" -type f | sort | while read -r sql_file; do
       echo "[vmangos-deploy]: Processing custom SQL file '$(basename "$sql_file")'"
 
-      import_data "mangos" "$sql_file"
-      if [ $? -ne 0 ]; then
+      if ! import_data "mangos" "$sql_file"; then
         echo "[vmangos-deploy]: ERROR: Failed to process custom SQL file '$(basename "$sql_file")'" >&2
       fi
     done
