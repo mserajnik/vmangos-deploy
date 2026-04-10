@@ -128,10 +128,10 @@ around easily.
 > Options relating to certain things that vmangos-deploy relies on to work
 > correctly (like the database connections or configured directories such as
 > the `DataDir` or the `LogsDir`) should not be adjusted unless you absolutely
-> need to change them and are aware of the implications (e.g., which
-> other configuration options may need to be adjusted as well to avoid
-> discrepancies resulting in unexpected behavior). No support will be provided
-> for non-default setups.
+> need to change them and are aware of the implications (e.g., which other
+> configuration options may need to be adjusted as well to avoid discrepancies
+> resulting in unexpected behavior). No support will be provided for
+> non-default setups.
 
 ### Adjusting the Docker Compose configuration
 
@@ -449,8 +449,8 @@ they become irrelevant), sorted by newest first:
   As of
   [`vmangos/core@fbbc4ae`](https://github.com/vmangos/core/commit/fbbc4ae899f876a78a37d8fee805dce40a182331)
   VMaNGOS no longer supports building without anticheat support, thus anticheat
-  is always available and there is no longer a need for separate images. If
-  you were using one of the anticheat images (which were suffixed with
+  is always available and there is no longer a need for separate images. If you
+  were using one of the anticheat images (which were suffixed with
   `-anticheat`), simply switch to the regular version of that image.
 
 ### Creating database backups
