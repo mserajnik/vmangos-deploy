@@ -166,6 +166,11 @@ populate_world_db_corrections_table() {
     SELECT 12, 'migration edits in vmangos/core@01bd3b3', '2026-04-09' \
     WHERE NOT EXISTS ( \
       SELECT 12 FROM \`world_db_corrections\` WHERE \`id\` = 12 \
+    ); \
+    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
+    SELECT 13, 'migration edits in vmangos/core@68560ac', '2026-04-11' \
+    WHERE NOT EXISTS ( \
+      SELECT 13 FROM \`world_db_corrections\` WHERE \`id\` = 13 \
     );"
 }
 
