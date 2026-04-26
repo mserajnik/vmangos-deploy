@@ -60,7 +60,7 @@ env:
   OCI_ANNOTATION_DOCUMENTATION: https://github.com/${{ github.repository }}/blob/master/README.md
   OCI_ANNOTATION_SOURCE: https://github.com/${{ github.repository }}
   OCI_ANNOTATION_VENDOR: ${{ vars.OCI_ANNOTATION_VENDOR || github.repository_owner }}
-  OCI_ANNOTATION_LICENSES: GPL-2.0
+  OCI_ANNOTATION_LICENSES: GPL-2.0-or-later
   OCI_ANNOTATION_SERVER_TITLE: ${{ inputs.workflow_mode == 'custom' && 'vmangos-deploy - Custom VMaNGOS server image' || 'vmangos-deploy - VMaNGOS server image' }}
   OCI_ANNOTATION_SERVER_DESCRIPTION: VMaNGOS is a server emulator supporting versions 1.5.1 to 1.12.1.
   OCI_ANNOTATION_SERVER_BASE_NAME: ubuntu:24.04
