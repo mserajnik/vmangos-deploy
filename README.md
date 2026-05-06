@@ -1,6 +1,8 @@
 # vmangos-deploy
 
-[![Latest built VMaNGOS commit][badge-latest-vmangos-commit]][badge-latest-vmangos-commit-url] [![Latest build date][badge-latest-build-date]][badge-latest-build-date-url] [![GitHub Actions status][badge-actions-status]][badge-actions-status-url]
+[![Latest built VMaNGOS commit][badge-latest-vmangos-commit]][badge-latest-vmangos-commit-url]
+[![Latest build date][badge-latest-build-date]][badge-latest-build-date-url]
+[![GitHub Actions status][badge-actions-status]][badge-actions-status-url]
 
 > A Docker setup for VMaNGOS
 
@@ -8,21 +10,21 @@ This is a Docker-based solution for running [VMaNGOS][vmangos] that focuses on
 providing a streamlined and user-friendly experience. It offers a range of
 features that simplify managing a VMaNGOS setup:
 
-+ __Prebuilt Docker images for both `amd64` and `arm64`, leveraging GitHub__
+- __Prebuilt Docker images for both `amd64` and `arm64`, leveraging GitHub__
   __Actions:__ simply pull the provided images that have been optimized for
   size, performance and stability instead of having to re-compile VMaNGOS
   yourself every time you want to update
-+ __The ability to run VMaNGOS configured for any of its supported client__
+- __The ability to run VMaNGOS configured for any of its supported client__
   __versions:__ prebuilt images for all versions ranging from `1.5.1.4449` to
   `1.12.1.5875` are provided
-+ __Seamless, automated database migrations:__ when pulling the latest Docker
+- __Seamless, automated database migrations:__ when pulling the latest Docker
   images and re-creating the containers, migrations are applied automatically
   to keep your database up-to-date at all times
-+ __A transparent and easy-to-follow user experience:__ the number of different
+- __A transparent and easy-to-follow user experience:__ the number of different
   commands that need to be run to install and manage VMaNGOS is kept to a
   minimum. You can use the Docker CLI or any other tool that is able to manage
   Docker containers
-+ __A clean and organized structure:__ the VMaNGOS configuration can be found
+- __A clean and organized structure:__ the VMaNGOS configuration can be found
   in [`./config`](config), everything else that is shared between the Docker
   containers and your host system lives inside [`./storage`](storage)
 
@@ -34,35 +36,35 @@ features that simplify managing a VMaNGOS setup:
 
 ## Table of contents
 
-+ [Install](#install)
-  + [Dependencies](#dependencies)
-  + [Using a coding agent](#using-a-coding-agent)
-  + [Instructions](#instructions)
-    + [Cloning the repository and adjusting the VMaNGOS configuration](#cloning-the-repository-and-adjusting-the-vmangos-configuration)
-    + [Adjusting the Docker Compose configuration](#adjusting-the-docker-compose-configuration)
-    + [Extracting the client data](#extracting-the-client-data)
-    + [Providing the Warden modules (optional)](#providing-the-warden-modules-optional)
-    + [Utilizing automatic world database corrections (optional)](#utilizing-automatic-world-database-corrections-optional)
-    + [Modifying the world database with custom changes (optional)](#modifying-the-world-database-with-custom-changes-optional)
-+ [Usage](#usage)
-  + [Starting VMaNGOS](#starting-vmangos)
-  + [Observing the VMaNGOS output](#observing-the-vmangos-output)
-  + [Creating the first account](#creating-the-first-account)
-  + [Stopping VMaNGOS](#stopping-vmangos)
-  + [Updating](#updating)
-    + [Breaking changes](#breaking-changes)
-  + [Creating database backups](#creating-database-backups)
-  + [Accessing the database](#accessing-the-database)
-  + [Database security](#database-security)
-+ [Maintainer](#maintainer)
-+ [Contribute](#contribute)
-+ [License](#license)
+- [Install](#install)
+  - [Dependencies](#dependencies)
+  - [Using a coding agent](#using-a-coding-agent)
+  - [Instructions](#instructions)
+    - [Cloning the repository and adjusting the VMaNGOS configuration](#cloning-the-repository-and-adjusting-the-vmangos-configuration)
+    - [Adjusting the Docker Compose configuration](#adjusting-the-docker-compose-configuration)
+    - [Extracting the client data](#extracting-the-client-data)
+    - [Providing the Warden modules (optional)](#providing-the-warden-modules-optional)
+    - [Utilizing automatic world database corrections (optional)](#utilizing-automatic-world-database-corrections-optional)
+    - [Modifying the world database with custom changes (optional)](#modifying-the-world-database-with-custom-changes-optional)
+- [Usage](#usage)
+  - [Starting VMaNGOS](#starting-vmangos)
+  - [Observing the VMaNGOS output](#observing-the-vmangos-output)
+  - [Creating the first account](#creating-the-first-account)
+  - [Stopping VMaNGOS](#stopping-vmangos)
+  - [Updating](#updating)
+    - [Breaking changes](#breaking-changes)
+  - [Creating database backups](#creating-database-backups)
+  - [Accessing the database](#accessing-the-database)
+  - [Database security](#database-security)
+- [Maintainer](#maintainer)
+- [Contribute](#contribute)
+- [License](#license)
 
 ## Install
 
 ### Dependencies
 
-+ [Docker][docker] (including [Compose V2][docker-compose])
+- [Docker][docker] (including [Compose V2][docker-compose])
 
 ### Using a coding agent
 
@@ -236,12 +238,12 @@ docker run \
 
 There are two things to look out for here:
 
-+ If you are using a Linux host and your user's UID and GID are not 1000,
+- If you are using a Linux host and your user's UID and GID are not 1000,
   change the `--user` argument to reflect your user's UID and GID. This will
   cause the user in the container to use the same UID and GID and prevent
   permission issues on the bind mounts. If you are on Windows or macOS, you can
   ignore this (or even remove the `--user` argument altogether, if you want to)
-+ The Docker image must reflect the client version you want to extract the data
+- The Docker image must reflect the client version you want to extract the data
   from; see the table further above in the
   [Docker Compose configuration section](#adjusting-the-docker-compose-configuration)
 
@@ -382,15 +384,15 @@ E.g., to create an administrator account, set the account level to `6`.
 > Master-specific behavior will begin to apply to characters on that account.
 > Exactly which behavior applies depends on the account level; you can modify
 > some of this via the [`GM.*` options][mangosd-gm-options] in your
-> `mangosd.conf`.
+> `mangosd.conf`.\
 > In particular, if you use an account level of `3` or higher, you will
 > probably want to set [`GM.CheatGod = 0`][mangosd-gm-options-cheat-god] if you
 > intend to actually play normally with the account, because otherwise your
 > characters will be invulnerable.
 
 When you are done, detach from the Docker container by pressing
-<kbd>Ctrl</kbd>+<kbd>P</kbd> and <kbd>Ctrl</kbd>+<kbd>Q</kbd>. You should
-now be able to log in to the game client with your newly created account.
+<kbd>Ctrl</kbd>+<kbd>P</kbd> and <kbd>Ctrl</kbd>+<kbd>Q</kbd>. You should now
+be able to log in to the game client with your newly created account.
 
 ### Stopping VMaNGOS
 
@@ -432,7 +434,7 @@ Sometimes, there may be new features or changes that require manual
 intervention. Such breaking changes will be listed here (and removed again once
 they become irrelevant), sorted by newest first:
 
-+ __[2025-02-22] - Automatic world database corrections are now available and__
+- __[2025-02-22] - Automatic world database corrections are now available and__
   __enabled by default:__ vmangos-deploy now keeps track of certain, unusual
   VMaNGOS code changes (such as migration edits) that lead to a faulty (or
   out-of-sync) world database state when updating and would normally require
@@ -445,8 +447,7 @@ they become irrelevant), sorted by newest first:
   re-creation of the world database by mounting a database dump, as described
   [here][compose-world-db-dump-mount]). This section will no longer list such
   changes.
-+ __[2024-10-31] - Removal of separate images with anticheat support:__
-  As of
+- __[2024-10-31] - Removal of separate images with anticheat support:__ As of
   [`vmangos/core@fbbc4ae`](https://github.com/vmangos/core/commit/fbbc4ae899f876a78a37d8fee805dce40a182331)
   VMaNGOS no longer supports building without anticheat support, thus anticheat
   is always available and there is no longer a need for separate images. If you
@@ -506,7 +507,6 @@ You are welcome to help out!
 [badge-latest-build-date-url]: https://github.com/mserajnik?tab=packages&repo_name=vmangos-deploy
 [badge-latest-vmangos-commit]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fcommit-badge.json
 [badge-latest-vmangos-commit-url]: https://scripts.mser.at/vmangos-deploy-latest-built-commit/
-
 [claude-code]: https://www.anthropic.com/product/claude-code
 [codex]: https://openai.com/codex
 [compose-automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L52-L63
@@ -527,7 +527,6 @@ You are welcome to help out!
 [vmangos]: https://github.com/vmangos/core
 [vmangos-example-commit]: https://github.com/vmangos/core/commit/46183d287f80ab1ebf27bab12f37bc0b5b188c86
 [warden-modules]: https://github.com/vmangos/warden_modules
-
 [issues]: https://github.com/mserajnik/vmangos-deploy/issues
 [maintainer]: https://github.com/mserajnik
 [pull-requests]: https://github.com/mserajnik/vmangos-deploy/pulls
