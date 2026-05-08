@@ -184,7 +184,7 @@ have tags that include the respective commit hash. E.g., for commit
 
 Since the Docker images are generally built only once a day it, is unlikely
 that there will be a build for every single VMaNGOS commit. Older images are
-automatically deleted, roughly after 45 days; in practice, you should not rely
+automatically deleted, roughly after 40 days; in practice, you should not rely
 on specific images staying available for any prolonged period of time. If you
 absolutely need images based on a specific VMaNGOS commit, you can always build
 them yourself instead.
@@ -374,8 +374,20 @@ After attaching, create the account and assign an account level:
 
 ```sh
 account create <account name> <account password>
-account set gmlevel <account name> <account level> # See https://github.com/vmangos/core/blob/28818aabd89c8d34df696edc7e49808865fffe97/src/shared/Common.h#L138-L144
+account set gmlevel <account name> <account level>
 ```
+
+The available account levels are:
+
+| Level | Type          |
+| ----- | ------------- |
+| `0`   | Player        |
+| `1`   | Moderator     |
+| `2`   | Ticket Master |
+| `3`   | Game Master   |
+| `4`   | Basic Admin   |
+| `5`   | Developer     |
+| `6`   | Administrator |
 
 E.g., to create an administrator account, set the account level to `6`.
 
@@ -470,7 +482,7 @@ configuration) it can be necessary to access the database with a MySQL/MariaDB
 client.
 
 A common web-based MySQL/MariaDB database administration tool called
-[phpMyAdmin][phpymadmin] is included and can be enabled by uncommenting the
+[phpMyAdmin][phpmyadmin] is included and can be enabled by uncommenting the
 [`phpmyadmin` service configuration][compose-phpmyadmin] in your
 `compose.yaml`. See the comments there for further information.
 
@@ -521,12 +533,12 @@ You are welcome to help out!
 [hermesproxy]: https://github.com/WowLegacyCore/HermesProxy
 [image-vmangos-database-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-database/versions?filters%5Bversion_type%5D=tagged
 [image-vmangos-server-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-server/versions?filters%5Bversion_type%5D=tagged
+[issues]: https://github.com/mserajnik/vmangos-deploy/issues
+[maintainer]: https://github.com/mserajnik
 [mangosd-gm-options]: https://github.com/mserajnik/vmangos-deploy/blob/master/config/mangosd.conf.example#L2256-L2364
 [mangosd-gm-options-cheat-god]: https://github.com/mserajnik/vmangos-deploy/blob/master/config/mangosd.conf.example#L2364
-[phpymadmin]: https://www.phpmyadmin.net/
+[phpmyadmin]: https://www.phpmyadmin.net/
+[pull-requests]: https://github.com/mserajnik/vmangos-deploy/pulls
 [vmangos]: https://github.com/vmangos/core
 [vmangos-example-commit]: https://github.com/vmangos/core/commit/46183d287f80ab1ebf27bab12f37bc0b5b188c86
 [warden-modules]: https://github.com/vmangos/warden_modules
-[issues]: https://github.com/mserajnik/vmangos-deploy/issues
-[maintainer]: https://github.com/mserajnik
-[pull-requests]: https://github.com/mserajnik/vmangos-deploy/pulls
