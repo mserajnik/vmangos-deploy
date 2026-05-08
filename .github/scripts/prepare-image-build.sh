@@ -19,6 +19,7 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source-path=SCRIPTDIR
 source "$script_dir/helpers.sh"
 
 require_env WORKFLOW_MODE
@@ -32,6 +33,7 @@ require_env OCI_ANNOTATION_VENDOR
 require_env OCI_ANNOTATION_LICENSES
 
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+# shellcheck disable=SC2153
 architectures="$(trim "$ARCHITECTURES")"
 
 declare -a tags=()

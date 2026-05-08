@@ -19,6 +19,7 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source-path=SCRIPTDIR
 source "$script_dir/helpers.sh"
 
 require_env IMAGE
@@ -26,9 +27,13 @@ require_env TAGS
 require_env DIGEST_AMD64
 require_env DIGEST_ARM64
 
+# shellcheck disable=SC2153
 image="$(trim "$IMAGE")"
+# shellcheck disable=SC2153
 tags_csv="$(trim "$TAGS")"
+# shellcheck disable=SC2153
 digest_amd64="$(trim "$DIGEST_AMD64")"
+# shellcheck disable=SC2153
 digest_arm64="$(trim "$DIGEST_ARM64")"
 
 declare -a command=()

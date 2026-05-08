@@ -19,10 +19,12 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source-path=SCRIPTDIR
 source "$script_dir/helpers.sh"
 
 require_env REPOSITORY_URL
 
+# shellcheck disable=SC2153
 repository_url="$(trim "$REPOSITORY_URL")"
 repository_owner=""
 repository_name=""

@@ -19,6 +19,7 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source-path=SCRIPTDIR
 source "$script_dir/helpers.sh"
 
 require_env GH_TOKEN
@@ -40,6 +41,7 @@ if ((${#requested_digests[@]} == 0)); then
   exit 0
 fi
 
+# shellcheck disable=SC2153
 package_endpoint="$(package_versions_endpoint "$PACKAGE_OWNER" "$PACKAGE_NAME")"
 package_versions_json="$(gh api --paginate --slurp "$package_endpoint?per_page=100")"
 

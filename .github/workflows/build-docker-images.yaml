@@ -46,15 +46,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      # If the original MariaDB entrypoint script changes, we can't guarantee
-      # that our custom version (which relies on functions defined in the
-      # original) will still work, so we fail the workflow run at this point.
-      - name: Check if MariaDB entrypoint script has been updated
-        id: mariadb-entrypoint-check
+      # Compares every upstream reference vmangos-deploy depends on (patched
+      # MariaDB entrypoint, bundled config templates, root `CMakeLists.txt`
+      # where new build deps would surface, ...) against its current upstream
+      # revision. The pinned SHAs anchor what each was last reviewed against;
+      # bump the matching SHA below after refreshing the local copy.
+      - name: Check for upstream drift
+        id: upstream-drift-check
         env:
-          MARIADB_ENTRYPOINT_KNOWN_URL: https://raw.githubusercontent.com/MariaDB/mariadb-docker/66972bc2e0c6fd33dcd5d98de0653c5696a1166e/11.8/docker-entrypoint.sh
-          MARIADB_ENTRYPOINT_LATEST_URL: https://raw.githubusercontent.com/MariaDB/mariadb-docker/master/11.8/docker-entrypoint.sh
-        run: ./.github/scripts/check-mariadb-entrypoint.sh
+          # When bumping `MARIADB_DOCKER_KNOWN_SHA`, also update the matching
+          # SHA in `docker/database/Dockerfile` and the header comment in
+          # `docker/database/docker-entrypoint.sh` so all three stay in sync.
+          MARIADB_DOCKER_KNOWN_SHA: 66972bc2e0c6fd33dcd5d98de0653c5696a1166e
+          VMANGOS_KNOWN_SHA: 8d27aeed57432d67d14ab02d766ca61690d38361
+        run: ./.github/scripts/check-upstream-drift.sh
 
       # We check if the workflow was triggered by a schedule and if today is
       # Monday, in which case we want to trigger a (re)build in any case (to
