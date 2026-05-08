@@ -79,11 +79,8 @@ RUN \
   cd /build/core/build && \
   cmake \
     -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ \
-    -DUSE_PCH=1 \
     -DBUILD_FOR_HOST_CPU=0 \
-    -DUSE_SCRIPTS=1 \
     -DBUILD_EXTRACTORS=1 \
-    -DBUILD_REALMMERGE=0 \
     -DENABLE_MAILSENDER=1 \
     -DENABLE_CPPTRACE=0 \
     -DSUPPORTED_CLIENT_BUILD=$VMANGOS_CLIENT_VERSION \
