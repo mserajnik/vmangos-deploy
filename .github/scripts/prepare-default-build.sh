@@ -37,14 +37,14 @@ vmangos_repository_name="$VMANGOS_REPOSITORY_NAME"
 # shellcheck disable=SC2153
 vmangos_revision="$VMANGOS_REVISION"
 force_rebuild="${FORCE_REBUILD:-false}"
-images_already_exist="false"
+any_images_to_build="true"
 
 commit_hash="$(gh api "/repos/$vmangos_repository_owner/$vmangos_repository_name/commits/$vmangos_revision" --jq '.sha')"
 
 if [[ "$GITHUB_EVENT_NAME" == "schedule" && "$(date +%u)" -eq 1 ]]; then
-  images_already_exist="false"
+  any_images_to_build="true"
 elif [[ "$force_rebuild" == "true" ]]; then
-  images_already_exist="false"
+  any_images_to_build="true"
 else
   # shellcheck disable=SC2153
   package_endpoint="$(package_versions_endpoint "$PACKAGE_OWNER" "$PACKAGE_NAME")"
@@ -63,9 +63,9 @@ else
   fi
 
   if grep -Fxq "$commit_hash" <<<"$existing_tags"; then
-    images_already_exist="true"
+    any_images_to_build="false"
   fi
 fi
 
 write_output commit_hash "$commit_hash"
-write_output images_already_exist "$images_already_exist"
+write_output any_images_to_build "$any_images_to_build"

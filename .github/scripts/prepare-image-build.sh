@@ -35,6 +35,11 @@ require_env OCI_ANNOTATION_LICENSES
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 # shellcheck disable=SC2153
 architectures="$(trim "$ARCHITECTURES")"
+# shellcheck disable=SC2153
+oci_annotation_authors="$(trim "$OCI_ANNOTATION_AUTHORS")"
+# shellcheck disable=SC2153
+oci_annotation_vendor="$(trim "$OCI_ANNOTATION_VENDOR")"
+vmangos_patches_repository_url="$(trim "${VMANGOS_PATCHES_REPOSITORY_URL:-}")"
 
 declare -a tags=()
 declare -a mode_metadata_entries=()
@@ -114,30 +119,34 @@ default:server)
   require_env OCI_ANNOTATION_SERVER_DESCRIPTION
   require_env OCI_ANNOTATION_SERVER_BASE_NAME
 
-  title="$OCI_ANNOTATION_SERVER_TITLE"
-  description="$OCI_ANNOTATION_SERVER_DESCRIPTION"
-  base_name="$OCI_ANNOTATION_SERVER_BASE_NAME"
-  ref_name="$image:$CLIENT_VERSION-$COMMIT_HASH"
+  # shellcheck disable=SC2153
+  commit_hash="$(trim "$COMMIT_HASH")"
+  # shellcheck disable=SC2153
+  client_version="$(trim "$CLIENT_VERSION")"
+  title="$(trim "$OCI_ANNOTATION_SERVER_TITLE")"
+  description="$(trim "$OCI_ANNOTATION_SERVER_DESCRIPTION")"
+  base_name="$(trim "$OCI_ANNOTATION_SERVER_BASE_NAME")"
+  ref_name="$image:$client_version-$commit_hash"
 
-  if [[ "$CLIENT_VERSION" == "5875" ]]; then
+  if [[ "$client_version" == "5875" ]]; then
     tags+=("$image:latest")
   fi
 
   tags+=(
-    "$image:$CLIENT_VERSION"
-    "$image:$CLIENT_VERSION-$COMMIT_HASH"
+    "$image:$client_version"
+    "$image:$client_version-$commit_hash"
   )
 
   build_args+=(
-    "VMANGOS_REVISION=$COMMIT_HASH"
-    "VMANGOS_CLIENT_VERSION=$CLIENT_VERSION"
-    "VMANGOS_PATCHES_REPOSITORY_URL=$VMANGOS_PATCHES_REPOSITORY_URL"
+    "VMANGOS_REVISION=$commit_hash"
+    "VMANGOS_CLIENT_VERSION=$client_version"
+    "VMANGOS_PATCHES_REPOSITORY_URL=$vmangos_patches_repository_url"
     "VMANGOS_FAIL_ON_PATCH_ERROR=1"
   )
 
   mode_metadata_entries+=(
-    "version=$COMMIT_HASH"
-    "revision=$COMMIT_HASH"
+    "version=$commit_hash"
+    "revision=$commit_hash"
   )
   ;;
 default:database)
@@ -146,25 +155,27 @@ default:database)
   require_env OCI_ANNOTATION_DATABASE_DESCRIPTION
   require_env OCI_ANNOTATION_DATABASE_BASE_NAME
 
-  title="$OCI_ANNOTATION_DATABASE_TITLE"
-  description="$OCI_ANNOTATION_DATABASE_DESCRIPTION"
-  base_name="$OCI_ANNOTATION_DATABASE_BASE_NAME"
-  ref_name="$image:$COMMIT_HASH"
+  # shellcheck disable=SC2153
+  commit_hash="$(trim "$COMMIT_HASH")"
+  title="$(trim "$OCI_ANNOTATION_DATABASE_TITLE")"
+  description="$(trim "$OCI_ANNOTATION_DATABASE_DESCRIPTION")"
+  base_name="$(trim "$OCI_ANNOTATION_DATABASE_BASE_NAME")"
+  ref_name="$image:$commit_hash"
 
   tags+=(
     "$image:latest"
-    "$image:$COMMIT_HASH"
+    "$image:$commit_hash"
   )
 
   build_args+=(
-    "VMANGOS_REVISION=$COMMIT_HASH"
-    "VMANGOS_PATCHES_REPOSITORY_URL=$VMANGOS_PATCHES_REPOSITORY_URL"
+    "VMANGOS_REVISION=$commit_hash"
+    "VMANGOS_PATCHES_REPOSITORY_URL=$vmangos_patches_repository_url"
     "VMANGOS_FAIL_ON_PATCH_ERROR=1"
   )
 
   mode_metadata_entries+=(
-    "version=$COMMIT_HASH"
-    "revision=$COMMIT_HASH"
+    "version=$commit_hash"
+    "revision=$commit_hash"
   )
   ;;
 custom:server)
@@ -176,27 +187,35 @@ custom:server)
   require_env OCI_ANNOTATION_SERVER_DESCRIPTION
   require_env OCI_ANNOTATION_SERVER_BASE_NAME
 
-  title="$OCI_ANNOTATION_SERVER_TITLE"
-  description="$OCI_ANNOTATION_SERVER_DESCRIPTION"
-  base_name="$OCI_ANNOTATION_SERVER_BASE_NAME"
+  # shellcheck disable=SC2153
+  repository_owner="$(trim "$REPOSITORY_OWNER")"
+  # shellcheck disable=SC2153
+  repository_name="$(trim "$REPOSITORY_NAME")"
+  # shellcheck disable=SC2153
+  revision="$(trim "$REVISION")"
+  # shellcheck disable=SC2153
+  client_version="$(trim "$CLIENT_VERSION")"
+  title="$(trim "$OCI_ANNOTATION_SERVER_TITLE")"
+  description="$(trim "$OCI_ANNOTATION_SERVER_DESCRIPTION")"
+  base_name="$(trim "$OCI_ANNOTATION_SERVER_BASE_NAME")"
+  vmangos_repository_url="$(trim "${VMANGOS_REPOSITORY_URL:-}")"
+  custom_tag_fragment="$(trim "${CUSTOM_TAG_FRAGMENT:-}")"
 
-  custom_name="$(trim "${CUSTOM_NAME:-}")"
-
-  if [[ -n "$custom_name" ]]; then
-    sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
-    ref_name="$image:$sanitized_custom_name-$CLIENT_VERSION"
+  if [[ -n "$custom_tag_fragment" ]]; then
+    sanitized_custom_tag_fragment="$(normalize_tag_fragment "custom" "$custom_tag_fragment")"
+    ref_name="$image:$sanitized_custom_tag_fragment-$client_version"
   else
-    sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
-    ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision-$CLIENT_VERSION"
+    sanitized_revision="$(normalize_tag_fragment "revision" "$revision")"
+    ref_name="$image:$repository_owner-$repository_name-$sanitized_revision-$client_version"
   fi
 
   tags+=("$ref_name")
 
   build_args+=(
-    "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
-    "VMANGOS_REVISION=$REVISION"
-    "VMANGOS_CLIENT_VERSION=$CLIENT_VERSION"
-    "VMANGOS_PATCHES_REPOSITORY_URL=${VMANGOS_PATCHES_REPOSITORY_URL:-}"
+    "VMANGOS_REPOSITORY_URL=$vmangos_repository_url"
+    "VMANGOS_REVISION=$revision"
+    "VMANGOS_CLIENT_VERSION=$client_version"
+    "VMANGOS_PATCHES_REPOSITORY_URL=$vmangos_patches_repository_url"
   )
   ;;
 custom:database)
@@ -207,28 +226,36 @@ custom:database)
   require_env OCI_ANNOTATION_DATABASE_DESCRIPTION
   require_env OCI_ANNOTATION_DATABASE_BASE_NAME
 
-  title="$OCI_ANNOTATION_DATABASE_TITLE"
-  description="$OCI_ANNOTATION_DATABASE_DESCRIPTION"
-  base_name="$OCI_ANNOTATION_DATABASE_BASE_NAME"
+  # shellcheck disable=SC2153
+  repository_owner="$(trim "$REPOSITORY_OWNER")"
+  # shellcheck disable=SC2153
+  repository_name="$(trim "$REPOSITORY_NAME")"
+  # shellcheck disable=SC2153
+  revision="$(trim "$REVISION")"
+  title="$(trim "$OCI_ANNOTATION_DATABASE_TITLE")"
+  description="$(trim "$OCI_ANNOTATION_DATABASE_DESCRIPTION")"
+  base_name="$(trim "$OCI_ANNOTATION_DATABASE_BASE_NAME")"
+  vmangos_repository_url="$(trim "${VMANGOS_REPOSITORY_URL:-}")"
+  vmangos_world_db_repository_url="$(trim "${VMANGOS_WORLD_DB_REPOSITORY_URL:-}")"
+  vmangos_world_db_dump_name="$(trim "${VMANGOS_WORLD_DB_DUMP_NAME:-}")"
+  custom_tag_fragment="$(trim "${CUSTOM_TAG_FRAGMENT:-}")"
 
-  custom_name="$(trim "${CUSTOM_NAME:-}")"
-
-  if [[ -n "$custom_name" ]]; then
-    sanitized_custom_name="$(normalize_tag_fragment "custom" "$custom_name")"
-    ref_name="$image:$sanitized_custom_name"
+  if [[ -n "$custom_tag_fragment" ]]; then
+    sanitized_custom_tag_fragment="$(normalize_tag_fragment "custom" "$custom_tag_fragment")"
+    ref_name="$image:$sanitized_custom_tag_fragment"
   else
-    sanitized_revision="$(normalize_tag_fragment "revision" "$REVISION")"
-    ref_name="$image:$REPOSITORY_OWNER-$REPOSITORY_NAME-$sanitized_revision"
+    sanitized_revision="$(normalize_tag_fragment "revision" "$revision")"
+    ref_name="$image:$repository_owner-$repository_name-$sanitized_revision"
   fi
 
   tags+=("$ref_name")
 
   build_args+=(
-    "VMANGOS_REPOSITORY_URL=${VMANGOS_REPOSITORY_URL:-}"
-    "VMANGOS_REVISION=$REVISION"
-    "VMANGOS_PATCHES_REPOSITORY_URL=${VMANGOS_PATCHES_REPOSITORY_URL:-}"
-    "VMANGOS_WORLD_DB_REPOSITORY_URL=${VMANGOS_WORLD_DB_REPOSITORY_URL:-}"
-    "VMANGOS_WORLD_DB_DUMP_NAME=${VMANGOS_WORLD_DB_DUMP_NAME:-}"
+    "VMANGOS_REPOSITORY_URL=$vmangos_repository_url"
+    "VMANGOS_REVISION=$revision"
+    "VMANGOS_PATCHES_REPOSITORY_URL=$vmangos_patches_repository_url"
+    "VMANGOS_WORLD_DB_REPOSITORY_URL=$vmangos_world_db_repository_url"
+    "VMANGOS_WORLD_DB_DUMP_NAME=$vmangos_world_db_dump_name"
   )
   ;;
 *)
@@ -244,7 +271,7 @@ fi
 
 metadata_entries=(
   "created=$timestamp"
-  "authors=$OCI_ANNOTATION_AUTHORS"
+  "authors=$oci_annotation_authors"
   "url=$OCI_ANNOTATION_URL"
   "documentation=$OCI_ANNOTATION_DOCUMENTATION"
   "source=$OCI_ANNOTATION_SOURCE"
@@ -255,7 +282,7 @@ if ((${#mode_metadata_entries[@]} > 0)); then
 fi
 
 metadata_entries+=(
-  "vendor=$OCI_ANNOTATION_VENDOR"
+  "vendor=$oci_annotation_vendor"
   "licenses=$OCI_ANNOTATION_LICENSES"
   "ref.name=$ref_name"
   "title=$title"

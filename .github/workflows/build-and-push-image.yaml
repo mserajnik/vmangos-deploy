@@ -46,7 +46,7 @@ on:
       patches_repository_url:
         type: string
         required: false
-      custom_name:
+      custom_tag_fragment:
         type: string
         required: false
 
@@ -105,7 +105,7 @@ jobs:
           CLIENT_VERSION: ${{ inputs.client_version }}
           VMANGOS_WORLD_DB_REPOSITORY_URL: ${{ inputs.world_db_repository_url }}
           VMANGOS_WORLD_DB_DUMP_NAME: ${{ inputs.world_db_dump_name }}
-          CUSTOM_NAME: ${{ inputs.custom_name }}
+          CUSTOM_TAG_FRAGMENT: ${{ inputs.custom_tag_fragment }}
         run: ./.github/scripts/prepare-image-build.sh
 
   build-amd64:

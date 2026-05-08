@@ -32,7 +32,7 @@ on:
         type: string
         required: false
         description: (Optional) A URL to a repository that contains patches to apply to the VMaNGOS code (patches have to end in `.patch` and be located in the root of the repository)
-      custom_name:
+      custom_tag_fragment:
         type: string
         required: false
         description: (Optional) A custom name to use as part of the image tags (when provided, this overrides the default `{ owner }-{ repository }-{ revision }` naming scheme)
@@ -109,7 +109,7 @@ jobs:
       revision: ${{ inputs.revision }}
       client_version: ${{ inputs.client_version }}
       patches_repository_url: ${{ inputs.patches_repository_url }}
-      custom_name: ${{ inputs.custom_name }}
+      custom_tag_fragment: ${{ inputs.custom_tag_fragment }}
 
   # We build database images only after the server build succeeds; otherwise, a
   # failure there could leave the latest database images out of sync.
@@ -132,4 +132,4 @@ jobs:
       world_db_repository_url: ${{ inputs.world_db_repository_url }}
       world_db_dump_name: ${{ inputs.world_db_dump_name }}
       patches_repository_url: ${{ inputs.patches_repository_url }}
-      custom_name: ${{ inputs.custom_name }}
+      custom_tag_fragment: ${{ inputs.custom_tag_fragment }}
