@@ -16,12 +16,25 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+vmangos_log() {
+  echo "[vmangos-deploy]: $*"
+}
+
+vmangos_fail() {
+  echo "[vmangos-deploy]: ERROR: $*" >&2
+  exit 1
+}
+
+sql_escape() {
+  printf '%s' "$1" | sed "s/'/''/g"
+}
+
 create_database() {
   local db_name="$1"
-  local silent=${2:-false}
+  local silent="${2:-false}"
 
   if [ "$silent" = false ]; then
-    echo "[vmangos-deploy]: Creating database '$db_name'"
+    vmangos_log "Creating database '$db_name'"
   fi
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
@@ -30,10 +43,10 @@ create_database() {
 
 drop_database() {
   local db_name="$1"
-  local silent=${2:-false}
+  local silent="${2:-false}"
 
   if [ "$silent" = false ]; then
-    echo "[vmangos-deploy]: Dropping database '$db_name'"
+    vmangos_log "Dropping database '$db_name'"
   fi
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
@@ -42,14 +55,15 @@ drop_database() {
 
 grant_permissions() {
   local db_name="$1"
-  local silent=${2:-false}
+  local silent="${2:-false}"
 
   if [ "$silent" = false ]; then
-    echo "[vmangos-deploy]: Granting permissions to database user '$MARIADB_USER' for database '$db_name'"
+    vmangos_log "Granting permissions to database user '$MARIADB_USER' for database '$db_name'"
   fi
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
-    "GRANT ALL ON \`$db_name\`.* TO '$MARIADB_USER'@'%'; \
+    "CREATE USER IF NOT EXISTS '$MARIADB_USER'@'%' IDENTIFIED BY '$MARIADB_PASSWORD'; \
+    GRANT ALL ON \`$db_name\`.* TO '$MARIADB_USER'@'%'; \
     FLUSH PRIVILEGES;"
 }
 
@@ -65,7 +79,7 @@ import_dump() {
   local db_name="$1"
   local dump_file="$2"
 
-  echo "[vmangos-deploy]: Importing initial data for database '$db_name'"
+  vmangos_log "Importing initial data for database '$db_name'"
 
   import_data "$db_name" "$dump_file"
   return $?
@@ -81,17 +95,22 @@ import_updates() {
     return 0
   fi
 
-  echo "[vmangos-deploy]: Importing potential updates for database '$db_name'"
+  vmangos_log "Importing potential updates for database '$db_name'"
 
   import_data "$db_name" "$update_file"
   return $?
 }
 
 configure_realm() {
-  echo "[vmangos-deploy]: Configuring realm '$VMANGOS_REALMLIST_NAME'"
+  local realm_name
+  local realm_address
+
+  realm_name="$(sql_escape "$VMANGOS_REALMLIST_NAME")"
+  realm_address="$(sql_escape "$VMANGOS_REALMLIST_ADDRESS")"
+  vmangos_log "Configuring realm '$VMANGOS_REALMLIST_NAME'"
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "realmd" -e \
-    "INSERT INTO \`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$VMANGOS_REALMLIST_NAME', '$VMANGOS_REALMLIST_ADDRESS', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
+    "INSERT IGNORE INTO \`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$realm_name', '$realm_address', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
 }
 
 create_world_db_corrections_table() {
@@ -209,19 +228,19 @@ process_custom_sql() {
   local file_directory="$1"
 
   if [ ! -d "$file_directory" ]; then
-    echo "[vmangos-deploy]: WARNING: Custom SQL file directory '$file_directory' does not exist" >&2
+    vmangos_log "WARNING: Custom SQL file directory '$file_directory' does not exist" >&2
     return 0
   fi
 
   file_count=$(find "$file_directory" -name "*.sql" -type f | wc -l)
-  echo "[vmangos-deploy]: Found $file_count custom SQL file(s) to process"
+  vmangos_log "Found $file_count custom SQL file(s) to process"
 
   if [ "$file_count" -gt 0 ]; then
     find "$file_directory" -name "*.sql" -type f | sort | while read -r sql_file; do
-      echo "[vmangos-deploy]: Processing custom SQL file '$(basename "$sql_file")'"
+      vmangos_log "Processing custom SQL file '$(basename "$sql_file")'"
 
       if ! import_data "mangos" "$sql_file"; then
-        echo "[vmangos-deploy]: ERROR: Failed to process custom SQL file '$(basename "$sql_file")'" >&2
+        vmangos_log "ERROR: Failed to process custom SQL file '$(basename "$sql_file")'" >&2
       fi
     done
   fi

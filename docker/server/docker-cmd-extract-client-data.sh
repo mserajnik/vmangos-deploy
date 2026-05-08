@@ -49,7 +49,7 @@ if [ ! -d "$client_data_dir" ] || [ ! -d "$client_data_dir/Data" ]; then
 fi
 
 if [ ! -d "$extracted_data_dir" ]; then
-  echo "[vmangos-deploy]: ERROR: Extracted data target directory '$extracted_data_dir' doesn't exist, aborting extraction" >&2
+  echo "[vmangos-deploy]: ERROR: Extracted data target directory '$extracted_data_dir' does not exist, aborting extraction" >&2
   exit 1
 fi
 

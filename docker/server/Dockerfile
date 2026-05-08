@@ -88,7 +88,7 @@ RUN \
     -DENABLE_CPPTRACE=0 \
     -DSUPPORTED_CLIENT_BUILD=$VMANGOS_CLIENT_VERSION \
     -DDEBUG_SYMBOLS=0 && \
-  make -j$(nproc) && \
+  make -j"$(nproc)" && \
   make install
 
 FROM ubuntu:24.04
@@ -140,7 +140,7 @@ RUN \
     useradd -u "$VMANGOS_USER_ID" -g "$VMANGOS_GROUP_NAME" -d "/home/$VMANGOS_USER_NAME" -s /bin/sh -m "$VMANGOS_USER_NAME"; \
   fi && \
   # See https://github.com/boxboat/fixuid
-  curl -SsL https://github.com/boxboat/fixuid/releases/download/v0.6.0/fixuid-0.6.0-linux-$TARGETARCH.tar.gz | tar -C /usr/local/bin -xzf - && \
+  curl -SsL "https://github.com/boxboat/fixuid/releases/download/v0.6.0/fixuid-0.6.0-linux-$TARGETARCH.tar.gz" | tar -C /usr/local/bin -xzf - && \
   chown root:root /usr/local/bin/fixuid && \
   chmod 4755 /usr/local/bin/fixuid && \
   mkdir -p /etc/fixuid && \

@@ -16,19 +16,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+set -euo pipefail
+
 # shellcheck source=docker/database/db-functions.sh
 source "/opt/scripts/db-functions.sh"
 
 if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
-  echo "[vmangos-deploy]: [x] Automatic world database corrections are enabled"
+  vmangos_log "[x] Automatic world database corrections are enabled"
 else
-  echo "[vmangos-deploy]: [ ] Automatic world database corrections are disabled"
+  vmangos_log "[ ] Automatic world database corrections are disabled"
 fi
 
 if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
-  echo "[vmangos-deploy]: [x] Custom SQL processing is enabled"
+  vmangos_log "[x] Custom SQL processing is enabled"
 else
-  echo "[vmangos-deploy]: [ ] Custom SQL processing is disabled"
+  vmangos_log "[ ] Custom SQL processing is disabled"
 fi
 
 create_database "mangos"
