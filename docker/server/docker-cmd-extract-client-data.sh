@@ -85,8 +85,14 @@ rm -rf ./Buildings ./Cameras ./dbc ./maps ./mmaps ./vmaps
 rm -rf ./Buildings ./Cameras
 
 # Remove any potentially already existing data from the extracted data
-# directory before moving the new data there.
-find "$extracted_data_dir" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+# directory before moving the new data there. Only the directories we know
+# the extractors produce are removed so unrelated files (such as `.gitkeep`)
+# stay untouched.
+rm -rf \
+  "$client_version_dir" \
+  "$extracted_data_dir/maps" \
+  "$extracted_data_dir/mmaps" \
+  "$extracted_data_dir/vmaps"
 
 mkdir -p "$client_version_dir"
 mv ./dbc "$client_version_dir/"
