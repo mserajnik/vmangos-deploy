@@ -22,15 +22,15 @@ set -euo pipefail
 source "/opt/scripts/db-functions.sh"
 
 if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
-  vmangos_log "[x] Automatic world database corrections are enabled"
+  vmangos_log "[x] Automatic world database corrections are enabled."
 else
-  vmangos_log "[ ] Automatic world database corrections are disabled"
+  vmangos_log "[ ] Automatic world database corrections are disabled."
 fi
 
 if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
-  vmangos_log "[x] Custom SQL processing is enabled"
+  vmangos_log "[x] Custom SQL processing is enabled."
 else
-  vmangos_log "[ ] Custom SQL processing is disabled"
+  vmangos_log "[ ] Custom SQL processing is disabled."
 fi
 
 if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
@@ -44,7 +44,7 @@ if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
   reason=$(echo "$result" | cut -d'|' -f2)
 
   if [ "$requires_correction" = "true" ]; then
-    vmangos_log "World database correction required because of $reason, re-creating world database"
+    vmangos_log "World database correction required because of $reason, re-creating world database..."
 
     drop_database "mangos"
     create_database "mangos"
@@ -53,13 +53,13 @@ if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
     mark_world_db_corrections_as_applied
   fi
 else
-  vmangos_log "Automatic world database corrections are disabled"
+  vmangos_log "Automatic world database corrections are disabled."
 
   drop_database "maintenance" true
 fi
 
 if [ -e "$VMANGOS_WORLD_DB_DUMP_NEW_FILE" ]; then
-  vmangos_log "'$VMANGOS_WORLD_DB_DUMP_NEW_FILE' exists, re-creating world database"
+  vmangos_log "'$VMANGOS_WORLD_DB_DUMP_NEW_FILE' exists, re-creating world database..."
 
   drop_database "mangos"
   create_database "mangos"

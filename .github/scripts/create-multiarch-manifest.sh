@@ -63,5 +63,5 @@ command+=(
   "$image@$digest_arm64"
 )
 
-printf 'Creating multi-platform image index for %s\n' "$image"
+printf 'Creating multi-platform image index for %s...\n' "$image"
 "${command[@]}"

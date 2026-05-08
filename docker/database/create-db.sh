@@ -22,15 +22,15 @@ set -euo pipefail
 source "/opt/scripts/db-functions.sh"
 
 if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
-  vmangos_log "[x] Automatic world database corrections are enabled"
+  vmangos_log "[x] Automatic world database corrections are enabled."
 else
-  vmangos_log "[ ] Automatic world database corrections are disabled"
+  vmangos_log "[ ] Automatic world database corrections are disabled."
 fi
 
 if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
-  vmangos_log "[x] Custom SQL processing is enabled"
+  vmangos_log "[x] Custom SQL processing is enabled."
 else
-  vmangos_log "[ ] Custom SQL processing is disabled"
+  vmangos_log "[ ] Custom SQL processing is disabled."
 fi
 
 create_database "mangos"

@@ -44,12 +44,12 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ ! -d "$client_data_dir" ] || [ ! -d "$client_data_dir/Data" ]; then
-  echo "[vmangos-deploy]: ERROR: Client data not found in '$client_data_dir', aborting extraction" >&2
+  echo "[vmangos-deploy]: ERROR: Client data not found in '$client_data_dir', aborting extraction." >&2
   exit 1
 fi
 
 if [ ! -d "$extracted_data_dir" ]; then
-  echo "[vmangos-deploy]: ERROR: Extracted data target directory '$extracted_data_dir' does not exist, aborting extraction" >&2
+  echo "[vmangos-deploy]: ERROR: Extracted data target directory '$extracted_data_dir' does not exist, aborting extraction." >&2
   exit 1
 fi
 
@@ -64,7 +64,7 @@ if [ "$force" = false ]; then
     fi
     choice=$(echo "${choice:-y}" | tr -d '[:space:]')
     if [ "$choice" = "n" ] || [ "$choice" = "N" ]; then
-      echo "[vmangos-deploy]: Aborting extraction"
+      echo "[vmangos-deploy]: Aborting extraction."
       exit 1
     fi
   fi

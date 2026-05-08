@@ -37,7 +37,7 @@ for digest in "${DIGEST_AMD64:-}" "${DIGEST_ARM64:-}"; do
 done
 
 if ((${#requested_digests[@]} == 0)); then
-  echo "No package digests were provided for cleanup"
+  echo "No package digests were provided for cleanup."
   exit 0
 fi
 
@@ -58,12 +58,12 @@ for digest in "${!requested_digests[@]}"; do
   )
 
   if ((${#version_ids[@]} == 0)); then
-    printf 'No untagged package version found for %s\n' "$digest"
+    printf 'No untagged package version found for %s.\n' "$digest"
     continue
   fi
 
   for version_id in "${version_ids[@]}"; do
-    printf 'Deleting untagged package version %s for %s\n' "$version_id" "$digest"
+    printf 'Deleting untagged package version %s for %s...\n' "$version_id" "$digest"
     gh api \
       --method DELETE \
       "$(package_version_endpoint "$PACKAGE_OWNER" "$PACKAGE_NAME" "$version_id")" \

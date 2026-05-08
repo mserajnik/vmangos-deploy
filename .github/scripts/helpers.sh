@@ -25,7 +25,7 @@ require_env() {
   local name="$1"
 
   if [[ -z "${!name:-}" ]]; then
-    fail "Environment variable '$name' is required"
+    fail "Environment variable '$name' is required."
   fi
 }
 
@@ -72,7 +72,7 @@ sanitize_docker_tag_fragment() {
     -e 's/[^A-Za-z0-9_.-]+$//')"
 
   if [[ -z "$sanitized" ]]; then
-    fail "Value '$original' cannot be converted into a valid Docker tag fragment"
+    fail "Value '$original' cannot be converted into a valid Docker tag fragment."
   fi
 
   printf '%s\n' "$sanitized"
@@ -113,7 +113,7 @@ package_owner_endpoint() {
     namespace="users"
     ;;
   *)
-    fail "Unsupported package owner type '$owner_type' for '$owner'"
+    fail "Unsupported package owner type '$owner_type' for '$owner'."
     ;;
   esac
 

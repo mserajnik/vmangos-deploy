@@ -34,7 +34,7 @@ create_database() {
   local silent="${2:-false}"
 
   if [ "$silent" = false ]; then
-    vmangos_log "Creating database '$db_name'"
+    vmangos_log "Creating database '$db_name'..."
   fi
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
@@ -46,7 +46,7 @@ drop_database() {
   local silent="${2:-false}"
 
   if [ "$silent" = false ]; then
-    vmangos_log "Dropping database '$db_name'"
+    vmangos_log "Dropping database '$db_name'..."
   fi
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
@@ -58,7 +58,7 @@ grant_permissions() {
   local silent="${2:-false}"
 
   if [ "$silent" = false ]; then
-    vmangos_log "Granting permissions to database user '$MARIADB_USER' for database '$db_name'"
+    vmangos_log "Granting permissions to database user '$MARIADB_USER' for database '$db_name'..."
   fi
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
@@ -79,7 +79,7 @@ import_dump() {
   local db_name="$1"
   local dump_file="$2"
 
-  vmangos_log "Importing initial data for database '$db_name'"
+  vmangos_log "Importing initial data for database '$db_name'..."
 
   import_data "$db_name" "$dump_file"
   return $?
@@ -95,7 +95,7 @@ import_updates() {
     return 0
   fi
 
-  vmangos_log "Importing potential updates for database '$db_name'"
+  vmangos_log "Importing potential updates for database '$db_name'..."
 
   import_data "$db_name" "$update_file"
   return $?
@@ -107,7 +107,7 @@ configure_realm() {
 
   realm_name="$(sql_escape "$VMANGOS_REALMLIST_NAME")"
   realm_address="$(sql_escape "$VMANGOS_REALMLIST_ADDRESS")"
-  vmangos_log "Configuring realm '$VMANGOS_REALMLIST_NAME'"
+  vmangos_log "Configuring realm '$VMANGOS_REALMLIST_NAME'..."
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "realmd" -e \
     "INSERT IGNORE INTO \`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$realm_name', '$realm_address', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
@@ -228,19 +228,19 @@ process_custom_sql() {
   local file_directory="$1"
 
   if [ ! -d "$file_directory" ]; then
-    vmangos_log "WARNING: Custom SQL file directory '$file_directory' does not exist" >&2
+    vmangos_log "WARNING: Custom SQL file directory '$file_directory' does not exist." >&2
     return 0
   fi
 
   file_count=$(find "$file_directory" -name "*.sql" -type f | wc -l)
-  vmangos_log "Found $file_count custom SQL file(s) to process"
+  vmangos_log "Found $file_count custom SQL file(s) to process."
 
   if [ "$file_count" -gt 0 ]; then
     find "$file_directory" -name "*.sql" -type f | sort | while read -r sql_file; do
-      vmangos_log "Processing custom SQL file '$(basename "$sql_file")'"
+      vmangos_log "Processing custom SQL file '$(basename "$sql_file")'..."
 
       if ! import_data "mangos" "$sql_file"; then
-        vmangos_log "ERROR: Failed to process custom SQL file '$(basename "$sql_file")'" >&2
+        vmangos_log "ERROR: Failed to process custom SQL file '$(basename "$sql_file")'." >&2
       fi
     done
   fi

@@ -58,7 +58,7 @@ else
       existing_tags=""
     else
       printf '%s\n' "$existing_tags" >&2
-      fail "Failed to query package versions for '$PACKAGE_OWNER/$PACKAGE_NAME'"
+      fail "Failed to query package versions for '$PACKAGE_OWNER/$PACKAGE_NAME'."
     fi
   fi
 

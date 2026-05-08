@@ -68,7 +68,7 @@ normalize_tag_fragment() {
   normalized_value="$(sanitize_docker_tag_fragment "$value")"
 
   if [[ "$normalized_value" != "$value" ]]; then
-    echo "Normalized $label tag fragment '$value' to '$normalized_value'"
+    echo "Normalized $label tag fragment '$value' to '$normalized_value'."
   fi
 
   printf '%s' "$normalized_value"
@@ -87,7 +87,7 @@ arm64 | "arm64 only")
   build_arm64="true"
   ;;
 *)
-  fail "Unsupported architectures value '$architectures'"
+  fail "Unsupported architectures value '$architectures'."
   ;;
 esac
 
@@ -105,7 +105,7 @@ database)
   dockerfile="./docker/database/Dockerfile"
   ;;
 *)
-  fail "Unsupported image kind '$IMAGE_KIND'"
+  fail "Unsupported image kind '$IMAGE_KIND'."
   ;;
 esac
 
@@ -259,7 +259,7 @@ custom:database)
   )
   ;;
 *)
-  fail "Unsupported workflow/image combination '$WORKFLOW_MODE:$IMAGE_KIND'"
+  fail "Unsupported workflow/image combination '$WORKFLOW_MODE:$IMAGE_KIND'."
   ;;
 esac
 

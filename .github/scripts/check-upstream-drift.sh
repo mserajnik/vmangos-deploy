@@ -92,6 +92,6 @@ for check in "${checks[@]}"; do
 done
 
 if ((failures > 0)); then
-  printf '\n%s upstream reference(s) drifted from the pinned revision\n' "$failures" >&2
-  fail "Review the diff(s) above, refresh any local files that need to align, and bump the matching *_KNOWN_SHA"
+  printf '\n%s upstream reference(s) drifted from the pinned revision.\n' "$failures" >&2
+  fail "Review the diff(s) above, refresh any local files that need to align, and bump the matching *_KNOWN_SHA."
 fi

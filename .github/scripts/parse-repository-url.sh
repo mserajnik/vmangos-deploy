@@ -40,7 +40,7 @@ fi
 repository_name="${repository_name%.git}"
 
 if [[ -z "$repository_owner" || -z "$repository_name" ]]; then
-  fail "Failed to parse repository URL '$repository_url'"
+  fail "Failed to parse repository URL '$repository_url'."
 fi
 
 write_output repository_owner "$repository_owner"

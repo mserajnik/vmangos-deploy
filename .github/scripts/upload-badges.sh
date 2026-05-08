@@ -23,7 +23,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$script_dir/helpers.sh"
 
 if [[ -z "${BADGES_FTP_HOST:-}" || -z "${BADGES_FTP_USERNAME:-}" || -z "${BADGES_FTP_PASSWORD:-}" ]]; then
-  echo "Badge FTP secrets are missing, skipping upload"
+  echo "Badge FTP secrets are missing, skipping upload."
   exit 0
 fi
 
