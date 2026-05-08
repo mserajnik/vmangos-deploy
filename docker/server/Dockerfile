@@ -79,6 +79,7 @@ RUN \
   cd /build/core/build && \
   cmake \
     -DCMAKE_INSTALL_PREFIX=/opt/vmangos ../ \
+    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
     -DBUILD_FOR_HOST_CPU=0 \
     -DBUILD_EXTRACTORS=1 \
     -DENABLE_MAILSENDER=1 \
