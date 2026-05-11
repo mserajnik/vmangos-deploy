@@ -16,8 +16,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Shared helpers sourced by `create-db.sh` and `update-db.sh`: database CRUD,
+# migration edit acknowledgement, halt and confirm sentinels, and the world
+# database `variables` capture and restore stopgap.
+
 vmangos_log() {
   echo "[vmangos-deploy]: $*"
+}
+
+vmangos_log_blank() {
+  echo
 }
 
 vmangos_fail() {
@@ -27,6 +35,18 @@ vmangos_fail() {
 
 sql_escape() {
   printf '%s' "$1" | sed "s/'/''/g"
+}
+
+mark_database_ready() {
+  touch /tmp/vmangos-database-ready
+}
+
+clear_database_ready() {
+  rm -f /tmp/vmangos-database-ready
+}
+
+clear_change_sentinels() {
+  rm -f /tmp/vmangos-changes-pending /tmp/vmangos-changes-acknowledged
 }
 
 create_database() {
@@ -113,115 +133,267 @@ configure_realm() {
     "INSERT IGNORE INTO \`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$realm_name', '$realm_address', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
 }
 
-create_world_db_corrections_table() {
-  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
-    "CREATE TABLE IF NOT EXISTS \`world_db_corrections\` ( \
-      \`id\` INT NOT NULL, \
-      \`reason\` VARCHAR(255) NOT NULL, \
-      \`date\` DATE NOT NULL, \
-      \`is_applied\` BOOLEAN NOT NULL DEFAULT FALSE, \
-      PRIMARY KEY (\`id\`) \
-    );"
+table_exists() {
+  local db_name="$1"
+  local table_name="$2"
+  local count
+
+  count="$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -N -s -e \
+    "SELECT COUNT(*) FROM \`information_schema\`.\`TABLES\` \
+    WHERE \`TABLE_SCHEMA\` = '$(sql_escape "$db_name")' \
+    AND \`TABLE_NAME\` = '$(sql_escape "$table_name")';")"
+
+  [ "$count" -gt 0 ]
 }
 
-populate_world_db_corrections_table() {
+ensure_maintenance_db_exists() {
+  create_database "maintenance" true
+  grant_permissions "maintenance" true
+
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
-    "INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 1, 'migration edits in vmangos/core@fe6fcb4', '2025-02-22' \
-    WHERE NOT EXISTS ( \
-      SELECT 1 FROM \`world_db_corrections\` WHERE \`id\` = 1 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 2, 'migration edits in vmangos/core@9e6d4ac', '2025-02-23' \
-    WHERE NOT EXISTS ( \
-      SELECT 2 FROM \`world_db_corrections\` WHERE \`id\` = 2 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 3, 'migration edits in vmangos/core@07c7832', '2025-02-25' \
-    WHERE NOT EXISTS ( \
-      SELECT 3 FROM \`world_db_corrections\` WHERE \`id\` = 3 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 4, 'migration edits in vmangos/core@f485dfa', '2025-03-22' \
-    WHERE NOT EXISTS ( \
-      SELECT 4 FROM \`world_db_corrections\` WHERE \`id\` = 4 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 5, 'migration edits in vmangos/core@33fcf97', '2025-07-05' \
-    WHERE NOT EXISTS ( \
-      SELECT 5 FROM \`world_db_corrections\` WHERE \`id\` = 5 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 6, 'a patch that fixes an issue with a migration in vmangos/core@a1f0a10', '2025-10-11' \
-    WHERE NOT EXISTS ( \
-      SELECT 6 FROM \`world_db_corrections\` WHERE \`id\` = 6 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 7, 'migration edits in vmangos/core@4a82d07', '2025-10-22' \
-    WHERE NOT EXISTS ( \
-      SELECT 7 FROM \`world_db_corrections\` WHERE \`id\` = 7 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 8, 'migration edits in vmangos/core@79c1e87', '2026-01-01' \
-    WHERE NOT EXISTS ( \
-      SELECT 8 FROM \`world_db_corrections\` WHERE \`id\` = 8 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 9, 'migration edits in vmangos/core@097449b', '2026-03-20' \
-    WHERE NOT EXISTS ( \
-      SELECT 9 FROM \`world_db_corrections\` WHERE \`id\` = 9 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 10, 'migration edits in vmangos/core@d11f5a0', '2026-03-27' \
-    WHERE NOT EXISTS ( \
-      SELECT 10 FROM \`world_db_corrections\` WHERE \`id\` = 10 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 11, 'migration edits in vmangos/core@2c96b01', '2026-04-05' \
-    WHERE NOT EXISTS ( \
-      SELECT 11 FROM \`world_db_corrections\` WHERE \`id\` = 11 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 12, 'migration edits in vmangos/core@01bd3b3', '2026-04-09' \
-    WHERE NOT EXISTS ( \
-      SELECT 12 FROM \`world_db_corrections\` WHERE \`id\` = 12 \
-    ); \
-    INSERT INTO \`world_db_corrections\` (\`id\`, \`reason\`, \`date\`) \
-    SELECT 13, 'migration edits in vmangos/core@68560ac', '2026-04-11' \
-    WHERE NOT EXISTS ( \
-      SELECT 13 FROM \`world_db_corrections\` WHERE \`id\` = 13 \
-    );"
+    "CREATE TABLE IF NOT EXISTS \`migration_corrections\` ( \
+      \`db_name\` VARCHAR(64) NOT NULL, \
+      \`commit_sha\` CHAR(40) NOT NULL, \
+      \`acknowledged_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, \
+      PRIMARY KEY (\`db_name\`, \`commit_sha\`) \
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
 }
 
-check_if_world_db_correction_is_required() {
-  local result
-  result=$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -N -s -e \
-    "WITH
-      db_creation AS (
-        SELECT DATE(CONVERT_TZ(MIN(\`CREATE_TIME\`), @@session.time_zone, '+00:00')) as world_db_created_at
-        FROM \`INFORMATION_SCHEMA\`.\`TABLES\`
-        WHERE \`TABLE_SCHEMA\` = 'mangos'
-      ),
-      latest_correction AS (
-        SELECT DATE(\`date\`) as correction_date, \`reason\`, \`is_applied\`
-        FROM \`world_db_corrections\`
-        WHERE \`id\` = (SELECT MAX(\`id\`) FROM \`world_db_corrections\`)
-      )
-    SELECT CONCAT_WS('|',
-      IF(
-        NOT \`is_applied\` AND correction_date >= world_db_created_at,
-        'true',
-        'false'
-      ),
-      \`reason\`
-    )
-    FROM latest_correction, db_creation;")
-  echo "$result"
+# One-time cleanup for installs that were created under the legacy
+# `world_db_corrections` mechanism. Removable once we can assume all existing
+# installs have started at least once with the new image.
+drop_legacy_world_db_corrections_table() {
+  if table_exists "maintenance" "world_db_corrections"; then
+    vmangos_log "Dropping legacy 'world_db_corrections' table..."
+    mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
+      "DROP TABLE \`world_db_corrections\`;"
+  fi
 }
 
-mark_world_db_corrections_as_applied() {
+# The `VMANGOS_MIGRATION_EDITS` build argument is baked into
+# `/sql/migration-edits` at image build time; manual builds leave the file
+# empty and all four globals stay empty, which makes every per-database
+# correction a no-op.
+#
+# Leaks the four `MIGRATION_EDIT_*` globals to the parent script by design;
+# `update-db.sh` and `create-db.sh` consume them after sourcing.
+# shellcheck disable=SC2034
+parse_migration_edits() {
+  MIGRATION_EDIT_WORLD=""
+  MIGRATION_EDIT_CHARACTERS=""
+  MIGRATION_EDIT_REALMD=""
+  MIGRATION_EDIT_LOGS=""
+
+  local file="/sql/migration-edits"
+  if [ ! -f "$file" ]; then
+    return 0
+  fi
+
+  local raw
+  raw="$(head -n1 "$file" | tr -d '\r\n')"
+  raw="${raw#"${raw%%[![:space:]]*}"}"
+  raw="${raw%"${raw##*[![:space:]]}"}"
+
+  if [ -z "$raw" ]; then
+    return 0
+  fi
+
+  local pair key value
+  local saved_ifs="$IFS"
+  IFS='|'
+  for pair in $raw; do
+    IFS="$saved_ifs"
+    key="${pair%%:*}"
+    value="${pair#*:}"
+    case "$key" in
+    world) MIGRATION_EDIT_WORLD="$value" ;;
+    characters) MIGRATION_EDIT_CHARACTERS="$value" ;;
+    realmd) MIGRATION_EDIT_REALMD="$value" ;;
+    logs) MIGRATION_EDIT_LOGS="$value" ;;
+    esac
+    IFS='|'
+  done
+  IFS="$saved_ifs"
+}
+
+correction_acknowledged() {
+  local db_name="$1"
+  local sha="$2"
+  local count
+
+  count="$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -N -s -e \
+    "SELECT COUNT(*) FROM \`migration_corrections\` \
+    WHERE \`db_name\` = '$(sql_escape "$db_name")' \
+    AND \`commit_sha\` = '$(sql_escape "$sha")';")"
+
+  [ "$count" -gt 0 ]
+}
+
+acknowledge_correction() {
+  local db_name="$1"
+  local sha="$2"
+
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
-    "UPDATE \`world_db_corrections\` SET \`is_applied\` = true;"
+    "INSERT IGNORE INTO \`migration_corrections\` (\`db_name\`, \`commit_sha\`) \
+    VALUES ('$(sql_escape "$db_name")', '$(sql_escape "$sha")');"
+}
+
+# Stopgap until vmangos/core#2825 moves the `variables` table to the
+# `characters` database; until then we capture it across the world database
+# re-creation so hardcoded event progress survives.
+capture_world_variables() {
+  if ! table_exists "mangos" "variables"; then
+    return 0
+  fi
+
+  # A captured dump from an earlier run means the previous startup did not
+  # complete successfully (we remove the file at the end of a successful
+  # restore). Bail out here so the user can inspect and recover it before
+  # any further capture overwrites it.
+  if [ -s /tmp/vmangos-world-variables.sql ]; then
+    vmangos_fail "An unconsumed 'variables' dump from a previous run exists at '/tmp/vmangos-world-variables.sql'. Inspect it and remove it manually before restarting."
+  fi
+
+  vmangos_log "Capturing world database 'variables' table..."
+
+  mariadb-dump --no-create-info --replace -u root -p"$MARIADB_ROOT_PASSWORD" \
+    "mangos" "variables" >/tmp/vmangos-world-variables.sql
+}
+
+restore_world_variables() {
+  if [ ! -s /tmp/vmangos-world-variables.sql ]; then
+    return 0
+  fi
+
+  vmangos_log "Restoring world database 'variables' table..."
+
+  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "mangos" \
+    </tmp/vmangos-world-variables.sql
+  rm -f /tmp/vmangos-world-variables.sql
+}
+
+PENDING_DB_NAMES=()
+PENDING_DB_SHAS=()
+
+process_world_correction() {
+  local sha="$1"
+
+  if [ -z "$sha" ]; then
+    return 0
+  fi
+
+  if correction_acknowledged "world" "$sha"; then
+    return 0
+  fi
+
+  local enable_auto="${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}"
+  local halt_on_edits="${VMANGOS_HALT_ON_MIGRATION_EDITS:-0}"
+
+  if [ "$enable_auto" = "1" ]; then
+    vmangos_log "Re-creating world database to apply migration edit (vmangos/core@${sha:0:7})..."
+    capture_world_variables
+    drop_database "mangos"
+    create_database "mangos"
+    grant_permissions "mangos"
+    import_dump "mangos" "/sql/world.sql"
+    restore_world_variables
+    acknowledge_correction "world" "$sha"
+    return 0
+  fi
+
+  if [ "$halt_on_edits" = "1" ]; then
+    PENDING_DB_NAMES+=("world")
+    PENDING_DB_SHAS+=("$sha")
+    return 0
+  fi
+
+  # We deliberately do not record an acknowledgement here so the warning
+  # repeats on every start until the user takes action.
+  vmangos_log "WARNING: Migration edit detected for world database (vmangos/core@${sha:0:7}) but both 'VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS' and 'VMANGOS_HALT_ON_MIGRATION_EDITS' are disabled; continuing without applying or acknowledging." >&2
+}
+
+process_userstate_correction() {
+  local db_name="$1"
+  local sha="$2"
+
+  if [ -z "$sha" ]; then
+    return 0
+  fi
+
+  if correction_acknowledged "$db_name" "$sha"; then
+    return 0
+  fi
+
+  local halt_on_edits="${VMANGOS_HALT_ON_MIGRATION_EDITS:-0}"
+
+  if [ "$halt_on_edits" = "1" ]; then
+    PENDING_DB_NAMES+=("$db_name")
+    PENDING_DB_SHAS+=("$sha")
+    return 0
+  fi
+
+  # We deliberately do not record an acknowledgement here so the warning
+  # repeats on every start until the user takes action.
+  vmangos_log "WARNING: Migration edit detected for '$db_name' database (vmangos/core@${sha:0:7}) but 'VMANGOS_HALT_ON_MIGRATION_EDITS' is disabled; continuing without acknowledging." >&2
+}
+
+print_correction_abort_message() {
+  cat >&2 <<'EOF'
+[vmangos-deploy]: ERROR: Migration edits detected in VMaNGOS that affect the
+following databases. vmangos-deploy will not apply these changes for you
+because they could overwrite data you (or your players) generated. Startup is
+halted; no databases have been modified.
+
+Affected databases:
+EOF
+
+  local i=0
+  local name
+  local sha
+  while [ "$i" -lt "${#PENDING_DB_NAMES[@]}" ]; do
+    name="${PENDING_DB_NAMES[$i]}"
+    sha="${PENDING_DB_SHAS[$i]}"
+    printf '  - %s\n' "$name" >&2
+    printf '    https://github.com/vmangos/core/commit/%s\n' "$sha" >&2
+    i=$((i + 1))
+  done
+
+  cat >&2 <<'EOF'
+
+For each affected database:
+
+  1. Open the GitHub link above to see what changed.
+  2. Apply the equivalent SQL to the running database yourself:
+       docker compose exec database mariadb -u root -p <db>
+     (mariadb will prompt for the password; it matches your
+     `MARIADB_ROOT_PASSWORD` setting in `compose.yaml`.)
+  3. When you have applied the changes, confirm by running on the host:
+       docker compose exec database vmangos-confirm-changes
+
+To abort instead, run on the host:
+  docker compose down
+
+While the container is paused, MariaDB is reachable inside the container via
+the internal socket. TCP access on port 3306 is not available during the pause.
+VMaNGOS stays offline. Nothing restarts on its own; take as long as you need.
+
+Note: When you confirm, vmangos-deploy treats the listed commits as applied and
+continues. It does not check your database to verify that the changes you made
+match what the commits describe. If your manual fix is incorrect or incomplete,
+the database will be in an inconsistent state and VMaNGOS may fail to start.
+The responsibility for matching what the commit does is yours; vmangos-deploy
+provides no further support for resolving these issues.
+EOF
+}
+
+wait_for_change_ack() {
+  touch /tmp/vmangos-changes-pending
+
+  while [ ! -f /tmp/vmangos-changes-acknowledged ]; do
+    sleep 5
+  done
+
+  rm -f /tmp/vmangos-changes-pending /tmp/vmangos-changes-acknowledged
 }
 
 process_custom_sql() {

@@ -153,9 +153,6 @@ RUN \
 # configuration files via a bind mount.
 COPY --from=build --exclude=vmangos/etc* --chown=$VMANGOS_USER_NAME:$VMANGOS_GROUP_NAME /opt /opt
 
-# See https://github.com/ufoscout/docker-compose-wait
-COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /usr/local/bin/wait-for-db
-
 COPY --chmod=755 ./docker/server/docker-cmd-mangosd.sh /usr/local/bin/mangosd
 COPY --chmod=755 ./docker/server/docker-cmd-realmd.sh /usr/local/bin/realmd
 COPY --chmod=755 ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bin/extract-client-data

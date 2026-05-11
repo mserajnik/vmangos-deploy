@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Deletes untagged GHCR package versions left behind by a failed multi-arch
+# publish, so they do not accumulate in the registry. Called from the
+# reusable build workflow's cleanup step.
+
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

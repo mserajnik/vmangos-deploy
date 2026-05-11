@@ -49,6 +49,9 @@ on:
       custom_tag_fragment:
         type: string
         required: false
+      migration_edits:
+        type: string
+        required: false
 
 env:
   REGISTRY: ghcr.io
@@ -106,6 +109,7 @@ jobs:
           VMANGOS_WORLD_DB_REPOSITORY_URL: ${{ inputs.world_db_repository_url }}
           VMANGOS_WORLD_DB_DUMP_NAME: ${{ inputs.world_db_dump_name }}
           CUSTOM_TAG_FRAGMENT: ${{ inputs.custom_tag_fragment }}
+          MIGRATION_EDITS: ${{ inputs.migration_edits }}
         run: ./.github/scripts/prepare-image-build.sh
 
   build-amd64:

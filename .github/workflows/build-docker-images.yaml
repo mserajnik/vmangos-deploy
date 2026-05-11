@@ -31,16 +31,22 @@ on:
         description: Force rebuild (even if images for the latest commit already exist)
         default: false
 
+# Serialize concurrent runs so they cannot race on the state file push.
+concurrency:
+  group: build-docker-images
+  cancel-in-progress: false
+
 jobs:
   setup:
     name: Setup
     runs-on: ubuntu-24.04
     permissions:
-      contents: read
+      contents: write
       packages: read
     outputs:
       commit_hash: ${{ steps.prepare-default-build.outputs.commit_hash }}
       any_images_to_build: ${{ steps.prepare-default-build.outputs.any_images_to_build }}
+      migration_edits: ${{ steps.compute-migration-edits.outputs.arg }}
 
     steps:
       - name: Checkout repository
@@ -80,6 +86,49 @@ jobs:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: ./.github/scripts/prepare-default-build.sh
 
+      # Resolve the previous build's VMaNGOS commit by reading the most recent
+      # commit hash tag of the published database image.
+      - name: Read previous build's VMaNGOS commit
+        id: read-last-built-commit
+        if: ${{ steps.prepare-default-build.outputs.any_images_to_build == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_OWNER: ${{ github.repository_owner }}
+          PACKAGE_NAME: vmangos-database
+        run: ./.github/scripts/read-last-built-commit.sh
+
+      - name: Compute migration edit state
+        id: compute-migration-edits
+        if: ${{ steps.prepare-default-build.outputs.any_images_to_build == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VMANGOS_REPOSITORY_OWNER: vmangos
+          VMANGOS_REPOSITORY_NAME: core
+          LAST_BUILT_COMMIT_HASH: ${{ steps.read-last-built-commit.outputs.commit_hash }}
+          CURRENT_COMMIT_HASH: ${{ steps.prepare-default-build.outputs.commit_hash }}
+          STATE_FILE: .github/migration-edit-state.json
+        run: |
+          ./.github/scripts/compute-migration-edits.sh
+          arg="$(./.github/scripts/migration-edits-to-arg.sh .github/migration-edit-state.json)"
+          echo "arg=$arg" >>"$GITHUB_OUTPUT"
+
+      # Auto-commit the state file when the scan flagged a new migration edit.
+      # The push uses `GITHUB_TOKEN` which, by GitHub policy, does not retrigger
+      # workflows.
+      # Commits via GitHub's GraphQL `createCommitOnBranch` mutation so the
+      # resulting commit is signed by GitHub server-side and shows up as
+      # Verified; a plain `git commit && git push` over `GITHUB_TOKEN`
+      # would produce an unsigned commit.
+      - name: Commit migration edit state if changed
+        if: ${{ steps.prepare-default-build.outputs.any_images_to_build == 'true' && github.event_name != 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+          REPO_NWO: ${{ github.repository }}
+        run: |
+          ./.github/scripts/commit-via-api.sh "Update migration edit state" \
+            .github/migration-edit-state.json
+
   build-and-push-server-images:
     name: Build and push server images
     needs: setup
@@ -116,6 +165,7 @@ jobs:
       architectures: both
       push_images: ${{ github.event_name != 'pull_request' }}
       commit_hash: ${{ needs.setup.outputs.commit_hash }}
+      migration_edits: ${{ needs.setup.outputs.migration_edits }}
 
   delete-old-package-versions:
     name: Delete old package versions

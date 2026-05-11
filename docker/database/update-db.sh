@@ -16,15 +16,29 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Runs on every subsequent container start (via `/always-initdb.d`) to apply
+# pending migrations and act on baked migration edit metadata, either
+# re-creating the world database or halting startup until the user runs
+# `vmangos-confirm-changes`.
+
 set -euo pipefail
 
 # shellcheck source=docker/database/db-functions.sh
 source "/opt/scripts/db-functions.sh"
 
+clear_database_ready
+clear_change_sentinels
+
 if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
   vmangos_log "[x] Automatic world database corrections are enabled."
 else
   vmangos_log "[ ] Automatic world database corrections are disabled."
+fi
+
+if [ "${VMANGOS_HALT_ON_MIGRATION_EDITS:-0}" = "1" ]; then
+  vmangos_log "[x] Halting on migration edits is enabled."
+else
+  vmangos_log "[ ] Halting on migration edits is disabled."
 fi
 
 if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
@@ -33,38 +47,26 @@ else
   vmangos_log "[ ] Custom SQL processing is disabled."
 fi
 
-if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
-  create_database "maintenance" true
-  grant_permissions "maintenance" true
-  create_world_db_corrections_table
-  populate_world_db_corrections_table
+ensure_maintenance_db_exists
+drop_legacy_world_db_corrections_table
+parse_migration_edits
 
-  result=$(check_if_world_db_correction_is_required)
-  requires_correction=$(echo "$result" | cut -d'|' -f1)
-  reason=$(echo "$result" | cut -d'|' -f2)
+process_world_correction "$MIGRATION_EDIT_WORLD"
+process_userstate_correction "characters" "$MIGRATION_EDIT_CHARACTERS"
+process_userstate_correction "realmd" "$MIGRATION_EDIT_REALMD"
+process_userstate_correction "logs" "$MIGRATION_EDIT_LOGS"
 
-  if [ "$requires_correction" = "true" ]; then
-    vmangos_log "World database correction required because of $reason, re-creating world database..."
+if [ "${#PENDING_DB_NAMES[@]}" -gt 0 ]; then
+  print_correction_abort_message
+  wait_for_change_ack
 
-    drop_database "mangos"
-    create_database "mangos"
-    grant_permissions "mangos"
-    import_dump "mangos" "/sql/world.sql"
-    mark_world_db_corrections_as_applied
-  fi
-else
-  vmangos_log "Automatic world database corrections are disabled."
+  i=0
+  while [ "$i" -lt "${#PENDING_DB_NAMES[@]}" ]; do
+    acknowledge_correction "${PENDING_DB_NAMES[$i]}" "${PENDING_DB_SHAS[$i]}"
+    i=$((i + 1))
+  done
 
-  drop_database "maintenance" true
-fi
-
-if [ -e "$VMANGOS_WORLD_DB_DUMP_NEW_FILE" ]; then
-  vmangos_log "'$VMANGOS_WORLD_DB_DUMP_NEW_FILE' exists, re-creating world database..."
-
-  drop_database "mangos"
-  create_database "mangos"
-  grant_permissions "mangos"
-  import_dump "mangos" "$VMANGOS_WORLD_DB_DUMP_NEW_FILE"
+  vmangos_log "Migration edits acknowledged; continuing startup."
 fi
 
 import_updates "mangos" "/sql/migrations/world_db_updates.sql"
@@ -75,3 +77,5 @@ import_updates "logs" "/sql/migrations/logs_db_updates.sql"
 if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
   process_custom_sql "/sql/custom"
 fi
+
+mark_database_ready

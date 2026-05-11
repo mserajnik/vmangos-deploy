@@ -16,8 +16,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Generates the badge JSON files and uploads them via FTP to the static host
-# that serves the README badges.
+# Flattens `.github/migration-edit-state.json` to the
+# `VMANGOS_MIGRATION_EDITS` build argument format:
+# `world:<sha>|characters:<sha>|realmd:<sha>|logs:<sha>` (empty for null
+# entries).
 
 set -euo pipefail
 
@@ -25,35 +27,18 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source-path=SCRIPTDIR
 source "$script_dir/helpers.sh"
 
-if [[ -z "${BADGES_FTP_HOST:-}" || -z "${BADGES_FTP_USERNAME:-}" || -z "${BADGES_FTP_PASSWORD:-}" ]]; then
-  echo "Badge FTP secrets are missing, skipping upload."
-  exit 0
+if [[ "$#" -ne 1 ]]; then
+  fail "Usage: $0 <state-file>"
 fi
 
-require_env COMMIT_HASH
+state_file="$1"
 
-short_hash="${COMMIT_HASH:0:7}"
-timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+if [[ ! -f "$state_file" ]]; then
+  fail "State file '$state_file' does not exist."
+fi
 
-cat >commit-badge.json <<EOF
-{
-  "schemaVersion": 1,
-  "label": "Latest built VMaNGOS commit",
-  "message": "$short_hash",
-  "color": "blue"
-}
-EOF
-
-cat >date-badge.json <<EOF
-{
-  "schemaVersion": 1,
-  "label": "Latest build date",
-  "message": "$timestamp",
-  "color": "orange"
-}
-EOF
-
-curl --fail --silent --show-error \
-  -T "{commit-badge.json,date-badge.json}" \
-  --user "$BADGES_FTP_USERNAME:$BADGES_FTP_PASSWORD" \
-  "ftp://$BADGES_FTP_HOST/"
+jq -r '
+  ["world", "characters", "realmd", "logs"] as $order
+  | [$order[] as $db | "\($db):\(.[$db].commit // "")"]
+  | join("|")
+' "$state_file"

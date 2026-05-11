@@ -44,7 +44,6 @@ features that simplify managing a VMaNGOS setup:
     - [Adjusting the Docker Compose configuration](#adjusting-the-docker-compose-configuration)
     - [Extracting the client data](#extracting-the-client-data)
     - [Providing the Warden modules (optional)](#providing-the-warden-modules-optional)
-    - [Utilizing automatic world database corrections (optional)](#utilizing-automatic-world-database-corrections-optional)
     - [Modifying the world database with custom changes (optional)](#modifying-the-world-database-with-custom-changes-optional)
 - [Usage](#usage)
   - [Starting VMaNGOS](#starting-vmangos)
@@ -52,6 +51,8 @@ features that simplify managing a VMaNGOS setup:
   - [Creating the first account](#creating-the-first-account)
   - [Stopping VMaNGOS](#stopping-vmangos)
   - [Updating](#updating)
+    - [What happens during an update](#what-happens-during-an-update)
+    - [When vmangos-deploy asks you to apply changes manually](#when-vmangos-deploy-asks-you-to-apply-changes-manually)
     - [Breaking changes](#breaking-changes)
   - [Creating database backups](#creating-database-backups)
   - [Accessing the database](#accessing-the-database)
@@ -245,7 +246,8 @@ There are two things to look out for here:
   ignore this (or even remove the `--user` argument altogether, if you want to)
 - The Docker image must reflect the client version you want to extract the data
   from; see the table further above in the
-  [Docker Compose configuration section](#adjusting-the-docker-compose-configuration)
+  _[Adjusting the Docker Compose configuration](#adjusting-the-docker-compose-configuration)_
+  section
 
 > [!IMPORTANT]
 > Extracting the data can take many hours (depending on your hardware). Some
@@ -257,7 +259,7 @@ Once the extraction is finished you can find the data in
 you may want to re-run the process in the future if VMaNGOS makes changes (to
 benefit from potentially improved mob movement etc.). In case it becomes
 necessary to do so (e.g., if the extraction process changes), the
-[breaking changes section](#breaking-changes) further below will be updated
+_[Breaking Changes](#breaking-changes)_ section further below will be updated
 accordingly.
 
 If you re-run the extraction, it will automatically detect previously extracted
@@ -286,32 +288,18 @@ yourself. See [here][compose-warden-modules] for details on how to do so.
 > `1.14.x` clients to VMaNGOS will likely not be possible (in a stable manner
 > without getting kicked off the server) when Warden is enabled.
 
-### Utilizing automatic world database corrections (optional)
-
-vmangos-deploy keeps track of certain, unusual VMaNGOS code changes (such as
-migration edits) that lead to a faulty (or out-of-sync) world database state
-when updating and would normally require manual intervention by you to rectify.
-
-By default, vmangos-deploy can automatically correct the state of your world
-database in such cases by re-creating it. It is strongly suggested to keep this
-feature enabled.
-
-If you do decide to [disable it][compose-automatic-world-db-corrections], you
-yourself are responsible for monitoring VMaNGOS for problematic code changes
-and taking appropriate actions (e.g., manually triggering the re-creation of
-the world database by mounting a database dump, as described
-[here][compose-world-db-dump-mount]).
-
 ### Modifying the world database with custom changes (optional)
 
 If you want to make custom changes to the world database, it is recommended to
 do so using SQL files and placing them in
 [`./storage/database/custom-sql`](storage/database/custom-sql) (a bind mount
 for this directory is
-[configured out-of-the-box][compose-custom-sql-bind-mount]). This way, you can
-keep
-[automatic world database corrections](#utilizing-automatic-world-database-corrections-optional)
-enabled without having to worry about your changes getting lost.
+[configured out-of-the-box][compose-custom-sql-bind-mount]). The files in this
+directory are processed on every startup, including after vmangos-deploy
+re-creates the world database to apply an upstream migration edit (see the
+_[What happens during an update](#what-happens-during-an-update)_ section), so
+your changes survive that flow without manual intervention as long as the SQL
+is idempotent.
 
 By default, all SQL files (files with a `.sql` extension) in that directory
 will be processed during each startup in alphabetical order (after the world
@@ -435,6 +423,61 @@ docker compose up -d
 > update without changing the configured images is not harmful, it will just
 > not have any effect.
 
+#### What happens during an update
+
+vmangos-deploy detects upstream VMaNGOS commits that edit already released
+migration files. Such changes would otherwise leave your databases in an
+inconsistent state and require manual intervention to rectify.
+
+By default, vmangos-deploy will
+[automatically re-create your world database][compose-automatic-world-db-corrections]
+when a relevant change is detected. Hardcoded event progress (such as the AQ
+War Effort stage) survives the re-creation; everything else in the world
+database (your custom NPCs and gameobjects, `npc_vendor` edits, etc.) does not,
+so restore those from a backup if you need them back (or use
+[custom SQL](#modifying-the-world-database-with-custom-changes-optional) to
+cleanly preserve the additions/changes).
+
+For the other databases that contain user state, vmangos-deploy cannot safely
+re-create them and instead [halts startup][compose-halt-on-edits] until you
+intervene; see the next section.
+
+#### When vmangos-deploy asks you to apply changes manually
+
+When a migration edit is detected that affects a database containing user state
+(or a world database edit with automatic corrections disabled), vmangos-deploy
+halts startup and prints a message naming the affected database(s) and the
+GitHub link(s) to the upstream commit(s).
+
+The container stays running while paused; nothing restarts on its own. To
+resolve:
+
+1. Open each linked commit on GitHub and read the changes to
+   `sql/migrations/*.sql`.
+2. Apply the equivalent SQL to the running database. From the host:
+   ```sh
+   docker compose exec database mariadb -u root -p <db>
+   ```
+   where `<db>` is `characters`, `realmd`, `logs`, or `mangos`. `mariadb` will
+   prompt for the password; it matches your `MARIADB_ROOT_PASSWORD` setting in
+   `compose.yaml`.
+3. When you are done, confirm by running on the host:
+   ```sh
+   docker compose exec database vmangos-confirm-changes
+   ```
+
+vmangos-deploy will then record the acknowledgement and continue startup. If
+you instead want to abort, run `docker compose down`.
+
+> [!CAUTION]
+> When you run `vmangos-confirm-changes`, vmangos-deploy treats the listed
+> commits as applied and continues. It does not check your database to verify
+> that the changes you made match what the commits describe. If your manual fix
+> is incorrect or incomplete, the database will be in an inconsistent state and
+> VMaNGOS may fail to start. The responsibility for matching what the commits
+> do is yours; vmangos-deploy provides no further support for resolving these
+> issues.
+
 #### Breaking changes
 
 It is recommended to regularly check this repository (either manually or by
@@ -446,19 +489,27 @@ Sometimes, there may be new features or changes that require manual
 intervention. Such breaking changes will be listed here (and removed again once
 they become irrelevant), sorted by newest first:
 
-- __[2025-02-22] - Automatic world database corrections are now available and__
-  __enabled by default:__ vmangos-deploy now keeps track of certain, unusual
-  VMaNGOS code changes (such as migration edits) that lead to a faulty (or
-  out-of-sync) world database state when updating and would normally require
-  manual intervention by you to rectify. In such cases, vmangos-deploy can
-  automatically correct the state of your world database by re-creating it. It
-  is strongly suggested to keep this feature enabled. If you do decide to
-  [disable it][compose-automatic-world-db-corrections] in your `compose.yaml`,
-  you yourself are responsible for monitoring VMaNGOS for problematic code
-  changes and taking appropriate actions (e.g., manually triggering the
-  re-creation of the world database by mounting a database dump, as described
-  [here][compose-world-db-dump-mount]). This section will no longer list such
-  changes.
+- __[2026-05-11] - Several changes to the database and server service__
+  __configurations are required:__ vmangos-deploy now also detects migration
+  edits affecting databases that contain user state (in addition to the world
+  database) and halts startup until you apply the equivalent SQL by hand; see
+  the
+  _[When vmangos-deploy asks you to apply changes manually](#when-vmangos-deploy-asks-you-to-apply-changes-manually)_
+  section. To opt out of halting (vmangos-deploy will instead log a warning on
+  every start until you take action), set
+  [`VMANGOS_HALT_ON_MIGRATION_EDITS=0`][compose-halt-on-edits] in your
+  `compose.yaml`. The `database` service's healthcheck must also be updated to
+  use the bundled `vmangos-healthcheck` wrapper, and the `realmd` and `mangosd`
+  services need to wait for the `service_healthy` state of the `database`
+  service instead of waiting for the TCP port (`WAIT_HOSTS` and `WAIT_TIMEOUT`
+  are deprecated; after 2026-08-31, vmangos-deploy will fail to start if these
+  are still set). See the
+  [updated example Compose configuration](compose.yaml.example) for the exact
+  configuration. Additionally, the bind mount escape hatch that re-created the
+  world database from a file at `/sql/world-new.sql` is removed; there is no
+  direct replacement. On first startup with the new image, existing
+  installations will see exactly one world database re-creation (or halt) to
+  apply the most recent flagged migration edit.
 - __[2024-10-31] - Removal of separate images with anticheat support:__ As of
   [`vmangos/core@fbbc4ae`](https://github.com/vmangos/core/commit/fbbc4ae899f876a78a37d8fee805dce40a182331)
   VMaNGOS no longer supports building without anticheat support, thus anticheat
@@ -521,13 +572,13 @@ You are welcome to help out!
 [badge-latest-vmangos-commit-url]: https://scripts.mser.at/vmangos-deploy-latest-built-commit/
 [claude-code]: https://www.anthropic.com/product/claude-code
 [codex]: https://openai.com/codex
-[compose-automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L52-L63
-[compose-custom-sql]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L64-L81
-[compose-custom-sql-bind-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L20
-[compose-database-backups]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L185-L220
-[compose-phpmyadmin]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L222-L241
-[compose-warden-modules]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L169-L179
-[compose-world-db-dump-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L21-L35
+[compose-automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L34-L47
+[compose-custom-sql]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L61-L78
+[compose-custom-sql-bind-mount]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L17
+[compose-database-backups]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L174-L210
+[compose-phpmyadmin]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L212-L232
+[compose-halt-on-edits]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L48-L60
+[compose-warden-modules]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L160-L170
 [docker]: https://docs.docker.com/get-docker/
 [docker-compose]: https://docs.docker.com/compose/install/
 [hermesproxy]: https://github.com/WowLegacyCore/HermesProxy

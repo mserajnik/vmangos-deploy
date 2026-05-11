@@ -5,34 +5,16 @@ services:
     # The healthcheck determines if the container is working as expected; if
     # the healthcheck fails it causes a restart of the container. The default
     # parameters here should work fine on most systems, but if you experience
-    # any issues, you might want to adjust them. In particular, the initial
-    # database creation might take a while and you may want to set
-    # `start_period` even higher if you notice that the container gets
-    # restarted before the initialization finishes.
+    # any issues, you might want to adjust them.
     healthcheck:
-      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      test: ['CMD', 'vmangos-healthcheck']
       interval: 1m
       timeout: 3s
       retries: 5
-      start_period: 10m # This is set relatively high to take the initial database creation into account; adjust as required.
+      start_period: 24h # Reports unhealthy until startup finishes; the long start period gives you time to apply manual changes when vmangos-deploy halts startup, without the container being marked unhealthy in the meantime. Adjust if you want a tighter window.
     volumes:
       - vmangos-database:/var/lib/mysql
       - ./storage/database/custom-sql:/sql/custom:ro
-      # Mount an SQL file as `/sql/world-new.sql` to force the re-creation of
-      # the world database (with the contents of the mounted file); make sure
-      # to remove this bind mount again before you restart the database the
-      # next time or it will continue to re-create the database each time you
-      # restart.
-      # This can be used to update to a world database dump newer than
-      # `world_full_14_june_2021`; however, this should not be necessary as the
-      # database migrations will keep it up to date anyway (and thus, a newer
-      # dump would only reduce the time of the initial creation of a fresh
-      # database because it would cause potentially lengthy migrations to get
-      # skipped).
-      # Therefore, this option is mainly here to have it available in case it
-      # becomes necessary or desirable to re-create the world database (e.g.,
-      # to cleanly get rid of any custom changes you may have made).
-      # - /path/to/new/world.sql:/sql/world-new.sql:ro
     environment:
       - TZ=Etc/UTC # Change this to your desired time zone (usually you want to match your host system's time zone).
       - MARIADB_USER=mangos # Specifies the name for the database user utilized by VMaNGOS (must match the credentials in the VMaNGOS configuration files); please note that the name cannot be changed using this environment variable after the initial startup.
@@ -49,24 +31,39 @@ services:
       - VMANGOS_REALMLIST_ICON=1 # Sets the icon of the realm; 0 = Normal, 1 = PvP, 6 = RP, 8 = RP PVP.
       - VMANGOS_REALMLIST_TIMEZONE=0 # Sets the time zone of the realm; some common values are: 2 = United States, 3 = Oceanic, 4 = Latin America, 8 = English, 9 = German, 10 = French, 11 = Spanish, 12 = Russian.
       - VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0 # Sets the minimum account security level required to log in to the realm; 0 = regular players.
-      # vmangos-deploy keeps track of certain, unusual VMaNGOS code changes
-      # (such as migration edits) that lead to a faulty (or out-of-sync) world
-      # database state when updating and would normally require manual
-      # intervention by you to rectify. In such cases, vmangos-deploy can
-      # automatically correct the state of your world database by re-creating
-      # it. It is strongly suggested to keep this feature enabled.
+      # vmangos-deploy keeps track of upstream VMaNGOS commits that edit
+      # already released migration files, which would otherwise leave your
+      # world database in an inconsistent state when updating and require
+      # manual intervention to rectify. In such cases, vmangos-deploy can
+      # automatically re-create your world database. The `variables` table is
+      # preserved across the re-creation so hardcoded event progress (such as
+      # the AQ War Effort stage) survives; everything else in the world
+      # database (your custom NPCs and gameobjects, `npc_vendor` edits, etc.)
+      # is not, so restore those from a backup if you need them back. It is
+      # strongly suggested to keep this feature enabled.
       # If you do decide to disable it (by setting the following environment
-      # variable to `0`), you yourself are responsible for monitoring VMaNGOS
-      # for problematic code changes and taking appropriate actions (e.g.,
-      # manually triggering the re-creation of the world database by mounting a
-      # database dump, as described further above).
+      # variable to `0`), vmangos-deploy will halt startup instead and ask you
+      # to apply the SQL by hand (see the next environment variable).
       - VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1
+      # vmangos-deploy also detects migration edits in databases that contain
+      # user state (player characters, accounts, etc.). Because of this they
+      # cannot be safely re-created. Instead, vmangos-deploy halts startup and
+      # waits for you to apply the equivalent SQL manually, then continues
+      # after you run `docker compose exec database vmangos-confirm-changes`.
+      # This setting also controls the world database fallback when the
+      # previous environment variable is set to `0`. It is strongly suggested
+      # to keep this feature enabled.
+      # If you do decide to disable it (by setting the following environment
+      # variable to `0`), vmangos-deploy will log a warning and continue
+      # without acknowledging the edit (so the warning will repeat on every
+      # start until you take action).
+      - VMANGOS_HALT_ON_MIGRATION_EDITS=1
       # If you want to make custom changes to the world database, it is
       # recommended to do so using SQL files and placing them in
       # `./storage/database/custom-sql` (a bind mount for this directory is
-      # configured out-of-the-box, as can be seen further above). This
-      # way, you can keep automatic world database corrections enabled without
-      # having to worry about your changes getting lost.
+      # configured out-of-the-box, as can be seen further above). This way, you
+      # can keep automatic world database corrections enabled without having to
+      # worry about your changes getting lost.
       # By default, all SQL files (files with a `.sql` extension) in that
       # directory will be processed during each startup in alphabetical order
       # (after the world database has been created and updated with the latest
@@ -76,8 +73,8 @@ services:
       # If you want to disable this feature, set the following environment
       # variable to `0`; while this also allows you to use SQL files containing
       # non-idempotent statements (by setting the environment variable to `0`
-      # after the SQL files have been processed once), this is not
-      # recommended and should be avoided.
+      # after the SQL files have been processed once), this is not recommended
+      # and should be avoided.
       - VMANGOS_PROCESS_CUSTOM_SQL=1
 
   realmd:
@@ -90,15 +87,13 @@ services:
     user: 1000:1000
     command: realmd
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     restart: unless-stopped
     # The healthcheck determines if the container is working as expected; if
     # the healthcheck fails it causes a restart of the container. The default
     # parameters here should work fine on most systems, but if you experience
-    # any issues, you might want to adjust them. In particular, the initial
-    # database creation might take a while and you may want to set
-    # `start_period` even higher if you notice that the container gets
-    # restarted before the initialization finishes.
+    # any issues, you might want to adjust them.
     healthcheck:
       test: ['CMD', 'nc', '-z', 'localhost', '3724']
       interval: 1m
@@ -112,8 +107,6 @@ services:
       - ./storage/realmd/logs:/opt/vmangos/storage/logs
     environment:
       - TZ=Etc/UTC # Change this to your desired time zone (usually you want to match your host system's time zone).
-      - WAIT_HOSTS=database:3306
-      - WAIT_TIMEOUT=600 # This should match `start_period` in the `healthcheck` section (in seconds).
 
   mangosd:
     image: ghcr.io/mserajnik/vmangos-server:5875
@@ -127,7 +120,8 @@ services:
     tty: true
     stdin_open: true
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     restart: unless-stopped
     # `stop_grace_period` configures how long Docker waits during shutdown
     # before it kills the container. The Docker default is 10 seconds, which
@@ -141,10 +135,7 @@ services:
     # The healthcheck determines if the container is working as expected; if
     # the healthcheck fails it causes a restart of the container. The default
     # parameters here should work fine on most systems, but if you experience
-    # any issues, you might want to adjust them. In particular, the initial
-    # database creation might take a while and you may want to set
-    # `start_period` even higher if you notice that the container gets
-    # restarted before the initialization finishes.
+    # any issues, you might want to adjust them.
     healthcheck:
       test: ['CMD', 'nc', '-z', 'localhost', '8085']
       interval: 1m
@@ -179,8 +170,6 @@ services:
       # - ./storage/mangosd/warden-modules:/opt/vmangos/storage/warden-modules
     environment:
       - TZ=Etc/UTC # Change this to your desired time zone (usually you want to match your host system's time zone).
-      - WAIT_HOSTS=database:3306
-      - WAIT_TIMEOUT=600 # This should match `start_period` in the `healthcheck` section (in seconds).
 
   # # Optional:
   # # Uncomment this service to enable periodic database backups.
@@ -195,7 +184,8 @@ services:
   # database-backup:
   #   image: tiredofit/db-backup
   #   depends_on:
-  #     - database
+  #     database:
+  #       condition: service_healthy
   #   restart: unless-stopped
   #   volumes:
   #     - ./storage/database/backups:/backup
@@ -230,7 +220,8 @@ services:
   # phpmyadmin:
   #   image: phpmyadmin
   #   depends_on:
-  #     - database
+  #     database:
+  #       condition: service_healthy
   #   restart: unless-stopped
   #   ports:
   #     - 8080:80

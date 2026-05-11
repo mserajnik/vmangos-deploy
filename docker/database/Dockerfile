@@ -21,7 +21,7 @@ ARG VMANGOS_PATCHES_REPOSITORY_URL
 ARG VMANGOS_FAIL_ON_PATCH_ERROR=0
 ARG VMANGOS_WORLD_DB_REPOSITORY_URL=https://github.com/brotalnia/database.git
 ARG VMANGOS_WORLD_DB_DUMP_NAME=world_full_14_june_2021
-ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE=/sql/world-new.sql
+ARG VMANGOS_MIGRATION_EDITS=
 
 FROM mariadb:11.8 AS build
 
@@ -83,7 +83,7 @@ RUN \
 
 FROM mariadb:11.8
 
-ARG VMANGOS_WORLD_DB_DUMP_NEW_FILE
+ARG VMANGOS_MIGRATION_EDITS
 
 # See https://github.com/MariaDB/mariadb-docker/blob/66972bc2e0c6fd33dcd5d98de0653c5696a1166e/11.8/docker-entrypoint.sh#L594-L598
 ENV MARIADB_AUTO_UPGRADE=1
@@ -96,19 +96,22 @@ ENV VMANGOS_REALMLIST_PORT=8085
 ENV VMANGOS_REALMLIST_ICON=1
 ENV VMANGOS_REALMLIST_TIMEZONE=0
 ENV VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0
-ENV VMANGOS_WORLD_DB_DUMP_NEW_FILE=$VMANGOS_WORLD_DB_DUMP_NEW_FILE
-ENV VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1
+ENV VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=0
+ENV VMANGOS_HALT_ON_MIGRATION_EDITS=0
 ENV VMANGOS_PROCESS_CUSTOM_SQL=1
 
 COPY --from=build /sql /sql
 
 RUN \
   mkdir -p /opt/scripts && \
-  mkdir /always-initdb.d
+  mkdir /always-initdb.d && \
+  printf '%s\n' "$VMANGOS_MIGRATION_EDITS" >/sql/migration-edits
 
 COPY ./docker/database/db-functions.sh /opt/scripts
 COPY --chmod=755 ./docker/database/create-db.sh /docker-entrypoint-initdb.d
 COPY --chmod=755 ./docker/database/update-db.sh /always-initdb.d
+COPY --chmod=755 ./docker/database/healthcheck.sh /usr/local/bin/vmangos-healthcheck
+COPY --chmod=755 ./docker/database/vmangos-confirm-changes.sh /usr/local/bin/vmangos-confirm-changes
 
 COPY --chmod=755 ./docker/database/docker-entrypoint.sh /entrypoint.sh
 

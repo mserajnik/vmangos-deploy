@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Container command wrapper for the `realmd` binary. Drops privileges via
+# `fixuid`, validates the bind-mounted config file, warns about deprecated
+# `WAIT_*` environment variables, and launches `realmd`.
+
 set -eu
 
 eval "$(fixuid -q)"
@@ -27,4 +31,8 @@ if [ ! -f "$config_file" ]; then
   exit 1
 fi
 
-WAIT_LOGGER_LEVEL=error wait-for-db && exec /opt/vmangos/bin/realmd -c "$config_file"
+if [ -n "${WAIT_HOSTS:-}" ] || [ -n "${WAIT_TIMEOUT:-}" ]; then
+  echo "[vmangos-deploy]: WARNING: The 'WAIT_HOSTS' and 'WAIT_TIMEOUT' environment variables are deprecated and have no effect. The server containers wait for the database via Docker Compose's 'depends_on: condition: service_healthy' instead. Remove these variables from your Compose configuration. After 2026-08-31, vmangos-deploy will fail to start if these are still set." >&2
+fi
+
+exec /opt/vmangos/bin/realmd -c "$config_file"

@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Shared helpers sourced by the other scripts in this directory: error
+# handling, environment variable checks, output writers for GitHub Actions,
+# Docker tag sanitization, and GHCR endpoint helpers.
+
 fail() {
   echo "ERROR: $*" >&2
   exit 1

@@ -16,6 +16,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Container command wrapper that runs the client data extractors. Skips the
+# confirmation prompt when `--force` is passed.
+
 set -eu
 
 eval "$(fixuid -q)"

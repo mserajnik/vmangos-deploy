@@ -16,14 +16,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Compares each upstream reference we depend on against its current revision.
-# Drift in any file fails the workflow run so the matching vmangos-deploy code
-# (Dockerfile apt deps, bundled configs, patched MariaDB entrypoint, ...) can
-# be reviewed and aligned.
-#
-# To acknowledge a drift after the local update has been made, bump the
-# matching `*_KNOWN_SHA` env var in the calling workflow to the new upstream
-# HEAD.
+# Compares pinned upstream references (the MariaDB entrypoint, VMaNGOS files
+# we mirror) against current upstream `HEAD`. Fails the workflow when any has
+# drifted so the matching local copy can be reviewed.
 
 set -euo pipefail
 
@@ -53,15 +48,16 @@ add_github_check() {
   checks+=("$desc|$known_url|$latest_url")
 }
 
-# Patched MariaDB entrypoint. The vmangos-deploy `docker-entrypoint.sh` extends
-# functions defined in upstream's version, so any change there has to be
-# reviewed for compatibility.
+# Patched MariaDB entrypoint. The vmangos-deploy
+# `docker/database/docker-entrypoint.sh` extends functions defined in
+# upstream's version, so any change there has to be reviewed for
+# compatibility.
 add_github_check MariaDB/mariadb-docker "$MARIADB_DOCKER_KNOWN_SHA" master \
   11.8/docker-entrypoint.sh
 
 # Configs we mirror as `*.conf.example` and the top-level `CMakeLists.txt`,
-# which is where new `find_package(...)` would typically introduce a new apt
-# dep that `docker/server/Dockerfile` would need to install.
+# which is where new `find_package(...)` would typically introduce a new
+# dependency that we would need to install.
 vmangos_paths=(
   src/mangosd/mangosd.conf.dist.in
   src/realmd/realmd.conf.dist.in

@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Produces the per build metadata consumed by the reusable build workflow:
+# Dockerfile path, target architectures, image tags, build arguments, OCI
+# annotations, and labels for the requested workflow mode and image kind.
+
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -157,6 +161,7 @@ default:database)
 
   # shellcheck disable=SC2153
   commit_hash="$(trim "$COMMIT_HASH")"
+  migration_edits="$(trim "${MIGRATION_EDITS:-}")"
   title="$(trim "$OCI_ANNOTATION_DATABASE_TITLE")"
   description="$(trim "$OCI_ANNOTATION_DATABASE_DESCRIPTION")"
   base_name="$(trim "$OCI_ANNOTATION_DATABASE_BASE_NAME")"
@@ -171,6 +176,7 @@ default:database)
     "VMANGOS_REVISION=$commit_hash"
     "VMANGOS_PATCHES_REPOSITORY_URL=$vmangos_patches_repository_url"
     "VMANGOS_FAIL_ON_PATCH_ERROR=1"
+    "VMANGOS_MIGRATION_EDITS=$migration_edits"
   )
 
   mode_metadata_entries+=(

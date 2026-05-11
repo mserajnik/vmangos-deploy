@@ -16,16 +16,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Runs once on first container start (via `/docker-entrypoint-initdb.d`) to
+# create and seed the four VMaNGOS databases, then pre-acknowledges any baked
+# migration edits so the next startup does not re-run a re-creation or halt
+# for them.
+
 set -euo pipefail
 
 # shellcheck source=docker/database/db-functions.sh
 source "/opt/scripts/db-functions.sh"
 
-if [ "${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}" = "1" ]; then
-  vmangos_log "[x] Automatic world database corrections are enabled."
-else
-  vmangos_log "[ ] Automatic world database corrections are disabled."
-fi
+clear_database_ready
+clear_change_sentinels
 
 if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
   vmangos_log "[x] Custom SQL processing is enabled."
@@ -58,3 +60,24 @@ configure_realm
 if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
   process_custom_sql "/sql/custom"
 fi
+
+# A fresh install is already at the latest state, so any migration edits
+# flagged in the baked state file are pre-acknowledged to avoid triggering an
+# unnecessary world database re-creation or halt on the next start.
+ensure_maintenance_db_exists
+parse_migration_edits
+
+if [ -n "$MIGRATION_EDIT_WORLD" ]; then
+  acknowledge_correction "world" "$MIGRATION_EDIT_WORLD"
+fi
+if [ -n "$MIGRATION_EDIT_CHARACTERS" ]; then
+  acknowledge_correction "characters" "$MIGRATION_EDIT_CHARACTERS"
+fi
+if [ -n "$MIGRATION_EDIT_REALMD" ]; then
+  acknowledge_correction "realmd" "$MIGRATION_EDIT_REALMD"
+fi
+if [ -n "$MIGRATION_EDIT_LOGS" ]; then
+  acknowledge_correction "logs" "$MIGRATION_EDIT_LOGS"
+fi
+
+mark_database_ready
