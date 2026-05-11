@@ -69,7 +69,11 @@ if [ "${#PENDING_DB_NAMES[@]}" -gt 0 ]; then
   vmangos_log "Migration edits acknowledged; continuing startup."
 fi
 
-import_updates "mangos" "/sql/migrations/world_db_updates.sql"
+# Skipped when `process_world_correction` already ran `import_updates` against
+# a freshly re-created world database above.
+if [ "${WORLD_DB_MIGRATIONS_APPLIED:-0}" != "1" ]; then
+  import_updates "mangos" "/sql/migrations/world_db_updates.sql"
+fi
 import_updates "characters" "/sql/migrations/characters_db_updates.sql"
 import_updates "realmd" "/sql/migrations/logon_db_updates.sql"
 import_updates "logs" "/sql/migrations/logs_db_updates.sql"

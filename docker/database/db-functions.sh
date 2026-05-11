@@ -275,6 +275,13 @@ restore_world_variables() {
 PENDING_DB_NAMES=()
 PENDING_DB_SHAS=()
 
+# Set to 1 by `process_world_correction` after it has re-created the world
+# database (including applying migrations on the fresh dump), so
+# `docker/database/update-db.sh` knows it does not need to run `import_updates`
+# again.
+# shellcheck disable=SC2034
+WORLD_DB_MIGRATIONS_APPLIED=0
+
 process_world_correction() {
   local sha="$1"
 
@@ -296,6 +303,9 @@ process_world_correction() {
     create_database "mangos"
     grant_permissions "mangos"
     import_dump "mangos" "/sql/world.sql"
+    import_updates "mangos" "/sql/migrations/world_db_updates.sql"
+    # shellcheck disable=SC2034
+    WORLD_DB_MIGRATIONS_APPLIED=1
     restore_world_variables
     acknowledge_correction "world" "$sha"
     return 0
