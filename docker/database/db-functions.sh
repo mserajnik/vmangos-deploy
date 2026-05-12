@@ -24,10 +24,6 @@ vmangos_log() {
   echo "[vmangos-deploy]: $*"
 }
 
-vmangos_log_blank() {
-  echo
-}
-
 vmangos_fail() {
   echo "[vmangos-deploy]: ERROR: $*" >&2
   exit 1
@@ -391,7 +387,7 @@ Note: When you confirm, vmangos-deploy treats the listed commits as applied and
 continues. It does not check your database to verify that the changes you made
 match what the commits describe. If your manual fix is incorrect or incomplete,
 the database will be in an inconsistent state and VMaNGOS may fail to start.
-The responsibility for matching what the commit does is yours; vmangos-deploy
+The responsibility for matching what the commits do is yours; vmangos-deploy
 provides no further support for resolving these issues.
 EOF
 }
@@ -408,6 +404,7 @@ wait_for_change_ack() {
 
 process_custom_sql() {
   local file_directory="$1"
+  local file_count
 
   if [ ! -d "$file_directory" ]; then
     vmangos_log "WARNING: Custom SQL file directory '$file_directory' does not exist." >&2

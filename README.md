@@ -136,7 +136,7 @@ around easily.
 > resulting in unexpected behavior). No support will be provided for
 > non-default setups.
 
-### Adjusting the Docker Compose configuration
+#### Adjusting the Docker Compose configuration
 
 Once you are done adjusting the VMaNGOS configuration, create a copy of the
 Docker Compose example configuration:
@@ -214,7 +214,7 @@ considers the container unhealthy and causes a restart.
 > have to (or, in some cases, _must not_) change. Doing so may lead to
 > unexpected behavior and is not supported.
 
-### Extracting the client data
+#### Extracting the client data
 
 VMaNGOS uses data that is generated from extracted client data to handle things
 like mob movement and line of sight. If you have already acquired this data
@@ -278,7 +278,7 @@ docker run \
   extract-client-data --force
 ```
 
-### Providing the Warden modules (optional)
+#### Providing the Warden modules (optional)
 
 To use Warden, you have to provide the [Warden modules][warden-modules]
 yourself. See [here][compose-warden-modules] for details on how to do so.
@@ -288,7 +288,7 @@ yourself. See [here][compose-warden-modules] for details on how to do so.
 > `1.14.x` clients to VMaNGOS will likely not be possible (in a stable manner
 > without getting kicked off the server) when Warden is enabled.
 
-### Modifying the world database with custom changes (optional)
+#### Modifying the world database with custom changes (optional)
 
 If you want to make custom changes to the world database, it is recommended to
 do so using SQL files and placing them in
@@ -298,8 +298,7 @@ for this directory is
 directory are processed on every startup, including after vmangos-deploy
 re-creates the world database to apply an upstream migration edit (see the
 _[What happens during an update](#what-happens-during-an-update)_ section), so
-your changes survive that flow without manual intervention as long as the SQL
-is idempotent.
+your changes survive that flow without manual intervention.
 
 By default, all SQL files (files with a `.sql` extension) in that directory
 will be processed during each startup in alphabetical order (after the world
@@ -346,7 +345,7 @@ to know when VMaNGOS is up and running:
 docker compose logs -f mangosd
 ```
 
-Once you see the output `World initialized.` you know that the intialization
+Once you see the output `World initialized.` you know that the initialization
 process has finished and VMaNGOS is ready.
 
 ### Creating the first account
@@ -547,7 +546,7 @@ be provided here.
 
 > [!CAUTION]
 > The default database users with full access to all VMaNGOS data (`root` and
-> the user named via `MARIADB_USER` environment variable) do not have any
+> the user named via the `MARIADB_USER` environment variable) do not have any
 > restrictions in place in regards to which IPs/hosts can connect.
 
 ## Maintainer
