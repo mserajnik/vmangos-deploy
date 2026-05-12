@@ -104,8 +104,8 @@ while IFS= read -r sha; do
     suffix="${db_suffixes[$i]}"
     has_edit="$(jq -r --arg suffix "$suffix" '
       [.[]
-        | select(.status == "modified")
-        | select(.filename | test("^sql/migrations/.*_" + $suffix + "\\.sql$"))
+        | select(.status == "modified" or .status == "renamed" or .status == "removed")
+        | select((.filename | test("^sql/migrations/.*_" + $suffix + "\\.sql$")) or ((.previous_filename // "") | test("^sql/migrations/.*_" + $suffix + "\\.sql$")))
       ] | length' <<<"$files_json")"
 
     if [[ "$has_edit" -gt 0 ]]; then
