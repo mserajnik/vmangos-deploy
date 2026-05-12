@@ -99,7 +99,7 @@ services:
       interval: 1m
       timeout: 3s
       retries: 5
-      start_period: 10m # This is set relatively high to take the initial database creation into account; adjust as required.
+      start_period: 5m
     ports:
       - 3724:3724
     volumes:
@@ -141,7 +141,7 @@ services:
       interval: 1m
       timeout: 3s
       retries: 5
-      start_period: 10m # This is set relatively high to take the initial database creation into account; adjust as required.
+      start_period: 5m
     ports:
       - 8085:8085
       # To enable SOAP API access, set `SOAP.Enabled` to `1` and make sure
