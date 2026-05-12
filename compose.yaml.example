@@ -11,7 +11,7 @@ services:
       interval: 1m
       timeout: 3s
       retries: 5
-      start_period: 24h # Reports unhealthy until startup finishes; the long start period gives you time to apply manual changes when vmangos-deploy halts startup, without the container being marked unhealthy in the meantime. Adjust if you want a tighter window.
+      start_period: 24h # Keeps the container in `starting` (not `unhealthy`) while vmangos-deploy halts startup for manual changes; adjust if you want a tighter window.
     volumes:
       - vmangos-database:/var/lib/mysql
       - ./storage/database/custom-sql:/sql/custom:ro
