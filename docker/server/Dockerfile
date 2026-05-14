@@ -25,7 +25,7 @@ ARG VMANGOS_GROUP_ID=1000
 ARG VMANGOS_USER_NAME=vmangos
 ARG VMANGOS_GROUP_NAME=vmangos
 
-FROM ubuntu:24.04 AS build
+FROM ubuntu:26.04 AS build
 
 ARG DEBIAN_FRONTEND
 ARG VMANGOS_REPOSITORY_URL
@@ -89,7 +89,7 @@ RUN \
   make -j"$(nproc)" && \
   make install
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ARG TARGETARCH
 ARG DEBIAN_FRONTEND
@@ -109,14 +109,14 @@ RUN \
   apt install -y --no-install-recommends \
     ca-certificates \
     curl \
-    libcurl4 \
-    libmysqlclient21 \
-    libssl3 \
+    libcurl4t64 \
+    libmysqlclient24 \
+    libssl3t64 \
     netcat-openbsd \
     python3 \
     python-is-python3 \
     zlib1g && \
-  # The Ubuntu 24.04 LTS Docker image has a user called `ubuntu` with UID 1000
+  # The Ubuntu 26.04 LTS Docker image has a user called `ubuntu` with UID 1000
   # and GID 1000 by default. Since we allow configuration of the name, UID and
   # GID of the user and group that should be used in the container, we need to
   # either rename the existing user and group or create a new user and group
