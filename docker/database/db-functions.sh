@@ -244,8 +244,8 @@ capture_world_variables() {
 
   # A captured dump from an earlier run means the previous startup did not
   # complete successfully (we remove the file at the end of a successful
-  # restore). Bail out here so the user can inspect and recover it before
-  # any further capture overwrites it.
+  # restore). Bail out here so the user can inspect and recover it before any
+  # further capture overwrites it.
   if [ -s /tmp/vmangos-world-variables.sql ]; then
     vmangos_fail "An unconsumed 'variables' dump from a previous run exists at '/tmp/vmangos-world-variables.sql'. Inspect it and remove it manually before restarting."
   fi

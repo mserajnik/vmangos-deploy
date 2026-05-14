@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Compares pinned upstream references (the MariaDB entrypoint, VMaNGOS files
-# we mirror) against current upstream `HEAD`. Fails the workflow when any has
+# Compares pinned upstream references (the MariaDB entrypoint, VMaNGOS files we
+# mirror) against current upstream `HEAD`. Fails the workflow when any has
 # drifted so the matching local copy can be reviewed.
 
 set -euo pipefail
@@ -50,8 +50,7 @@ add_github_check() {
 
 # Patched MariaDB entrypoint. The vmangos-deploy
 # `docker/database/docker-entrypoint.sh` extends functions defined in
-# upstream's version, so any change there has to be reviewed for
-# compatibility.
+# upstream's version, so any change there has to be reviewed for compatibility.
 add_github_check MariaDB/mariadb-docker "$MARIADB_DOCKER_KNOWN_SHA" master \
   11.8/docker-entrypoint.sh
 

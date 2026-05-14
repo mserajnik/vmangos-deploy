@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Walks the commits between the previous and current build via the GitHub
-# API and updates `.github/migration-edit-state.json` with the most recent
+# Walks the commits between the previous and current build via the GitHub API
+# and updates `.github/migration-edit-state.json` with the most recent
 # migration file edit per VMaNGOS database.
 
 set -euo pipefail
@@ -52,8 +52,8 @@ latest_subjects=("" "" "" "")
 
 echo "Scanning $repo for migration edits between $LAST_BUILT_COMMIT_HASH and $CURRENT_COMMIT_HASH..."
 
-# The compare endpoint returns commits oldest-first across pages; we reverse
-# it so we can short-circuit per database once the newest hit is found.
+# The compare endpoint returns commits oldest-first across pages; we reverse it
+# so we can short-circuit per database once the newest hit is found.
 shas_oldest_first="$(gh api --paginate \
   "repos/$repo/compare/$LAST_BUILT_COMMIT_HASH...$CURRENT_COMMIT_HASH" \
   --jq '.commits[].sha')"
@@ -70,9 +70,9 @@ echo "Walking $shas_total commits newest-first."
 found_count=0
 scanned=0
 
-# Each iteration makes one `gh api ...commits/<sha>` call. The 5000 calls
-# per hour `GITHUB_TOKEN` rate limit bounds the worst case (~14 months of
-# history from the cutoff anchor on a fresh fork's first build).
+# Each iteration makes one `gh api ...commits/<sha>` call. The 5000 calls per
+# hour `GITHUB_TOKEN` rate limit bounds the worst case (~14 months of history
+# from the cutoff anchor on a fresh fork's first build).
 while IFS= read -r sha; do
   [[ -z "$sha" ]] && continue
   scanned=$((scanned + 1))

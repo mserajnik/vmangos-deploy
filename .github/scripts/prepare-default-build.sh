@@ -16,10 +16,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Resolves the current upstream VMaNGOS commit and decides whether the
-# default workflow should build images this run (skipping when an image for
-# that commit already exists, unless the run is a scheduled Monday rebuild
-# or a manual force rebuild).
+# Resolves the current upstream VMaNGOS commit and decides whether the default
+# workflow should build images this run (skipping when an image for that commit
+# already exists, unless the run is a scheduled Monday rebuild or a manual
+# force rebuild).
 
 set -euo pipefail
 

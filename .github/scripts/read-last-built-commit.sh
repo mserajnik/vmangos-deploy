@@ -29,13 +29,13 @@ require_env GH_TOKEN
 require_env PACKAGE_OWNER
 require_env PACKAGE_NAME
 
-# Anchor for the very first scan: vmangos/core@c53391e (2025-04-28, "Fixes
-# for last commit."). It fixes up a7a48b45 "Implement character flags."
-# that landed ~40 minutes earlier; both touch the same `characters`
-# migration. No vmangos-deploy image was built in between, so the interim
-# state was never shipped, and we start the walk strictly after the fix.
-# Used when the package registry has no prior version tagged with a
-# commit hash, e.g. on a fork's first build.
+# Anchor for the very first scan: vmangos/core@c53391e (2025-04-28, "Fixes for
+# last commit."). It fixes up a7a48b45 "Implement character flags." that landed
+# ~40 minutes earlier; both touch the same `characters` migration. No
+# vmangos-deploy image was built in between, so the interim state was never
+# shipped, and we start the walk strictly after the fix. Used when the package
+# registry has no prior version tagged with a commit hash, e.g. on a fork's
+# first build.
 MIGRATION_EDIT_CUTOFF_COMMIT_HASH="c53391ecfb2b8b936432c369aad5cabd6c996f06"
 
 # shellcheck disable=SC2153
@@ -57,8 +57,8 @@ if [[ $gh_status -ne 0 ]]; then
 fi
 
 # Take the most recent commit hash tag. The package list is sorted
-# newest-first, so this is the previous build's commit even when newer
-# versions exist with tags that aren't SHAs (e.g., `latest`).
+# newest-first, so this is the previous build's commit even when newer versions
+# exist with tags that aren't SHAs (e.g., `latest`).
 last_built_commit_hash="$(grep -E '^[0-9a-f]{40}$' <<<"$all_tags" | head -n1 || true)"
 
 if [[ -z "$last_built_commit_hash" ]]; then

@@ -17,8 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Confirms manually applied migration edits so `update-db.sh` can continue.
-# Refuses to run unless the pending sentinel exists, so accidental
-# invocations during normal operation are no-ops.
+# Refuses to run unless the pending sentinel exists, so accidental invocations
+# during normal operation are no-ops.
 
 set -eu
 
@@ -31,8 +31,8 @@ touch /tmp/vmangos-changes-acknowledged
 
 # `docker compose exec` defaults to root, but the bootstrap runs as the
 # database user and removes both sentinels when it sees the ack. Match
-# ownership to the pending sentinel so the bootstrap can remove the ack
-# file from sticky `/tmp`.
+# ownership to the pending sentinel so the bootstrap can remove the ack file
+# from sticky `/tmp`.
 chown --reference=/tmp/vmangos-changes-pending /tmp/vmangos-changes-acknowledged
 
 echo "[vmangos-deploy]: Confirmation recorded; startup will continue."

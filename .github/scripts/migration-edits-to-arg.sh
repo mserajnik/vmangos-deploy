@@ -16,10 +16,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Flattens `.github/migration-edit-state.json` to the
-# `VMANGOS_MIGRATION_EDITS` build argument format:
-# `world:<sha>|characters:<sha>|realmd:<sha>|logs:<sha>` (empty for null
-# entries).
+# Flattens `.github/migration-edit-state.json` to the `VMANGOS_MIGRATION_EDITS`
+# build argument format: `world:<sha>|characters:<sha>|realmd:<sha>|logs:<sha>`
+# (empty for null entries).
 
 set -euo pipefail
 

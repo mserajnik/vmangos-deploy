@@ -113,12 +113,12 @@ jobs:
           echo "arg=$arg" >>"$GITHUB_OUTPUT"
 
       # Auto-commit the state file when the scan flagged a new migration edit.
-      # The push uses `GITHUB_TOKEN` which, by GitHub policy, does not retrigger
-      # workflows.
+      # The push uses `GITHUB_TOKEN` which, by GitHub policy, does not
+      # retrigger workflows.
       # Commits via GitHub's GraphQL `createCommitOnBranch` mutation so the
       # resulting commit is signed by GitHub server-side and shows up as
-      # Verified; a plain `git commit && git push` over `GITHUB_TOKEN`
-      # would produce an unsigned commit.
+      # Verified; a plain `git commit && git push` over `GITHUB_TOKEN` would
+      # produce an unsigned commit.
       - name: Commit migration edit state if changed
         if: ${{ steps.prepare-default-build.outputs.any_images_to_build == 'true' && github.event_name != 'pull_request' }}
         env:

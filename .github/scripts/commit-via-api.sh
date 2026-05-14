@@ -17,12 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Commits the given files to the configured branch via GitHub's GraphQL
-# `createCommitOnBranch` mutation. The resulting commit is signed by
-# GitHub server-side, which is what gives it the "Verified" badge on the
-# web UI; a plain `git commit && git push` over `GITHUB_TOKEN` produces
-# an unsigned commit instead. Only files that actually changed against
-# `HEAD` are included in the commit, so this is safe to call
-# unconditionally after a step that may or may not have edited a file.
+# `createCommitOnBranch` mutation. The resulting commit is signed by GitHub
+# server-side, which is what gives it the "Verified" badge on the web UI; a
+# plain `git commit && git push` over `GITHUB_TOKEN` produces an unsigned
+# commit instead. Only files that actually changed against `HEAD` are included
+# in the commit, so this is safe to call unconditionally after a step that may
+# or may not have edited a file.
 
 set -euo pipefail
 
@@ -57,10 +57,9 @@ if [ "${#changed[@]}" -eq 0 ]; then
   exit 0
 fi
 
-# The branch's current tip on the remote. The mutation refuses to commit
-# if the tip moves underneath us (e.g., a concurrent run pushed first),
-# which is the right behavior; the next scheduled run will pick up the
-# leftover edits.
+# The branch's current tip on the remote. The mutation refuses to commit if the
+# tip moves underneath us (e.g., a concurrent run pushed first), which is the
+# right behavior; the next scheduled run will pick up the leftover edits.
 expected_head_oid="$(gh api "repos/$REPO_NWO/branches/$BRANCH" --jq '.commit.sha')"
 
 if [ -z "$expected_head_oid" ]; then

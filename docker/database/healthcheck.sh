@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Health gate for the database service. Reports unhealthy until startup
-# signals ready by writing `/tmp/vmangos-database-ready`, then delegates to
-# the upstream MariaDB healthcheck. Server containers gate on this via
+# Health gate for the database service. Reports unhealthy until startup signals
+# ready by writing `/tmp/vmangos-database-ready`, then delegates to the
+# upstream MariaDB healthcheck. Server containers gate on this via
 # `depends_on: condition: service_healthy`.
 
 set -eu

@@ -18,8 +18,8 @@
 
 # Runs once on first container start (via `/docker-entrypoint-initdb.d`) to
 # create and seed the four VMaNGOS databases, then pre-acknowledges any baked
-# migration edits so the next startup does not re-run a re-creation or halt
-# for them.
+# migration edits so the next startup does not re-run a re-creation or halt for
+# them.
 
 set -euo pipefail
 
