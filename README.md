@@ -9,6 +9,11 @@
 
 > A Docker setup for VMaNGOS
 
+> [!TIP]
+> Also check out my new project [cmangos-deploy][cmangos-deploy]: a similar
+> Docker setup for [CMaNGOS][cmangos], a server emulator that supports Classic,
+> TBC and WotLK.
+
 This is a Docker-based solution for running [VMaNGOS][vmangos] that focuses on
 providing a streamlined and user-friendly experience. It offers a range of
 features that simplify managing a VMaNGOS setup:
@@ -573,6 +578,8 @@ You are welcome to help out!
 [badge-latest-vmangos-commit]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fcommit-badge.json
 [badge-latest-vmangos-commit-url]: https://scripts.mser.at/vmangos-deploy-latest-built-commit/
 [claude-code]: https://www.anthropic.com/product/claude-code
+[cmangos]: https://github.com/cmangos
+[cmangos-deploy]: https://github.com/mserajnik/cmangos-deploy
 [codex]: https://openai.com/codex
 [compose-automatic-world-db-corrections]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L34-L47
 [compose-custom-sql]: https://github.com/mserajnik/vmangos-deploy/blob/master/compose.yaml.example#L61-L78
