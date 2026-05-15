@@ -1,4 +1,7 @@
-# vmangos-deploy
+<h1>
+  <img src=".github/logo.png" alt="" height="100" align="center">
+  vmangos-deploy
+</h1>
 
 [![Latest built VMaNGOS commit][badge-latest-vmangos-commit]][badge-latest-vmangos-commit-url]
 [![Latest build date][badge-latest-build-date]][badge-latest-build-date-url]
