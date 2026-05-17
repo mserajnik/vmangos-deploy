@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 name: Build and push custom Docker images
 
 on:

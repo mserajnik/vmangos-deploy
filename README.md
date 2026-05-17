@@ -67,7 +67,7 @@ features that simplify managing a VMaNGOS setup:
   - [Database security](#database-security)
 - [Maintainer](#maintainer)
 - [Contribute](#contribute)
-- [License](#license)
+- [Licenses](#licenses)
 
 ## Install
 
@@ -567,9 +567,13 @@ You are welcome to help out!
 
 [Open an issue][issues] or [make a pull request][pull-requests].
 
-## License
+## Licenses
 
-[AGPL-3.0-or-later](LICENSE) © Michael Serajnik
+- [`AGPL-3.0-or-later`][license-agpl-3.0-or-later] (Code)
+- [`CC-BY-SA-4.0`][license-cc-by-sa-4.0] (Documentation and graphic assets)
+- [`CC0-1.0`][license-cc0-1.0] (Configurations)
+
+This project follows the [REUSE specification][reuse-spec].
 
 [badge-actions-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml/badge.svg
 [badge-actions-status-url]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml
@@ -594,11 +598,15 @@ You are welcome to help out!
 [image-vmangos-database-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-database/versions?filters%5Bversion_type%5D=tagged
 [image-vmangos-server-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-server/versions?filters%5Bversion_type%5D=tagged
 [issues]: https://github.com/mserajnik/vmangos-deploy/issues
+[license-agpl-3.0-or-later]: LICENSES/AGPL-3.0-or-later.txt
+[license-cc-by-sa-4.0]: LICENSES/CC-BY-SA-4.0.txt
+[license-cc0-1.0]: LICENSES/CC0-1.0.txt
 [maintainer]: https://github.com/mserajnik
 [mangosd-gm-options]: https://github.com/mserajnik/vmangos-deploy/blob/master/config/mangosd.conf.example#L2256-L2364
 [mangosd-gm-options-cheat-god]: https://github.com/mserajnik/vmangos-deploy/blob/master/config/mangosd.conf.example#L2364
 [phpmyadmin]: https://www.phpmyadmin.net/
 [pull-requests]: https://github.com/mserajnik/vmangos-deploy/pulls
+[reuse-spec]: https://reuse.software/spec/
 [vmangos]: https://github.com/vmangos/core
 [vmangos-example-commit]: https://github.com/vmangos/core/commit/46183d287f80ab1ebf27bab12f37bc0b5b188c86
 [warden-modules]: https://github.com/vmangos/warden_modules
