@@ -21,10 +21,11 @@ services:
       - MARIADB_PASSWORD=mangos # Specifies the password for the database user utilized by VMaNGOS (must match the credentials in the VMaNGOS configuration files); please note that the password cannot be changed using this environment variable after the initial startup.
       - MARIADB_ROOT_PASSWORD=password # Specifies the password for the database's `root` user (not used by VMaNGOS itself, only for database creation/updates); please note that the password cannot be changed using this environment variable after the initial startup.
       # Only a subset covering the most important realmlist parameters is
-      # exposed in this configuration file. Altering them here after the
-      # database has been created will _not_ update them, but you can always
-      # change them (and the other parameters not exposed here) manually in the
-      # database at any point (see the `phpmyadmin` service further below).
+      # exposed in this configuration file. Restarting the containers with
+      # changed values updates the corresponding columns on the next startup;
+      # manual database edits to these columns will be overwritten. Other
+      # parameters not exposed here can be changed manually in the database at
+      # any point (see the `phpmyadmin` service further below).
       - VMANGOS_REALMLIST_NAME=VMaNGOS # Sets the name of the realm as it appears in the selection list and the character screen.
       - VMANGOS_REALMLIST_ADDRESS=127.0.0.1 # Sets the LAN or WAN address of the realm; this can also be a domain name.
       - VMANGOS_REALMLIST_PORT=8085 # Sets the port of the realm; changing this means it also needs to be changed in other places.

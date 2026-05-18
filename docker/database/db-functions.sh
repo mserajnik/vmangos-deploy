@@ -113,7 +113,17 @@ configure_realm() {
   vmangos_log "Configuring realm '$VMANGOS_REALMLIST_NAME'..."
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "realmd" -e \
-    "INSERT IGNORE INTO \`realmlist\` (\`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) VALUES ('$realm_name', '$realm_address', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL');"
+    "INSERT INTO \`realmlist\` \
+       (\`id\`, \`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) \
+     VALUES \
+       (1, '$realm_name', '$realm_address', '$VMANGOS_REALMLIST_PORT', '$VMANGOS_REALMLIST_ICON', '$VMANGOS_REALMLIST_TIMEZONE', '$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL') \
+     ON DUPLICATE KEY UPDATE \
+       \`name\` = VALUES(\`name\`), \
+       \`address\` = VALUES(\`address\`), \
+       \`port\` = VALUES(\`port\`), \
+       \`icon\` = VALUES(\`icon\`), \
+       \`timezone\` = VALUES(\`timezone\`), \
+       \`allowedSecurityLevel\` = VALUES(\`allowedSecurityLevel\`);"
 }
 
 table_exists() {
