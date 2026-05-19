@@ -72,7 +72,7 @@ FROM mariadb:11.8
 
 ARG VMANGOS_MIGRATION_EDITS
 
-# See https://github.com/MariaDB/mariadb-docker/blob/66972bc2e0c6fd33dcd5d98de0653c5696a1166e/11.8/docker-entrypoint.sh#L594-L598
+# See https://github.com/MariaDB/mariadb-docker/blob/17937f4efcf313be671a6706b4c72ba6ef07b347/11.8/docker-entrypoint.sh#L595-L599
 ENV MARIADB_AUTO_UPGRADE=1
 ENV MARIADB_USER=mangos
 ENV MARIADB_PASSWORD=mangos

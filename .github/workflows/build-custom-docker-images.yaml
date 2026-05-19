@@ -71,7 +71,7 @@ jobs:
           # When bumping `MARIADB_DOCKER_KNOWN_SHA`, also update the matching
           # SHA in `docker/database/Dockerfile` and the header comment in
           # `docker/database/docker-entrypoint.sh` so all three stay in sync.
-          MARIADB_DOCKER_KNOWN_SHA: 66972bc2e0c6fd33dcd5d98de0653c5696a1166e
+          MARIADB_DOCKER_KNOWN_SHA: 17937f4efcf313be671a6706b4c72ba6ef07b347
           VMANGOS_KNOWN_SHA: 8d27aeed57432d67d14ab02d766ca61690d38361
         run: ./.github/scripts/check-upstream-drift.sh
 
