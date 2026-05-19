@@ -12,6 +12,7 @@
 
 set -eo pipefail
 
+# shellcheck disable=SC1090
 source "$(which docker-entrypoint.sh)"
 
 # This is a temporary copy of the `docker_mariadb_upgrade()` function from the

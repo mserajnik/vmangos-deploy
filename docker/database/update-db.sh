@@ -49,7 +49,7 @@ if [ "${#PENDING_DB_NAMES[@]}" -gt 0 ]; then
 
   i=0
   while [ "$i" -lt "${#PENDING_DB_NAMES[@]}" ]; do
-    acknowledge_correction "${PENDING_DB_NAMES[$i]}" "${PENDING_DB_SHAS[$i]}"
+    acknowledge_correction "${PENDING_DB_NAMES[$i]}" "${PENDING_DB_COMMIT_HASHES[$i]}"
     i=$((i + 1))
   done
 

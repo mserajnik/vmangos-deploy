@@ -146,10 +146,17 @@ ensure_maintenance_db_exists() {
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
     "CREATE TABLE IF NOT EXISTS \`migration_corrections\` ( \
       \`db_name\` VARCHAR(64) NOT NULL, \
-      \`commit_sha\` CHAR(40) NOT NULL, \
+      \`commit_hash\` CHAR(40) NOT NULL, \
       \`acknowledged_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, \
-      PRIMARY KEY (\`db_name\`, \`commit_sha\`) \
+      PRIMARY KEY (\`db_name\`, \`commit_hash\`) \
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+
+  # One-time rename of the legacy `commit_sha` column to `commit_hash` for
+  # installs that were created before the renaming. TODO: removable once we can
+  # assume all existing installs have run with the new column name.
+  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
+    "ALTER TABLE \`migration_corrections\` \
+     CHANGE COLUMN IF EXISTS \`commit_sha\` \`commit_hash\` CHAR(40) NOT NULL;"
 }
 
 # One-time cleanup for installs that were created under the legacy
@@ -211,24 +218,24 @@ parse_migration_edits() {
 
 correction_acknowledged() {
   local db_name="$1"
-  local sha="$2"
+  local commit_hash="$2"
   local count
 
   count="$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -N -s -e \
     "SELECT COUNT(*) FROM \`migration_corrections\` \
     WHERE \`db_name\` = '$(sql_escape "$db_name")' \
-    AND \`commit_sha\` = '$(sql_escape "$sha")';")"
+    AND \`commit_hash\` = '$(sql_escape "$commit_hash")';")"
 
   [ "$count" -gt 0 ]
 }
 
 acknowledge_correction() {
   local db_name="$1"
-  local sha="$2"
+  local commit_hash="$2"
 
   mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
-    "INSERT IGNORE INTO \`migration_corrections\` (\`db_name\`, \`commit_sha\`) \
-    VALUES ('$(sql_escape "$db_name")', '$(sql_escape "$sha")');"
+    "INSERT IGNORE INTO \`migration_corrections\` (\`db_name\`, \`commit_hash\`) \
+    VALUES ('$(sql_escape "$db_name")', '$(sql_escape "$commit_hash")');"
 }
 
 # Stopgap until vmangos/core#2825 moves the `variables` table to the
@@ -266,23 +273,22 @@ restore_world_variables() {
 }
 
 PENDING_DB_NAMES=()
-PENDING_DB_SHAS=()
+PENDING_DB_COMMIT_HASHES=()
 
 # Set to 1 by `process_world_correction` after it has re-created the world
-# database (including applying migrations on the fresh dump), so
-# `docker/database/update-db.sh` knows it does not need to run `import_updates`
-# again.
+# database (including applying migrations on the fresh dump), so `update-db.sh`
+# knows it does not need to run `import_updates` again.
 # shellcheck disable=SC2034
 WORLD_DB_MIGRATIONS_APPLIED=0
 
 process_world_correction() {
-  local sha="$1"
+  local commit_hash="$1"
 
-  if [ -z "$sha" ]; then
+  if [ -z "$commit_hash" ]; then
     return 0
   fi
 
-  if correction_acknowledged "world" "$sha"; then
+  if correction_acknowledged "world" "$commit_hash"; then
     return 0
   fi
 
@@ -290,7 +296,7 @@ process_world_correction() {
   local halt_on_edits="${VMANGOS_HALT_ON_MIGRATION_EDITS:-0}"
 
   if [ "$enable_auto" = "1" ]; then
-    vmangos_log "Re-creating world database to apply migration edit (vmangos/core@${sha:0:7})..."
+    vmangos_log "Re-creating world database to apply migration edit (vmangos/core@${commit_hash:0:7})..."
     capture_world_variables
     drop_database "mangos"
     create_database "mangos"
@@ -300,30 +306,30 @@ process_world_correction() {
     # shellcheck disable=SC2034
     WORLD_DB_MIGRATIONS_APPLIED=1
     restore_world_variables
-    acknowledge_correction "world" "$sha"
+    acknowledge_correction "world" "$commit_hash"
     return 0
   fi
 
   if [ "$halt_on_edits" = "1" ]; then
     PENDING_DB_NAMES+=("world")
-    PENDING_DB_SHAS+=("$sha")
+    PENDING_DB_COMMIT_HASHES+=("$commit_hash")
     return 0
   fi
 
   # We deliberately do not record an acknowledgement here so the warning
   # repeats on every start until the user takes action.
-  vmangos_log "WARNING: Migration edit detected for world database (vmangos/core@${sha:0:7}) but both 'VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS' and 'VMANGOS_HALT_ON_MIGRATION_EDITS' are disabled; continuing without applying or acknowledging." >&2
+  vmangos_log "WARNING: Migration edit detected for world database (vmangos/core@${commit_hash:0:7}) but both 'VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS' and 'VMANGOS_HALT_ON_MIGRATION_EDITS' are disabled; continuing without applying or acknowledging." >&2
 }
 
 process_userstate_correction() {
   local db_name="$1"
-  local sha="$2"
+  local commit_hash="$2"
 
-  if [ -z "$sha" ]; then
+  if [ -z "$commit_hash" ]; then
     return 0
   fi
 
-  if correction_acknowledged "$db_name" "$sha"; then
+  if correction_acknowledged "$db_name" "$commit_hash"; then
     return 0
   fi
 
@@ -331,13 +337,13 @@ process_userstate_correction() {
 
   if [ "$halt_on_edits" = "1" ]; then
     PENDING_DB_NAMES+=("$db_name")
-    PENDING_DB_SHAS+=("$sha")
+    PENDING_DB_COMMIT_HASHES+=("$commit_hash")
     return 0
   fi
 
   # We deliberately do not record an acknowledgement here so the warning
   # repeats on every start until the user takes action.
-  vmangos_log "WARNING: Migration edit detected for '$db_name' database (vmangos/core@${sha:0:7}) but 'VMANGOS_HALT_ON_MIGRATION_EDITS' is disabled; continuing without acknowledging." >&2
+  vmangos_log "WARNING: Migration edit detected for '$db_name' database (vmangos/core@${commit_hash:0:7}) but 'VMANGOS_HALT_ON_MIGRATION_EDITS' is disabled; continuing without acknowledging." >&2
 }
 
 print_correction_abort_message() {
@@ -352,12 +358,12 @@ EOF
 
   local i=0
   local name
-  local sha
+  local commit_hash
   while [ "$i" -lt "${#PENDING_DB_NAMES[@]}" ]; do
     name="${PENDING_DB_NAMES[$i]}"
-    sha="${PENDING_DB_SHAS[$i]}"
+    commit_hash="${PENDING_DB_COMMIT_HASHES[$i]}"
     printf '  - %s\n' "$name" >&2
-    printf '    https://github.com/vmangos/core/commit/%s\n' "$sha" >&2
+    printf '    https://github.com/vmangos/core/commit/%s\n' "$commit_hash" >&2
     i=$((i + 1))
   done
 
@@ -367,7 +373,7 @@ For each affected database:
 
   1. Open the GitHub link above to see what changed.
   2. Apply the equivalent SQL to the running database yourself:
-       docker compose exec database mariadb -u root -p <db>
+       docker compose exec database mariadb -u root -p <database>
      (mariadb will prompt for the password; it matches your
      `MARIADB_ROOT_PASSWORD` setting in `compose.yaml`.)
   3. When you have applied the changes, confirm by running on the host:

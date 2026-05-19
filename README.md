@@ -463,11 +463,11 @@ resolve:
    `sql/migrations/*.sql`.
 2. Apply the equivalent SQL to the running database. From the host:
    ```sh
-   docker compose exec database mariadb -u root -p <db>
+   docker compose exec database mariadb -u root -p <database>
    ```
-   where `<db>` is `characters`, `realmd`, `logs`, or `mangos`. `mariadb` will
-   prompt for the password; it matches your `MARIADB_ROOT_PASSWORD` setting in
-   `compose.yaml`.
+   where `<database>` is `characters`, `realmd`, `logs`, or `mangos`. `mariadb`
+   will prompt for the password; it matches your `MARIADB_ROOT_PASSWORD`
+   setting in `compose.yaml`.
 3. When you are done, confirm by running on the host:
    ```sh
    docker compose exec database vmangos-confirm-changes

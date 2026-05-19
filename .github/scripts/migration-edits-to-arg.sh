@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Flattens `.github/migration-edit-state.json` to the `VMANGOS_MIGRATION_EDITS`
-# build argument format: `world:<sha>|characters:<sha>|realmd:<sha>|logs:<sha>`
-# (empty for null entries).
+# build argument: pipe-separated `<database>:<commit hash>` entries for each of
+# `world`, `characters`, `realmd`, `logs` (empty value for null entries).
 
 set -euo pipefail
 

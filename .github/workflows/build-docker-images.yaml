@@ -47,7 +47,7 @@ jobs:
       contents: write
       packages: read
     outputs:
-      commit_hash: ${{ steps.prepare-default-build.outputs.commit_hash }}
+      commit_hash: ${{ steps.resolve-sources.outputs.vmangos_commit_hash }}
       any_images_to_build: ${{ steps.prepare-default-build.outputs.any_images_to_build }}
       migration_edits: ${{ steps.compute-migration-edits.outputs.arg }}
 
@@ -55,19 +55,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      # Compares every upstream reference vmangos-deploy depends on (patched
-      # MariaDB entrypoint, bundled config templates, root `CMakeLists.txt`
-      # where new build deps would surface, ...) against its current upstream
-      # revision. The pinned SHAs anchor what each was last reviewed against;
-      # bump the matching SHA below after refreshing the local copy.
+      # Resolve the current upstream commit of every source the default
+      # workflow depends on to a full commit hash once, up front. Downstream
+      # steps (drift check, build decision, image builds) all reference these
+      # same commit hashes so the run is consistent even if a branch tip moves
+      # mid-run.
+      - name: Resolve sources
+        id: resolve-sources
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VMANGOS_REPOSITORY_OWNER: vmangos
+          VMANGOS_REPOSITORY_NAME: core
+          VMANGOS_REVISION: development
+          MARIADB_DOCKER_REPOSITORY_OWNER: MariaDB
+          MARIADB_DOCKER_REPOSITORY_NAME: mariadb-docker
+          MARIADB_DOCKER_REVISION: master
+        run: ./.github/scripts/resolve-sources.sh
+
+      # Compares every upstream reference vmangos-deploy depends on (bundled
+      # config templates, root `CMakeLists.txt` where new build dependencies
+      # would surface, the patched MariaDB entrypoint, ...) against the
+      # resolved upstream `HEAD`. The pinned commit hashes anchor what each was
+      # last reviewed against; bump the matching commit hash below after
+      # refreshing the local copy.
       - name: Check for upstream drift
         id: upstream-drift-check
         env:
-          # When bumping `MARIADB_DOCKER_KNOWN_SHA`, also update the matching
-          # SHA in `docker/database/Dockerfile` and the header comment in
-          # `docker/database/docker-entrypoint.sh` so all three stay in sync.
-          MARIADB_DOCKER_KNOWN_SHA: 17937f4efcf313be671a6706b4c72ba6ef07b347
-          VMANGOS_KNOWN_SHA: 8d27aeed57432d67d14ab02d766ca61690d38361
+          VMANGOS_REPOSITORY: ${{ steps.resolve-sources.outputs.vmangos_repository }}
+          VMANGOS_LATEST_COMMIT_HASH: ${{ steps.resolve-sources.outputs.vmangos_commit_hash }}
+          MARIADB_DOCKER_REPOSITORY: ${{ steps.resolve-sources.outputs.mariadb_docker_repository }}
+          MARIADB_DOCKER_LATEST_COMMIT_HASH: ${{ steps.resolve-sources.outputs.mariadb_docker_commit_hash }}
+          VMANGOS_KNOWN_COMMIT_HASH: 8d27aeed57432d67d14ab02d766ca61690d38361
+          # When bumping `MARIADB_DOCKER_KNOWN_COMMIT_HASH`, also update the
+          # matching commit hash in `docker/database/Dockerfile` and the header
+          # comment in `docker/database/docker-entrypoint.sh` so all three stay
+          # in sync.
+          MARIADB_DOCKER_KNOWN_COMMIT_HASH: 17937f4efcf313be671a6706b4c72ba6ef07b347
         run: ./.github/scripts/check-upstream-drift.sh
 
       # We check if the workflow was triggered by a schedule and if today is
@@ -83,9 +106,7 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           PACKAGE_OWNER: ${{ github.repository_owner }}
           PACKAGE_NAME: vmangos-database
-          VMANGOS_REPOSITORY_OWNER: vmangos
-          VMANGOS_REPOSITORY_NAME: core
-          VMANGOS_REVISION: development
+          VMANGOS_COMMIT_HASH: ${{ steps.resolve-sources.outputs.vmangos_commit_hash }}
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: ./.github/scripts/prepare-default-build.sh
 
@@ -108,7 +129,7 @@ jobs:
           VMANGOS_REPOSITORY_OWNER: vmangos
           VMANGOS_REPOSITORY_NAME: core
           LAST_BUILT_COMMIT_HASH: ${{ steps.read-last-built-commit.outputs.commit_hash }}
-          CURRENT_COMMIT_HASH: ${{ steps.prepare-default-build.outputs.commit_hash }}
+          CURRENT_COMMIT_HASH: ${{ steps.resolve-sources.outputs.vmangos_commit_hash }}
           STATE_FILE: .github/migration-edit-state.json
         run: |
           ./.github/scripts/compute-migration-edits.sh

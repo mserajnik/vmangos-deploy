@@ -3,18 +3,17 @@
 # SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-# Compares pinned upstream references (the MariaDB entrypoint, VMaNGOS files we
-# mirror) against current upstream `HEAD`. Fails the workflow when any has
-# drifted so the matching local copy can be reviewed.
+# Compares pinned upstream references against the resolved upstream `HEAD`.
+# Sources are opt-in: each source's checks run only when its environment
+# variables (`*_REPOSITORY`, `*_LATEST_COMMIT_HASH`, `*_KNOWN_COMMIT_HASH`) are
+# provided. Fails the workflow when any reference has drifted so the matching
+# local copy can be reviewed.
 
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source-path=SCRIPTDIR
 source "$script_dir/helpers.sh"
-
-require_env MARIADB_DOCKER_KNOWN_SHA
-require_env VMANGOS_KNOWN_SHA
 
 workdir="$(mktemp -d)"
 trap 'rm -rf "$workdir"' EXIT
@@ -24,35 +23,59 @@ declare -a checks=()
 
 add_github_check() {
   local owner_repo="$1"
-  local ref="$2"
-  local latest_ref="$3"
+  local known_commit_hash="$2"
+  local latest_commit_hash="$3"
   local path="$4"
 
   local desc="$owner_repo:$path"
-  local known_url="https://raw.githubusercontent.com/$owner_repo/$ref/$path"
-  local latest_url="https://raw.githubusercontent.com/$owner_repo/$latest_ref/$path"
+  local known_url="https://raw.githubusercontent.com/$owner_repo/$known_commit_hash/$path"
+  local latest_url="https://raw.githubusercontent.com/$owner_repo/$latest_commit_hash/$path"
 
   checks+=("$desc|$known_url|$latest_url")
 }
 
-# Patched MariaDB entrypoint. The vmangos-deploy
-# `docker/database/docker-entrypoint.sh` extends functions defined in
-# upstream's version, so any change there has to be reviewed for compatibility.
-add_github_check MariaDB/mariadb-docker "$MARIADB_DOCKER_KNOWN_SHA" master \
-  11.8/docker-entrypoint.sh
+if [[ -n "${VMANGOS_REPOSITORY:-}${VMANGOS_LATEST_COMMIT_HASH:-}${VMANGOS_KNOWN_COMMIT_HASH:-}" ]]; then
+  require_env VMANGOS_REPOSITORY
+  require_env VMANGOS_LATEST_COMMIT_HASH
+  require_env VMANGOS_KNOWN_COMMIT_HASH
 
-# Configs we mirror as `*.conf.example` and the top-level `CMakeLists.txt`,
-# which is where new `find_package(...)` would typically introduce a new
-# dependency that we would need to install.
-vmangos_paths=(
-  src/mangosd/mangosd.conf.dist.in
-  src/realmd/realmd.conf.dist.in
-  CMakeLists.txt
-)
+  # shellcheck disable=SC2153
+  vmangos_latest_commit_hash="$(trim "$VMANGOS_LATEST_COMMIT_HASH")"
 
-for path in "${vmangos_paths[@]}"; do
-  add_github_check vmangos/core "$VMANGOS_KNOWN_SHA" development "$path"
-done
+  # Configs we mirror as `*.conf.example` and the top-level `CMakeLists.txt`,
+  # which is where new `find_package(...)` would typically introduce a new
+  # dependency that we would need to install.
+  vmangos_paths=(
+    src/mangosd/mangosd.conf.dist.in
+    src/realmd/realmd.conf.dist.in
+    CMakeLists.txt
+  )
+
+  for path in "${vmangos_paths[@]}"; do
+    add_github_check "$VMANGOS_REPOSITORY" \
+      "$VMANGOS_KNOWN_COMMIT_HASH" "$vmangos_latest_commit_hash" "$path"
+  done
+fi
+
+if [[ -n "${MARIADB_DOCKER_REPOSITORY:-}${MARIADB_DOCKER_LATEST_COMMIT_HASH:-}${MARIADB_DOCKER_KNOWN_COMMIT_HASH:-}" ]]; then
+  require_env MARIADB_DOCKER_REPOSITORY
+  require_env MARIADB_DOCKER_LATEST_COMMIT_HASH
+  require_env MARIADB_DOCKER_KNOWN_COMMIT_HASH
+
+  # shellcheck disable=SC2153
+  mariadb_docker_latest_commit_hash="$(trim "$MARIADB_DOCKER_LATEST_COMMIT_HASH")"
+
+  # Patched MariaDB entrypoint. Our `docker/database/docker-entrypoint.sh`
+  # extends functions defined in upstream's version, so any change there has to
+  # be reviewed for compatibility.
+  add_github_check "$MARIADB_DOCKER_REPOSITORY" \
+    "$MARIADB_DOCKER_KNOWN_COMMIT_HASH" "$mariadb_docker_latest_commit_hash" \
+    11.8/docker-entrypoint.sh
+fi
+
+if ((${#checks[@]} == 0)); then
+  fail "No drift checks requested; provide environment variables for at least one source."
+fi
 
 failures=0
 
@@ -75,5 +98,5 @@ done
 
 if ((failures > 0)); then
   printf '\n%s upstream reference(s) drifted from the pinned revision.\n' "$failures" >&2
-  fail "Review the diff(s) above, refresh any local files that need to align, and bump the matching *_KNOWN_SHA."
+  fail "Review the diff(s) above, refresh any local files that need to align, and bump the matching *_KNOWN_COMMIT_HASH."
 fi

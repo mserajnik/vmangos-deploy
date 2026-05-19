@@ -26,26 +26,11 @@ require_env PACKAGE_NAME
 MIGRATION_EDIT_CUTOFF_COMMIT_HASH="c53391ecfb2b8b936432c369aad5cabd6c996f06"
 
 # shellcheck disable=SC2153
-package_endpoint="$(package_versions_endpoint "$PACKAGE_OWNER" "$PACKAGE_NAME")"
-
-set +e
-all_tags="$(gh api --paginate "$package_endpoint?per_page=100" \
-  --jq '.[].metadata.container.tags[]?' 2>&1)"
-gh_status=$?
-set -e
-
-if [[ $gh_status -ne 0 ]]; then
-  if grep -Fq "HTTP 404" <<<"$all_tags"; then
-    all_tags=""
-  else
-    printf '%s\n' "$all_tags" >&2
-    fail "Failed to query package versions for '$PACKAGE_OWNER/$PACKAGE_NAME'."
-  fi
-fi
+all_tags="$(existing_tags_for_package "$PACKAGE_OWNER" "$PACKAGE_NAME")"
 
 # Take the most recent commit hash tag. The package list is sorted
 # newest-first, so this is the previous build's commit even when newer versions
-# exist with tags that aren't SHAs (e.g., `latest`).
+# exist with tags that aren't commit hashes (e.g., `latest`).
 last_built_commit_hash="$(grep -E '^[0-9a-f]{40}$' <<<"$all_tags" | head -n1 || true)"
 
 if [[ -z "$last_built_commit_hash" ]]; then
