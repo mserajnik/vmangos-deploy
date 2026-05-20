@@ -13,6 +13,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source-path=SCRIPTDIR
 source "$script_dir/helpers.sh"
 
+require_env REGISTRY
 require_env WORKFLOW_MODE
 require_env IMAGE_KIND
 require_env ARCHITECTURES
@@ -81,8 +82,6 @@ arm64 | "arm64 only")
   fail "Unsupported architectures value '$architectures'."
   ;;
 esac
-
-require_env REGISTRY
 
 case "$IMAGE_KIND" in
 server)

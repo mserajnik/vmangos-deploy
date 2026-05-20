@@ -191,7 +191,7 @@ have tags that include the respective commit hash. E.g., for commit
 > on an older commit than the previous ones you used to perform a clean
 > downgrade due to the database migrations.
 
-Since the Docker images are generally built only once a day it, is unlikely
+Since the Docker images are generally built only once a day, it is unlikely
 that there will be a build for every single VMaNGOS commit. Older images are
 automatically deleted, roughly after 40 days; in practice, you should not rely
 on specific images staying available for any prolonged period of time. If you

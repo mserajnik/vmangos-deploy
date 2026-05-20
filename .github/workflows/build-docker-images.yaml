@@ -77,7 +77,7 @@ jobs:
       # would surface, the patched MariaDB entrypoint, ...) against the
       # resolved upstream `HEAD`. The pinned commit hashes anchor what each was
       # last reviewed against; bump the matching commit hash below after
-      # refreshing the local copy.
+      # refreshing the local files.
       - name: Check for upstream drift
         id: upstream-drift-check
         env:

@@ -7,7 +7,7 @@
 # Sources are opt-in: each source's checks run only when its environment
 # variables (`*_REPOSITORY`, `*_LATEST_COMMIT_HASH`, `*_KNOWN_COMMIT_HASH`) are
 # provided. Fails the workflow when any reference has drifted so the matching
-# local copy can be reviewed.
+# local files can be reviewed.
 
 set -euo pipefail
 
