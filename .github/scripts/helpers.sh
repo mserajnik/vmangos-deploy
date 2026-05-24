@@ -125,15 +125,15 @@ package_owner_endpoint() {
   owner_type="$(gh api "/users/$owner" --jq '.type')"
 
   case "$owner_type" in
-  Organization)
-    namespace="orgs"
-    ;;
-  User)
-    namespace="users"
-    ;;
-  *)
-    fail "Unsupported package owner type '$owner_type' for '$owner'."
-    ;;
+    Organization)
+      namespace="orgs"
+      ;;
+    User)
+      namespace="users"
+      ;;
+    *)
+      fail "Unsupported package owner type '$owner_type' for '$owner'."
+      ;;
   esac
 
   printf '/%s/%s' "$namespace" "$owner"

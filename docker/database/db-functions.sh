@@ -206,10 +206,10 @@ parse_migration_edits() {
     key="${pair%%:*}"
     value="${pair#*:}"
     case "$key" in
-    world) MIGRATION_EDIT_WORLD="$value" ;;
-    characters) MIGRATION_EDIT_CHARACTERS="$value" ;;
-    realmd) MIGRATION_EDIT_REALMD="$value" ;;
-    logs) MIGRATION_EDIT_LOGS="$value" ;;
+      world) MIGRATION_EDIT_WORLD="$value" ;;
+      characters) MIGRATION_EDIT_CHARACTERS="$value" ;;
+      realmd) MIGRATION_EDIT_REALMD="$value" ;;
+      logs) MIGRATION_EDIT_LOGS="$value" ;;
     esac
     IFS='|'
   done
