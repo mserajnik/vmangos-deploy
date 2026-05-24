@@ -3,9 +3,10 @@
   vmangos-deploy
 </h1>
 
+[![Lint status][badge-lint-status]][badge-lint-status-url]
+[![Build status][badge-build-status]][badge-build-status-url]\
 [![Latest built VMaNGOS commit][badge-latest-vmangos-commit]][badge-latest-vmangos-commit-url]
 [![Latest build date][badge-latest-build-date]][badge-latest-build-date-url]
-[![GitHub Actions status][badge-actions-status]][badge-actions-status-url]
 
 > A Docker setup for VMaNGOS
 
@@ -571,16 +572,18 @@ You are welcome to help out!
 
 - [`AGPL-3.0-or-later`][license-agpl-3.0-or-later] (Code)
 - [`CC-BY-SA-4.0`][license-cc-by-sa-4.0] (Documentation and graphic assets)
-- [`CC0-1.0`][license-cc0-1.0] (Configurations)
+- [`CC0-1.0`][license-cc0-1.0] (Configuration files)
 
 This project follows the [REUSE specification][reuse-spec].
 
-[badge-actions-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml/badge.svg
-[badge-actions-status-url]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml
+[badge-build-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml/badge.svg
+[badge-build-status-url]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml
 [badge-latest-build-date]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fdate-badge.json
 [badge-latest-build-date-url]: https://github.com/mserajnik?tab=packages&repo_name=vmangos-deploy
 [badge-latest-vmangos-commit]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fcommit-badge.json
 [badge-latest-vmangos-commit-url]: https://scripts.mser.at/vmangos-deploy-latest-built-commit/
+[badge-lint-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/lint.yaml/badge.svg
+[badge-lint-status-url]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/lint.yaml
 [claude-code]: https://www.anthropic.com/product/claude-code
 [cmangos]: https://github.com/cmangos
 [cmangos-deploy]: https://github.com/mserajnik/cmangos-deploy

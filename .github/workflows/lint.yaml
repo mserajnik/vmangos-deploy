@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+name: Lint
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run shellcheck
+        run: find . -type f -not -path './.git/*' -name '*.sh' -print0 | xargs -0 shellcheck
+
+  reuse:
+    name: REUSE compliance
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run reuse lint
+        uses: fsfe/reuse-action@v6
