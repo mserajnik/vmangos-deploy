@@ -1,5 +1,5 @@
 <h1>
-  <img src=".github/logo.png" alt="" height="100" align="center">
+  <img src=".github/logo.webp" alt="" height="100" align="center">
   vmangos-deploy
 </h1>
 
