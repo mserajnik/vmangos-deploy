@@ -368,8 +368,8 @@ docker compose attach mangosd
 After attaching, create the account and assign an account level:
 
 ```sh
-account create <account name> <account password>
-account set gmlevel <account name> <account level>
+account create <account-name> <account-password>
+account set gmlevel <account-name> <account-level>
 ```
 
 The available account levels are:
