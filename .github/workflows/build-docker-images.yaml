@@ -191,6 +191,11 @@ jobs:
       commit_hash: ${{ needs.setup.outputs.commit_hash }}
       migration_edits: ${{ needs.setup.outputs.migration_edits }}
 
+  # Keep only a short retention window. Long-term availability of older images
+  # is explicitly not promised: breaking changes accumulate over time, and
+  # users running stale images risk hitting issues that have already been fixed
+  # upstream. Anyone who needs an image for a specific commit should build it
+  # locally.
   delete-old-package-versions:
     name: Delete old package versions
     needs: [setup, build-and-push-server-images, build-and-push-database-images]
@@ -203,17 +208,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Each build of the server image creates 24 packages (one image index
-          # plus two image manifests, times the 8 client versions in the
-          # matrix). Keeping 960 versions therefore retains 40 builds worth of
-          # server images.
+          # 7 builds * (1 index + 2 manifests) * 8 client versions = 168.
           - package_name: vmangos-server
-            min_versions_to_keep: 960
-          # Each build of the database image creates 3 packages (one image
-          # index plus two image manifests). Keeping 120 versions retains the
-          # same 40 builds worth as above.
+            min_versions_to_keep: 168
+          # 7 builds * (1 index + 2 manifests) = 21.
           - package_name: vmangos-database
-            min_versions_to_keep: 120
+            min_versions_to_keep: 21
 
     steps:
       - name: Delete old package versions
