@@ -95,7 +95,7 @@ jobs:
 
       # We check if the workflow was triggered by a schedule and if today is
       # Monday, in which case we want to trigger a (re)build in any case (to
-      # keep the Docker images up-to-date).
+      # keep the Docker images up to date).
       #
       # We also check if the "force rebuild" input is checked when the workflow
       # is triggered manually; if yes, we also want to (re)build.

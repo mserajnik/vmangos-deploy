@@ -28,7 +28,7 @@ features that simplify managing a VMaNGOS setup:
   `1.12.1.5875` are provided
 - __Seamless, automated database migrations:__ when pulling the latest Docker
   images and re-creating the containers, migrations are applied automatically
-  to keep your database up-to-date at all times
+  to keep your database up to date at all times
 - __A transparent and easy-to-follow user experience:__ the number of different
   commands that need to be run to install and manage VMaNGOS is kept to a
   minimum. You can use the Docker CLI or any other tool that is able to manage
@@ -40,7 +40,7 @@ features that simplify managing a VMaNGOS setup:
 > [!NOTE]
 > The Docker images are built on a daily schedule, unless there have been no
 > new commits to VMaNGOS since the last build. Additionally, every Monday, the
-> latest images are rebuilt to ensure software and dependencies are up-to-date,
+> latest images are rebuilt to ensure software and dependencies are up to date,
 > even if there have been no updates to VMaNGOS itself.
 
 ## Table of contents
