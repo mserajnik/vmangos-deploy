@@ -90,7 +90,7 @@ jobs:
           # matching commit hash in `docker/database/Dockerfile` and the header
           # comment in `docker/database/docker-entrypoint.sh` so all three stay
           # in sync.
-          MARIADB_DOCKER_KNOWN_COMMIT_HASH: 17937f4efcf313be671a6706b4c72ba6ef07b347
+          MARIADB_DOCKER_KNOWN_COMMIT_HASH: 1b6429ba3544e134715c15f8c56cc6f665f827c9
         run: ./.github/scripts/check-upstream-drift.sh
 
       # The following Git repository URL formats are supported:
