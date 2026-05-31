@@ -15,27 +15,27 @@
 > Docker setup for [CMaNGOS][cmangos], a server emulator that supports Classic,
 > TBC and WotLK.
 
-This is a Docker-based solution for running [VMaNGOS][vmangos] that focuses on
-providing a streamlined and user-friendly experience. It offers a range of
-features that simplify managing a VMaNGOS setup:
+vmangos-deploy is a Docker-based solution for running [VMaNGOS][vmangos] that
+focuses on providing a streamlined and user-friendly experience. It offers a
+range of features that simplify managing a VMaNGOS setup:
 
 - __Prebuilt Docker images for both `amd64` and `arm64`, leveraging GitHub__
   __Actions:__ simply pull the provided images that have been optimized for
   size, performance and stability instead of having to re-compile VMaNGOS
-  yourself every time you want to update
+  yourself every time you want to update.
 - __The ability to run VMaNGOS configured for any of its supported client__
   __versions:__ prebuilt images for all versions ranging from `1.5.1.4449` to
-  `1.12.1.5875` are provided
+  `1.12.1.5875` are provided.
 - __Seamless, automated database migrations:__ when pulling the latest Docker
   images and re-creating the containers, migrations are applied automatically
-  to keep your database up to date at all times
+  to keep your database up to date at all times.
 - __A transparent and easy-to-follow user experience:__ the number of different
   commands that need to be run to install and manage VMaNGOS is kept to a
   minimum. You can use the Docker CLI or any other tool that is able to manage
-  Docker containers
+  Docker containers.
 - __A clean and organized structure:__ the VMaNGOS configuration can be found
   in [`./config`](config), everything else that is shared between the Docker
-  containers and your host system lives inside [`./storage`](storage)
+  containers and your host system lives inside [`./storage`](storage).
 
 > [!NOTE]
 > The Docker images are built on a daily schedule, unless there have been no
