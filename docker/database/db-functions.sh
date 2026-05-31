@@ -238,7 +238,7 @@ acknowledge_correction() {
     VALUES ('$(sql_escape "$db_name")', '$(sql_escape "$commit_hash")');"
 }
 
-# Stopgap until vmangos/core#2825 moves the `variables` table to the
+# Stopgap until `vmangos/core#2825` moves the `variables` table to the
 # `characters` database; until then we capture it across the world database
 # re-creation so hardcoded event progress survives.
 capture_world_variables() {

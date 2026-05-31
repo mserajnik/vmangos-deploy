@@ -16,9 +16,9 @@ require_env GH_TOKEN
 require_env PACKAGE_OWNER
 require_env PACKAGE_NAME
 
-# Anchor for the very first scan: vmangos/core@c53391e (2025-04-28, "Fixes for
-# last commit."). It fixes up a7a48b45 "Implement character flags." that landed
-# ~40 minutes earlier; both touch the same `characters` migration. No
+# Anchor for the very first scan: `vmangos/core@c53391e` (2025-04-28, "Fixes
+# for last commit."). It fixes up `a7a48b45` "Implement character flags." that
+# landed ~40 minutes earlier; both touch the same `characters` migration. No
 # vmangos-deploy image was built in between, so the interim state was never
 # shipped, and we start the walk strictly after the fix. Used when the package
 # registry has no prior version tagged with a commit hash, e.g. on a fork's

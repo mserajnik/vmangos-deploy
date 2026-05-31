@@ -87,7 +87,7 @@ ARG VMANGOS_USER_NAME
 ARG VMANGOS_GROUP_NAME
 
 # Force the Python stdout and stderr streams to be unbuffered so we can see the
-# output from the mmap_extract.py script while it is running.
+# output from the `mmap_extract.py` script while it is running.
 ENV PYTHONUNBUFFERED=1
 ENV VMANGOS_CLIENT_VERSION=$VMANGOS_CLIENT_VERSION
 
