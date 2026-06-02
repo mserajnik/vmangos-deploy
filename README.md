@@ -69,6 +69,7 @@ range of features that simplify managing a VMaNGOS setup:
 - [Maintainer](#maintainer)
 - [Contribute](#contribute)
 - [Licenses](#licenses)
+- [Disclaimer](#disclaimer)
 
 ## Install
 
@@ -575,6 +576,18 @@ You are welcome to help out!
 - [`CC0-1.0`][license-cc0-1.0] (Configuration files)
 
 This project follows the [REUSE specification][reuse-spec].
+
+## Disclaimer
+
+vmangos-deploy is an independent, community-made Docker setup for the
+open-source [VMaNGOS][vmangos] project. It is not affiliated with, endorsed by,
+or sponsored by Blizzard Entertainment, Inc., and it is not an official VMaNGOS
+project.
+
+This project includes no game client data or other copyrighted game assets. You
+must supply your own legitimate game client, from which the required data is
+extracted locally on your own machine. It is intended for private,
+non-commercial use only and comes with no warranty.
 
 [badge-build-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml/badge.svg
 [badge-build-status-url]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml
