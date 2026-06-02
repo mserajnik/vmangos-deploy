@@ -23,7 +23,6 @@ force=false
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -f | --force)
-      # If user passes `-f` or `--force`, set 'force' to true.
       force=true
       shift
       ;;
