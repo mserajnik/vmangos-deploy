@@ -22,10 +22,10 @@ require_env COMMIT_HASH
 short_hash="${COMMIT_HASH:0:7}"
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-cat >commit-badge.json <<EOF
+cat >build-badge.json <<EOF
 {
   "schemaVersion": 1,
-  "label": "Latest built VMaNGOS commit",
+  "label": "Latest VMaNGOS build",
   "message": "$short_hash",
   "color": "blue"
 }
@@ -41,6 +41,6 @@ cat >date-badge.json <<EOF
 EOF
 
 curl --fail --silent --show-error \
-  -T "{commit-badge.json,date-badge.json}" \
+  -T "{build-badge.json,date-badge.json}" \
   --user "$BADGES_FTP_USERNAME:$BADGES_FTP_PASSWORD" \
   "ftp://$BADGES_FTP_HOST/"

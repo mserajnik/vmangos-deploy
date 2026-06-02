@@ -5,7 +5,7 @@
 
 [![Lint status][badge-lint-status]][badge-lint-status-url]
 [![Build status][badge-build-status]][badge-build-status-url]\
-[![Latest built VMaNGOS commit][badge-latest-vmangos-commit]][badge-latest-vmangos-commit-url]
+[![Latest VMaNGOS build][badge-latest-vmangos-build]][badge-latest-vmangos-build-url]
 [![Latest build date][badge-latest-build-date]][badge-latest-build-date-url]
 
 > A Docker setup for VMaNGOS
@@ -593,8 +593,8 @@ non-commercial use only and comes with no warranty.
 [badge-build-status-url]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/build-docker-images.yaml
 [badge-latest-build-date]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fdate-badge.json
 [badge-latest-build-date-url]: https://github.com/mserajnik?tab=packages&repo_name=vmangos-deploy
-[badge-latest-vmangos-commit]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fcommit-badge.json
-[badge-latest-vmangos-commit-url]: https://scripts.mser.at/vmangos-deploy-latest-built-commit/
+[badge-latest-vmangos-build]: https://img.shields.io/endpoint?url=https%3A%2F%2Fscripts.mser.at%2Fvmangos-deploy-badges%2Fbuild-badge.json
+[badge-latest-vmangos-build-url]: https://scripts.mser.at/vmangos-deploy-latest-build/
 [badge-lint-status]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/lint.yaml/badge.svg
 [badge-lint-status-url]: https://github.com/mserajnik/vmangos-deploy/actions/workflows/lint.yaml
 [claude-code]: https://www.anthropic.com/product/claude-code
