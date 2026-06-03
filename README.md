@@ -213,11 +213,6 @@ should also be of interest; changing the `VMANGOS_REALMLIST_ADDRESS` to a LAN
 IP, a WAN IP or a domain name is required if you want to allow non-local
 connections.
 
-Also take note of the `healthcheck` sections; if you are using a low end system
-you may have to adjust the `start_period` setting so that the initial database
-creation process will be able to complete in time before the healthcheck
-considers the container unhealthy and causes a restart.
-
 > [!CAUTION]
 > Anything in your `compose.yaml` that is not commented or explicitly mentioned
 > in this README, regardless of the section, is likely something you do not
