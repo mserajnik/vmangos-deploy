@@ -248,11 +248,12 @@ There are two things to look out for here:
   change the `--user` argument to reflect your user's UID and GID. This will
   cause the user in the container to use the same UID and GID and prevent
   permission issues on the bind mounts. If you are on Windows or macOS, you can
-  ignore this (or even remove the `--user` argument altogether, if you want to)
+  ignore this (or even remove the `--user` argument altogether, if you want
+  to).
 - The Docker image must reflect the client version you want to extract the data
   from; see the table further above in the
   _[Adjusting the Docker Compose configuration](#adjusting-the-docker-compose-configuration)_
-  section
+  section.
 
 > [!IMPORTANT]
 > Extracting the data can take many hours (depending on your hardware). Some
