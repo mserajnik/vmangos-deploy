@@ -265,7 +265,7 @@ Once the extraction is finished you can find the data in
 you may want to re-run the process in the future if VMaNGOS makes changes (to
 benefit from potentially improved mob movement etc.). In case it becomes
 necessary to do so (e.g., if the extraction process changes), the
-_[Breaking Changes](#breaking-changes)_ section further below will be updated
+_[Breaking changes](#breaking-changes)_ section further below will be updated
 accordingly.
 
 If you re-run the extraction, it will automatically detect previously extracted
