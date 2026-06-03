@@ -202,26 +202,16 @@ jobs:
     if: ${{ needs.setup.outputs.any_images_to_build == 'true' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
     permissions:
-      contents: read
       packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # 7 builds * (1 index + 2 manifests) * 8 client versions = 168.
-          - package_name: vmangos-server
-            min_versions_to_keep: 168
-          # 7 builds * (1 index + 2 manifests) = 21.
-          - package_name: vmangos-database
-            min_versions_to_keep: 21
 
     steps:
       - name: Delete old package versions
-        uses: actions/delete-package-versions@v5
+        uses: snok/container-retention-policy@v3.1.0
         with:
-          package-name: ${{ matrix.package_name }}
-          package-type: container
-          min-versions-to-keep: ${{ matrix.min_versions_to_keep }}
+          account: user
+          token: ${{ github.token }}
+          image-names: vmangos-server vmangos-database
+          cut-off: 2w
 
   update-badges:
     name: Update badges
