@@ -124,7 +124,7 @@ jobs:
       contents: read
       packages: write
     env:
-      # The split `amd64`/`arm64` jobs would otherwise upload separate build
+      # The split `amd64` / `arm64` jobs would otherwise upload separate build
       # records, which would add workflow artifacts that the current pipeline
       # does not need.
       DOCKER_BUILD_RECORD_UPLOAD: false
@@ -183,7 +183,7 @@ jobs:
       contents: read
       packages: write
     env:
-      # The split `amd64`/`arm64` jobs would otherwise upload separate build
+      # The split `amd64` / `arm64` jobs would otherwise upload separate build
       # records, which would add workflow artifacts that the current pipeline
       # does not need.
       DOCKER_BUILD_RECORD_UPLOAD: false

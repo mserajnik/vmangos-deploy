@@ -181,7 +181,7 @@ services) and the `vmangos-database` image (used by the `database` service)
 have tags that include the respective commit hash. E.g., for commit
 [`46183d287f80ab1ebf27bab12f37bc0b5b188c86`][vmangos-example-commit]:
 
-| `realmd`/`mangos` service image                                                  | `database` service image                                                      |
+| `realmd` / `mangosd` service image                                               | `database` service image                                                      |
 | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `ghcr.io/mserajnik/vmangos-server:5875-46183d287f80ab1ebf27bab12f37bc0b5b188c86` | `ghcr.io/mserajnik/vmangos-database:46183d287f80ab1ebf27bab12f37bc0b5b188c86` |
 
