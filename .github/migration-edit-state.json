@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "f0bbcbf59264d1ca5f3e2fba2cf4a9121f67f71f",
-    "subject": "Fix migration error."
+    "commit": "4c426172340e59ab59719b2b27f79394e00831bf",
+    "subject": "Add Naxx Teleporter trap."
   },
   "characters": null,
   "realmd": null,
