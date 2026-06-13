@@ -9,6 +9,6 @@
     "headingKind": "atx"
   },
   "plugins": [
-    "https://plugins.dprint.dev/markdown-0.21.1.wasm"
+    "https://plugins.dprint.dev/markdown-0.22.1.wasm"
   ]
 }
