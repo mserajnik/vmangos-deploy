@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "4c426172340e59ab59719b2b27f79394e00831bf",
-    "subject": "Add Naxx Teleporter trap."
+    "commit": "b63c62ff91950890b0692e3fe947b8fa3c99df62",
+    "subject": "Correct gameobject data based on 1.11 wdb files."
   },
   "characters": null,
   "realmd": null,
