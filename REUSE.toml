@@ -14,6 +14,7 @@ path = [
   ".gitattributes",
   ".github/migration-edit-state.json",
   ".gitignore",
+  ".hadolint.yaml",
   ".shellcheckrc",
   "compose.yaml.example",
   "config/*.conf.example",

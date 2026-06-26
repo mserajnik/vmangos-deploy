@@ -44,7 +44,7 @@ RUN \
         patch_count=$((patch_count + 1)); \
       fi; \
     done; \
-    if [ $patch_count -eq 0 ]; then \
+    if [ "$patch_count" -eq 0 ]; then \
       echo "No patches found"; \
     fi; \
   else \

@@ -1,0 +1,10 @@
+ignored:
+  # These steps `cd` between directories within a single combined `RUN`. Using
+  # `WORKDIR` would fragment that `RUN` into separate layers and change the
+  # working directory for the rest of the stage.
+  - DL3003
+  # `apt` is used deliberately. The verbs we use (update/install/remove) have
+  # been stable for years. Switching to `apt-get` would also pull in DL3008
+  # (pin every package version); we intentionally do not pin dependencies so
+  # the image stays up-to-date automatically against rolling base images.
+  - DL3027
