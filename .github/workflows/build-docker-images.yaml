@@ -14,8 +14,8 @@ on:
       - .dockerignore
       - .github/scripts/**
       - .github/workflows/build-and-push-image.yaml
-      - .github/workflows/build-docker-images.yaml
       - .github/workflows/build-custom-docker-images.yaml
+      - .github/workflows/build-docker-images.yaml
       - docker/**
   pull_request:
     branches:
@@ -24,8 +24,8 @@ on:
       - .dockerignore
       - .github/scripts/**
       - .github/workflows/build-and-push-image.yaml
-      - .github/workflows/build-docker-images.yaml
       - .github/workflows/build-custom-docker-images.yaml
+      - .github/workflows/build-docker-images.yaml
       - docker/**
   workflow_dispatch:
     inputs:

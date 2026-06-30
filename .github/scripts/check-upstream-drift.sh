@@ -46,9 +46,9 @@ if [[ -n "${VMANGOS_REPOSITORY:-}${VMANGOS_LATEST_COMMIT_HASH:-}${VMANGOS_KNOWN_
   # which is where new `find_package(...)` would typically introduce a new
   # dependency that we would need to install.
   vmangos_paths=(
+    CMakeLists.txt
     src/mangosd/mangosd.conf.dist.in
     src/realmd/realmd.conf.dist.in
-    CMakeLists.txt
   )
 
   for path in "${vmangos_paths[@]}"; do

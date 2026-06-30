@@ -60,7 +60,7 @@ services:
       - VMANGOS_HALT_ON_MIGRATION_EDITS=1
       # If you want to make custom changes to the world database, it is
       # recommended to do so using SQL files and placing them in
-      # `./storage/database/custom-sql` (a bind mount for this directory is
+      # `storage/database/custom-sql/` (a bind mount for this directory is
       # configured out-of-the-box, as can be seen further above). This way, you
       # can keep automatic world database corrections enabled without having to
       # worry about your changes getting lost.
@@ -144,10 +144,10 @@ services:
       - 8085:8085
       # To enable SOAP API access, set `SOAP.Enabled` to `1` and make sure
       # `SOAP.IP` is set to `0.0.0.0` and `SOAP.Port` to `7878` in your
-      # `./config/mangosd.conf`, then uncomment the following port mapping:
+      # `config/mangosd.conf`, then uncomment the following port mapping:
       # - 7878:7878
       # To enable RA, set `Ra.Enable` to `1` and make sure `Ra.IP` is set to
-      # `0.0.0.0` and `Ra.Port` to `3443` in your `./config/mangosd.conf`, then
+      # `0.0.0.0` and `Ra.Port` to `3443` in your `config/mangosd.conf`, then
       # uncomment the following port mapping:
       # - 3443:3443
     volumes:
@@ -157,12 +157,12 @@ services:
       - ./storage/mangosd/honor:/opt/vmangos/storage/honor
       # To enable the usage of Warden, download the Warden modules from
       # https://github.com/vmangos/warden_modules and place them into
-      # `./storage/mangosd/warden-modules`.
+      # `storage/mangosd/warden-modules/`.
       # Note that using HermesProxy (or projects derived from it) to connect
       # `1.14.x` clients to VMaNGOS will likely not be possible (in a stable
       # manner without getting kicked off the server) when Warden is enabled.
       # Finally, uncomment the following bind mount and (optionally) adjust the
-      # Warden configuration in your `./config/mangosd.conf` (in particular,
+      # Warden configuration in your `config/mangosd.conf` (in particular,
       # ensure that `Warden.ModuleDir` is set to
       # `/opt/vmangos/storage/warden-modules`).
       # - ./storage/mangosd/warden-modules:/opt/vmangos/storage/warden-modules
@@ -176,7 +176,7 @@ services:
   # # every day at 04:00 (change the `TIMEZONE` environment variable to your
   # # desired time zone). Backups older than a week will automatically get
   # # deleted.
-  # # Backups will be stored in `./storage/database/backups`.
+  # # Backups will be stored in `storage/database/backups/`.
   # # See https://github.com/tiredofit/docker-db-backup#configuration for more
   # # information.
   # database-backup:
