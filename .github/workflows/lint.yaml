@@ -54,3 +54,13 @@ jobs:
 
       - name: Run reuse lint
         uses: fsfe/reuse-action@v6
+
+  dprint:
+    name: dprint
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Run dprint check
+        uses: dprint/check@v2.3
