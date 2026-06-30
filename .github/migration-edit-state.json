@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "b63c62ff91950890b0692e3fe947b8fa3c99df62",
-    "subject": "Correct gameobject data based on 1.11 wdb files."
+    "commit": "b0c82f425668c39855a29c3a6fbcf5721d643a0f",
+    "subject": "Delete many unused gameobjects."
   },
   "characters": null,
   "realmd": null,
