@@ -34,7 +34,7 @@ jobs:
         run: find . -type f -not -path './.git/*' -not -path './docker/database/docker-entrypoint.sh' -name '*.sh' -print0 | xargs -0 shellcheck
 
   hadolint:
-    name: hadolint
+    name: Hadolint
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
