@@ -21,20 +21,20 @@ focuses on providing a streamlined and user-friendly experience. It offers a
 range of features that simplify managing a VMaNGOS setup:
 
 - __Prebuilt Docker images for both `amd64` and `arm64`, leveraging GitHub__
-  __Actions:__ simply pull the provided images that have been optimized for
+  __Actions__: simply pull the provided images that have been optimized for
   size, performance and stability instead of having to re-compile VMaNGOS
   yourself every time you want to update.
 - __The ability to run VMaNGOS configured for any of its supported client__
-  __versions:__ prebuilt images for all versions ranging from `1.5.1.4449` to
+  __versions__: prebuilt images for all versions ranging from `1.5.1.4449` to
   `1.12.1.5875` are provided.
-- __Seamless, automated database migrations:__ when pulling the latest Docker
+- __Seamless, automated database migrations__: when pulling the latest Docker
   images and re-creating the containers, migrations are applied automatically
   to keep your database up to date at all times.
-- __A transparent and easy-to-follow user experience:__ the number of different
+- __A transparent and easy-to-follow user experience__: the number of different
   commands that need to be run to install and manage VMaNGOS is kept to a
   minimum. You can use the Docker CLI or any other tool that is able to manage
   Docker containers.
-- __A clean and organized structure:__ the VMaNGOS configuration can be found
+- __A clean and organized structure__: the VMaNGOS configuration can be found
   in [`config/`](config), everything else that is shared between the Docker
   containers and your host system lives inside [`storage/`](storage).
 
@@ -495,7 +495,7 @@ intervention. Such breaking changes will be listed here (and removed again once
 they become irrelevant), sorted by newest first:
 
 - __[2026-05-11] - Several changes to the database and server service__
-  __configurations are required:__ vmangos-deploy now also detects migration
+  __configurations are required__: vmangos-deploy now also detects migration
   edits affecting databases that contain user state (in addition to the world
   database) and halts startup until you apply the equivalent SQL by hand; see
   the
@@ -515,7 +515,7 @@ they become irrelevant), sorted by newest first:
   direct replacement. On first startup with the new image, existing
   installations will see exactly one world database re-creation (or halt) to
   apply the most recent flagged migration edit.
-- __[2024-10-31] - Removal of separate images with anticheat support:__ As of
+- __[2024-10-31] - Removal of separate images with anticheat support__: As of
   [`vmangos/core@fbbc4ae`](https://github.com/vmangos/core/commit/fbbc4ae899f876a78a37d8fee805dce40a182331)
   VMaNGOS no longer supports building without anticheat support, thus anticheat
   is always available and there is no longer a need for separate images. If you
