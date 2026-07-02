@@ -37,7 +37,7 @@ db_suffixes=(world characters logon logs)
 latest_commits=("" "" "" "")
 latest_subjects=("" "" "" "")
 
-echo "Scanning $repo for migration edits between $LAST_BUILT_COMMIT_HASH and $CURRENT_COMMIT_HASH..."
+echo "Scanning '$repo' for migration edits between $LAST_BUILT_COMMIT_HASH and $CURRENT_COMMIT_HASH..."
 
 # The compare endpoint returns commits oldest-first across pages; we reverse it
 # so we can short-circuit per database once the newest hit is found.
