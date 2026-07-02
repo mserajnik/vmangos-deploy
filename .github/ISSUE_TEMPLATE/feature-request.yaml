@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a feature or improvement
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to suggest an improvement!
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched the existing issues (both open and closed) and did not find a duplicate.
+          required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What do you want?
+      description: Describe the feature or improvement you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it be good to have?
+      description: Describe your use case and how the feature would help.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Any alternatives or workarounds you have considered.
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Anything else that might be relevant.
+    validations:
+      required: false
