@@ -572,7 +572,8 @@ You are welcome to help out!
 ## Licenses
 
 - [`AGPL-3.0-or-later`][license-agpl-3.0-or-later] (Code)
-- [`CC-BY-SA-4.0`][license-cc-by-sa-4.0] (Documentation and graphic assets)
+- [`CC-BY-SA-4.0`][license-cc-by-sa-4.0] (Documentation, graphic assets and
+  issue templates)
 - [`CC0-1.0`][license-cc0-1.0] (Configuration files)
 
 This project follows the [REUSE specification][reuse-spec].
