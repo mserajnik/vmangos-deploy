@@ -21,7 +21,7 @@ require_env GH_TOKEN
 require_env BRANCH
 require_env REPO_NWO
 
-if [ "$#" -lt 2 ]; then
+if [[ "$#" -lt 2 ]]; then
   fail "Usage: $0 <message> <path> [<path> ...]"
 fi
 
@@ -31,7 +31,7 @@ paths=("$@")
 
 changed=()
 for path in "${paths[@]}"; do
-  if [ ! -f "$path" ]; then
+  if [[ ! -f "$path" ]]; then
     fail "Path '$path' does not exist or is not a regular file."
   fi
   if ! git diff --quiet -- "$path"; then
@@ -39,7 +39,7 @@ for path in "${paths[@]}"; do
   fi
 done
 
-if [ "${#changed[@]}" -eq 0 ]; then
+if [[ "${#changed[@]}" -eq 0 ]]; then
   echo "No tracked file changes among the requested paths; nothing to commit."
   exit 0
 fi
@@ -49,7 +49,7 @@ fi
 # right behavior; the next scheduled run will pick up the leftover edits.
 expected_head_oid="$(gh api "repos/$REPO_NWO/branches/$BRANCH" --jq '.commit.sha')"
 
-if [ -z "$expected_head_oid" ]; then
+if [[ -z "$expected_head_oid" ]]; then
   fail "Failed to resolve remote tip of branch '$BRANCH'."
 fi
 
@@ -85,7 +85,7 @@ result="$(gh api graphql --input - <<<"$payload")"
 new_oid="$(jq -r '.data.createCommitOnBranch.commit.oid // empty' <<<"$result")"
 new_url="$(jq -r '.data.createCommitOnBranch.commit.url // empty' <<<"$result")"
 
-if [ -z "$new_oid" ]; then
+if [[ -z "$new_oid" ]]; then
   printf '%s\n' "$result" >&2
   fail "GraphQL mutation did not return a commit OID."
 fi

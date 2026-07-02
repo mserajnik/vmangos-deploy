@@ -9,7 +9,7 @@
 
 set -eu
 
-if [ ! -f /tmp/vmangos-changes-pending ]; then
+if [[ ! -f /tmp/vmangos-changes-pending ]]; then
   echo "[vmangos-deploy]: ERROR: vmangos-deploy is not currently waiting for confirmation. Nothing to do." >&2
   exit 1
 fi

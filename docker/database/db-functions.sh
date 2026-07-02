@@ -36,7 +36,7 @@ create_database() {
   local db_name="$1"
   local silent="${2:-false}"
 
-  if [ "$silent" = false ]; then
+  if [[ "$silent" = false ]]; then
     vmangos_log "Creating database '$db_name'..."
   fi
 
@@ -48,7 +48,7 @@ drop_database() {
   local db_name="$1"
   local silent="${2:-false}"
 
-  if [ "$silent" = false ]; then
+  if [[ "$silent" = false ]]; then
     vmangos_log "Dropping database '$db_name'..."
   fi
 
@@ -60,7 +60,7 @@ grant_permissions() {
   local db_name="$1"
   local silent="${2:-false}"
 
-  if [ "$silent" = false ]; then
+  if [[ "$silent" = false ]]; then
     vmangos_log "Granting permissions to database user '$MARIADB_USER' for database '$db_name'..."
   fi
 
@@ -92,7 +92,7 @@ import_updates() {
   local db_name="$1"
   local update_file="$2"
 
-  if [ ! -e "$update_file" ]; then
+  if [[ ! -e "$update_file" ]]; then
     # The update file not existing is not an error, so we return 0 (success)
     # here.
     return 0
@@ -136,7 +136,7 @@ table_exists() {
     WHERE \`TABLE_SCHEMA\` = '$(sql_escape "$db_name")' \
     AND \`TABLE_NAME\` = '$(sql_escape "$table_name")';")"
 
-  [ "$count" -gt 0 ]
+  [[ "$count" -gt 0 ]]
 }
 
 ensure_maintenance_db_exists() {
@@ -185,7 +185,7 @@ parse_migration_edits() {
   MIGRATION_EDIT_LOGS=""
 
   local file="/sql/migration-edits"
-  if [ ! -f "$file" ]; then
+  if [[ ! -f "$file" ]]; then
     return 0
   fi
 
@@ -194,7 +194,7 @@ parse_migration_edits() {
   raw="${raw#"${raw%%[![:space:]]*}"}"
   raw="${raw%"${raw##*[![:space:]]}"}"
 
-  if [ -z "$raw" ]; then
+  if [[ -z "$raw" ]]; then
     return 0
   fi
 
@@ -226,7 +226,7 @@ correction_acknowledged() {
     WHERE \`db_name\` = '$(sql_escape "$db_name")' \
     AND \`commit_hash\` = '$(sql_escape "$commit_hash")';")"
 
-  [ "$count" -gt 0 ]
+  [[ "$count" -gt 0 ]]
 }
 
 acknowledge_correction() {
@@ -250,7 +250,7 @@ capture_world_variables() {
   # complete successfully (we remove the file at the end of a successful
   # restore). Bail out here so the user can inspect and recover it before any
   # further capture overwrites it.
-  if [ -s /tmp/vmangos-world-variables.sql ]; then
+  if [[ -s /tmp/vmangos-world-variables.sql ]]; then
     vmangos_fail "An unconsumed 'variables' dump from a previous run exists at '/tmp/vmangos-world-variables.sql'. Inspect it and remove it manually before restarting."
   fi
 
@@ -261,7 +261,7 @@ capture_world_variables() {
 }
 
 restore_world_variables() {
-  if [ ! -s /tmp/vmangos-world-variables.sql ]; then
+  if [[ ! -s /tmp/vmangos-world-variables.sql ]]; then
     return 0
   fi
 
@@ -284,7 +284,7 @@ WORLD_DB_MIGRATIONS_APPLIED=0
 process_world_correction() {
   local commit_hash="$1"
 
-  if [ -z "$commit_hash" ]; then
+  if [[ -z "$commit_hash" ]]; then
     return 0
   fi
 
@@ -295,7 +295,7 @@ process_world_correction() {
   local enable_auto="${VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS:-0}"
   local halt_on_edits="${VMANGOS_HALT_ON_MIGRATION_EDITS:-0}"
 
-  if [ "$enable_auto" = "1" ]; then
+  if [[ "$enable_auto" = "1" ]]; then
     vmangos_log "Re-creating world database to apply migration edit (vmangos/core@${commit_hash:0:7})..."
     capture_world_variables
     drop_database "mangos"
@@ -310,7 +310,7 @@ process_world_correction() {
     return 0
   fi
 
-  if [ "$halt_on_edits" = "1" ]; then
+  if [[ "$halt_on_edits" = "1" ]]; then
     PENDING_DB_NAMES+=("world")
     PENDING_DB_COMMIT_HASHES+=("$commit_hash")
     return 0
@@ -325,7 +325,7 @@ process_userstate_correction() {
   local db_name="$1"
   local commit_hash="$2"
 
-  if [ -z "$commit_hash" ]; then
+  if [[ -z "$commit_hash" ]]; then
     return 0
   fi
 
@@ -335,7 +335,7 @@ process_userstate_correction() {
 
   local halt_on_edits="${VMANGOS_HALT_ON_MIGRATION_EDITS:-0}"
 
-  if [ "$halt_on_edits" = "1" ]; then
+  if [[ "$halt_on_edits" = "1" ]]; then
     PENDING_DB_NAMES+=("$db_name")
     PENDING_DB_COMMIT_HASHES+=("$commit_hash")
     return 0
@@ -359,7 +359,7 @@ EOF
   local i=0
   local name
   local commit_hash
-  while [ "$i" -lt "${#PENDING_DB_NAMES[@]}" ]; do
+  while [[ "$i" -lt "${#PENDING_DB_NAMES[@]}" ]]; do
     name="${PENDING_DB_NAMES[$i]}"
     commit_hash="${PENDING_DB_COMMIT_HASHES[$i]}"
     printf '  - %s\n' "$name" >&2
@@ -398,7 +398,7 @@ EOF
 wait_for_change_ack() {
   touch /tmp/vmangos-changes-pending
 
-  while [ ! -f /tmp/vmangos-changes-acknowledged ]; do
+  while [[ ! -f /tmp/vmangos-changes-acknowledged ]]; do
     sleep 5
   done
 
@@ -409,19 +409,19 @@ process_custom_sql() {
   local file_directory="$1"
   local file_count
 
-  if [ ! -d "$file_directory" ]; then
+  if [[ ! -d "$file_directory" ]]; then
     vmangos_log "WARNING: Custom SQL file directory '$file_directory' does not exist." >&2
     return 0
   fi
 
-  if [ ! -r "$file_directory" ] || [ ! -x "$file_directory" ]; then
+  if [[ ! -r "$file_directory" ]] || [[ ! -x "$file_directory" ]]; then
     vmangos_fail "Custom SQL file directory '$file_directory' is not readable by the database user (UID $(id -u)). This is a permission problem on the host: the bind-mounted directory must be readable by that user. Adjust the permissions, then restart."
   fi
 
   file_count=$(find "$file_directory" -name "*.sql" -type f | wc -l)
   vmangos_log "Found $file_count custom SQL file(s) to process."
 
-  if [ "$file_count" -gt 0 ]; then
+  if [[ "$file_count" -gt 0 ]]; then
     find "$file_directory" -name "*.sql" -type f | sort | while read -r sql_file; do
       vmangos_log "Processing custom SQL file '$(basename "$sql_file")'..."
 

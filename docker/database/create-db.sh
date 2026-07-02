@@ -16,7 +16,7 @@ source "/opt/scripts/db-functions.sh"
 clear_database_ready
 clear_change_sentinels
 
-if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
+if [[ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]]; then
   vmangos_log "[x] Custom SQL processing is enabled."
 else
   vmangos_log "[ ] Custom SQL processing is disabled."
@@ -44,7 +44,7 @@ import_updates "logs" "/sql/migrations/logs_db_updates.sql"
 
 configure_realm
 
-if [ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]; then
+if [[ "${VMANGOS_PROCESS_CUSTOM_SQL:-0}" = "1" ]]; then
   process_custom_sql "/sql/custom"
 fi
 
@@ -54,16 +54,16 @@ fi
 ensure_maintenance_db_exists
 parse_migration_edits
 
-if [ -n "$MIGRATION_EDIT_WORLD" ]; then
+if [[ -n "$MIGRATION_EDIT_WORLD" ]]; then
   acknowledge_correction "world" "$MIGRATION_EDIT_WORLD"
 fi
-if [ -n "$MIGRATION_EDIT_CHARACTERS" ]; then
+if [[ -n "$MIGRATION_EDIT_CHARACTERS" ]]; then
   acknowledge_correction "characters" "$MIGRATION_EDIT_CHARACTERS"
 fi
-if [ -n "$MIGRATION_EDIT_REALMD" ]; then
+if [[ -n "$MIGRATION_EDIT_REALMD" ]]; then
   acknowledge_correction "realmd" "$MIGRATION_EDIT_REALMD"
 fi
-if [ -n "$MIGRATION_EDIT_LOGS" ]; then
+if [[ -n "$MIGRATION_EDIT_LOGS" ]]; then
   acknowledge_correction "logs" "$MIGRATION_EDIT_LOGS"
 fi
 
