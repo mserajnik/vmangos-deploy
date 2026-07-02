@@ -12,9 +12,13 @@
 > A Docker setup for VMaNGOS
 
 > [!TIP]
-> Also check out my new project [cmangos-deploy][cmangos-deploy]: a similar
-> Docker setup for [CMaNGOS][cmangos], a server emulator that supports Classic,
-> TBC and WotLK.
+> Also check out my similar Docker setups:
+>
+> - [cmangos-deploy][cmangos-deploy] for [CMaNGOS][cmangos], a server emulator
+>   that supports Vanilla (which CMaNGOS calls Classic), TBC and WotLK.
+> - [tortoise-deploy][tortoise-deploy] for [Tortoise-WoW][tortoise-wow], a
+>   community-driven restoration of Turtle WoW's `1.18.1.7272` patch with
+>   additions for solo play.
 
 vmangos-deploy is a Docker-based solution for running [VMaNGOS][vmangos] that
 focuses on providing a streamlined and user-friendly experience. It offers a
@@ -619,6 +623,8 @@ non-commercial use only and comes with no warranty.
 [phpmyadmin]: https://www.phpmyadmin.net/
 [pull-requests]: https://github.com/mserajnik/vmangos-deploy/pulls
 [reuse-spec]: https://reuse.software/spec/
+[tortoise-deploy]: https://github.com/mserajnik/tortoise-deploy
+[tortoise-wow]: https://github.com/Penqle/tortoise-wow
 [vmangos]: https://github.com/vmangos/core
 [vmangos-example-commit]: https://github.com/vmangos/core/commit/46183d287f80ab1ebf27bab12f37bc0b5b188c86
 [warden-modules]: https://github.com/vmangos/warden_modules
