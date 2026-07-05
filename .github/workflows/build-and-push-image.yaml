@@ -72,7 +72,7 @@ env:
   OCI_ANNOTATION_SERVER_BASE_NAME: ubuntu:26.04
   OCI_ANNOTATION_DATABASE_TITLE: ${{ inputs.workflow_mode == 'custom' && 'vmangos-deploy - Custom VMaNGOS database image' || 'vmangos-deploy - VMaNGOS database image' }}
   OCI_ANNOTATION_DATABASE_DESCRIPTION: Database for the VMaNGOS server emulator.
-  OCI_ANNOTATION_DATABASE_BASE_NAME: mariadb:11.8
+  OCI_ANNOTATION_DATABASE_BASE_NAME: mariadb:12.3
 
 jobs:
   prepare:

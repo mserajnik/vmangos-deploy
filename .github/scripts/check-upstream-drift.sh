@@ -70,7 +70,7 @@ if [[ -n "${MARIADB_DOCKER_REPOSITORY:-}${MARIADB_DOCKER_LATEST_COMMIT_HASH:-}${
   # be reviewed for compatibility.
   add_github_check "$MARIADB_DOCKER_REPOSITORY" \
     "$MARIADB_DOCKER_KNOWN_COMMIT_HASH" "$mariadb_docker_latest_commit_hash" \
-    11.8/docker-entrypoint.sh
+    12.3/docker-entrypoint.sh
 fi
 
 if ((${#checks[@]} == 0)); then
