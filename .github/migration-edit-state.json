@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "b0c82f425668c39855a29c3a6fbcf5721d643a0f",
-    "subject": "Delete many unused gameobjects."
+    "commit": "64d9e28b3675816333a7cf13afbc199e779674e9",
+    "subject": "Correct creature data based on 1.8 wdb files."
   },
   "characters": null,
   "realmd": null,
