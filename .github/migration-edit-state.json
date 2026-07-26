@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "64d9e28b3675816333a7cf13afbc199e779674e9",
-    "subject": "Correct creature data based on 1.8 wdb files."
+    "commit": "1b3513846a4dd33260e7709cacba70ec54c60b7a",
+    "subject": "Correct creature static flags based on 1.9 wdb files."
   },
   "characters": null,
   "realmd": null,
