@@ -173,14 +173,20 @@ services:
   # # Uncomment this service to enable periodic database backups.
   # # The default configuration should work out of the box (unless you have
   # # modified the `database` service configuration) and will create a backup
-  # # every day at 04:00 (change the `TIMEZONE` environment variable to your
-  # # desired time zone). Backups older than a week will automatically get
-  # # deleted.
-  # # Backups will be stored in `storage/database/backups/`.
-  # # See https://github.com/tiredofit/docker-db-backup#configuration for more
-  # # information.
+  # # every day at 04:00 (change the `TZ` and `CRON_TZ` values to your desired
+  # # time zone). Backups older than a week will automatically get deleted.
+  # # Backups will be stored in `storage/database/backups/`, one gzip-compressed
+  # # tar archive per run containing one SQL dump per database.
+  # # See https://github.com/databacker/mysql-backup for more information.
   # database-backup:
-  #   image: tiredofit/db-backup
+  #   image: databack/mysql-backup
+  #   # If you are using a Linux host and your user's UID and GID are not 1000,
+  #   # change these values to reflect your user's UID and GID. This will cause
+  #   # the user in the container to use the same UID and GID and prevent
+  #   # permission issues on the bind mount.
+  #   # If you are on Windows or macOS, you can ignore this.
+  #   user: 1000:1000
+  #   command: dump
   #   depends_on:
   #     database:
   #       condition: service_healthy
@@ -188,24 +194,19 @@ services:
   #   volumes:
   #     - ./storage/database/backups:/backup
   #   environment:
-  #     - TIMEZONE=Etc/UTC # Change this to your desired time zone (usually you want to match your host system's time zone).
-  #     - CONTAINER_ENABLE_MONITORING=FALSE
-  #     # If you are using a Linux host and your user's UID and GID are not 1000,
-  #     # change these next two variables to reflect your user's UID and GID.
-  #     # This will cause the user in the container to use the same UID and GID
-  #     # and prevent permission issues on the bind mount.
-  #     # If you are on Windows or macOS, you can ignore this.
-  #     - USER_DBBACKUP=1000
-  #     - GROUP_DBBACKUP=1000
-  #     - DEFAULT_COMPRESSION=GZ
-  #     - DEFAULT_BACKUP_INTERVAL=1440 # How often to run the backup in minutes; 1440 means once per day.
-  #     - DEFAULT_BACKUP_BEGIN=0400 # When to start the backup; 0400 means it starts at 04:00.
-  #     - DEFAULT_CLEANUP_TIME=10080 # How old backups have to be to get deleted; 10080 means backups older than a week get deleted.
-  #     - DB01_TYPE=mariadb
-  #     - DB01_HOST=database
-  #     - DB01_NAME=characters,realmd # Which databases should be backed up.
-  #     - DB01_USER=root
-  #     - DB01_PASS=password # Must match the `MARIADB_ROOT_PASSWORD` environment variable of the `database` service.
+  #     - TZ=Etc/UTC # Change this to your desired time zone (usually you want to match your host system's time zone).
+  #     - DB_SERVER=database
+  #     - DB_USER=root
+  #     - DB_PASS=password # Must match the `MARIADB_ROOT_PASSWORD` environment variable of the `database` service.
+  #     - DB_DUMP_INCLUDE=characters,realmd # Which databases should be backed up.
+  #     - DB_DUMP_TARGET=/backup
+  #     - DB_DUMP_COMPRESSION=gzip
+  #     # The backup schedule is always evaluated in UTC unless `CRON_TZ` is set;
+  #     # the `TZ` environment variable above has no effect on it, so keep the
+  #     # two in sync when changing your time zone.
+  #     - DB_DUMP_CRON=CRON_TZ=Etc/UTC 0 4 * * * # When to run the backup; `0 4 * * *` means every day at 04:00.
+  #     - DB_DUMP_RETENTION=7d # How old backups have to be to get deleted; `7d` means backups older than a week get deleted.
+  #     - DB_DUMP_SAFECHARS=true # Writes hyphens instead of colons in backup file names, which is required on Windows hosts.
 
   # # Optional:
   # # Uncomment this service to run phpMyAdmin, a web-based MySQL/MariaDB
