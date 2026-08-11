@@ -125,7 +125,6 @@ jobs:
         id: compute-migration-edits
         if: ${{ steps.prepare-default-build.outputs.any_images_to_build == 'true' }}
         env:
-          GH_TOKEN: ${{ github.token }}
           VMANGOS_REPOSITORY_OWNER: vmangos
           VMANGOS_REPOSITORY_NAME: core
           LAST_BUILT_COMMIT_HASH: ${{ steps.read-last-built-commit.outputs.commit_hash }}

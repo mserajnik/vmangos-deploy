@@ -9,7 +9,9 @@
 
 set -eu
 
-eval "$(fixuid -q)"
+# Capture the `fixuid -q` exit status first since `eval` discards it.
+fixuid_output="$(fixuid -q)"
+eval "$fixuid_output"
 
 config_file="/opt/vmangos/config/realmd.conf"
 

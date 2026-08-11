@@ -3,9 +3,12 @@
 # SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-# Walks the commits between the previous and current build via the GitHub API
-# and updates `.github/migration-edit-state.json` with the most recent
-# migration file edit per VMaNGOS database.
+# Walks the commits between the previous and current build and updates
+# `.github/migration-edit-state.json` with the most recent migration file edit
+# per VMaNGOS database.
+#
+# The walk reads a blobless clone rather than the GitHub API, whose commit
+# endpoint silently caps a file list and could hide a watched file.
 
 set -euo pipefail
 
@@ -13,7 +16,6 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source-path=SCRIPTDIR
 source "$script_dir/helpers.sh"
 
-require_env GH_TOKEN
 require_env LAST_BUILT_COMMIT_HASH
 require_env CURRENT_COMMIT_HASH
 require_env STATE_FILE
@@ -22,8 +24,15 @@ require_env VMANGOS_REPOSITORY_NAME
 
 repo="$VMANGOS_REPOSITORY_OWNER/$VMANGOS_REPOSITORY_NAME"
 
-if [[ ! -f "$STATE_FILE" ]]; then
-  fail "State file '$STATE_FILE' does not exist."
+# A state file `jq` cannot read as an object would make the writeback's
+# comparison read as "already up to date" and silently drop an edit the walk
+# just found.
+if ! jq -e '
+  type == "object"
+  and all(.. | objects | select(has("commit")) | .commit;
+          type == "string" and length == 40 and test("^[0-9a-f]{40}$"))
+' "$STATE_FILE" >/dev/null; then
+  fail "State file '$STATE_FILE' is missing, is not a JSON object, or holds a malformed commit hash."
 fi
 
 if [[ "$LAST_BUILT_COMMIT_HASH" == "$CURRENT_COMMIT_HASH" ]]; then
@@ -39,27 +48,31 @@ latest_subjects=("" "" "" "")
 
 echo "Scanning '$repo' for migration edits between $LAST_BUILT_COMMIT_HASH and $CURRENT_COMMIT_HASH..."
 
-# The compare endpoint returns commits oldest-first across pages; we reverse it
-# so we can short-circuit per database once the newest hit is found.
-commit_hashes_oldest_first="$(gh api --paginate \
-  "repos/$repo/compare/$LAST_BUILT_COMMIT_HASH...$CURRENT_COMMIT_HASH" \
-  --jq '.commits[].sha')"
+clone_dir="$(mktemp -d)"
+trap 'rm -rf "$clone_dir"' EXIT
 
-if [[ -z "$commit_hashes_oldest_first" ]]; then
+# Blobless so the clone carries commits and trees but no file contents, which
+# is all `git diff-tree` needs to report paths and statuses.
+git clone --filter=blob:none --no-checkout --quiet \
+  "https://github.com/$repo.git" "$clone_dir"
+
+# Merge commits are excluded because their diff against the first parent would
+# attribute the merged branch's file changes to the merge commit itself, which
+# would give us the wrong commit hash and subject.
+commit_hashes_newest_first="$(git -C "$clone_dir" rev-list --no-merges --topo-order \
+  "$LAST_BUILT_COMMIT_HASH..$CURRENT_COMMIT_HASH")"
+
+if [[ -z "$commit_hashes_newest_first" ]]; then
   echo "No commits between $LAST_BUILT_COMMIT_HASH and $CURRENT_COMMIT_HASH."
   exit 0
 fi
 
-commit_hashes_newest_first="$(tac <<<"$commit_hashes_oldest_first")"
-commit_hashes_total="$(wc -l <<<"$commit_hashes_newest_first" | tr -d ' ')"
+commit_hashes_total="$(wc -l <<<"$commit_hashes_newest_first")"
 echo "Walking $commit_hashes_total commits newest-first."
 
 found_count=0
 scanned=0
 
-# Each iteration makes one `gh api ...commits/<commit_hash>` call. The 5000
-# calls per hour `GITHUB_TOKEN` rate limit bounds the worst case (~14 months of
-# history from the cutoff anchor on a fresh fork's first build).
 while IFS= read -r commit_hash; do
   [[ -z "$commit_hash" ]] && continue
   scanned=$((scanned + 1))
@@ -70,32 +83,50 @@ while IFS= read -r commit_hash; do
     break
   fi
 
-  commit_data="$(gh api "repos/$repo/commits/$commit_hash")"
-
-  # We skip merge commits because their diff against the first parent would
-  # attribute the merged branch's file changes to the merge commit itself,
-  # which would give us the wrong timestamp and subject.
-  parent_count="$(jq -r '.parents | length' <<<"$commit_data")"
-  if [[ "$parent_count" -ne 1 ]]; then
-    continue
-  fi
-
-  files_json="$(jq -c '.files' <<<"$commit_data")"
-  subject="$(jq -r '.commit.message | split("\n")[0]' <<<"$commit_data")"
+  # `core.quotePath` defaults to true, which wraps a path holding a non-ASCII
+  # byte in quotes and escapes it, and no watched pattern matches such a value.
+  #
+  # Rename detection is limited to exact matches because the similarity scoring
+  # `-M` performs otherwise reads file contents, which a blobless clone has to
+  # fetch one commit at a time. A rename reports both its old and its new path,
+  # and the checks below test both, so a watched file renamed away still
+  # counts.
+  #
+  # A parentless commit reports nothing at all without `--root`, so an
+  # unrelated history grafted into the window would pass as touching no watched
+  # file. The flag changes nothing for every other commit.
+  changed_files="$(git -C "$clone_dir" -c core.quotePath=false diff-tree \
+    --no-commit-id --name-status --root -r -M100% "$commit_hash")"
 
   for i in "${!db_names[@]}"; do
     if [[ -n "${latest_commits[$i]}" ]]; then
       continue
     fi
 
-    suffix="${db_suffixes[$i]}"
-    has_edit="$(jq -r --arg suffix "$suffix" '
-      [.[]
-        | select(.status == "modified" or .status == "renamed" or .status == "removed")
-        | select((.filename | test("^sql/migrations/.*_" + $suffix + "\\.sql$")) or ((.previous_filename // "") | test("^sql/migrations/.*_" + $suffix + "\\.sql$")))
-      ] | length' <<<"$files_json")"
+    # The backslashes are doubled because `awk -v` processes escape sequences
+    # in the value.
+    has_edit="$(awk -F'\t' \
+      -v pattern='^sql/migrations/.*_'"${db_suffixes[$i]}"'\\.sql$' '
+      {
+        status = substr($1, 1, 1)
 
-    if [[ "$has_edit" -gt 0 ]]; then
+        if (status == "R") {
+          previous_path = $2
+          path = $3
+        } else {
+          previous_path = ""
+          path = $2
+        }
+
+        if (status ~ /^[MRDT]$/ && ((path ~ pattern) ||
+          (previous_path != "" && previous_path ~ pattern))) {
+          found = 1
+        }
+      }
+      END { if (found) print "1" }' <<<"$changed_files")"
+
+    if [[ "$has_edit" == "1" ]]; then
+      subject="$(git -C "$clone_dir" log -1 --format=%s "$commit_hash")"
       latest_commits[i]="$commit_hash"
       latest_subjects[i]="$subject"
       found_count=$((found_count + 1))

@@ -8,7 +8,9 @@
 
 set -eu
 
-eval "$(fixuid -q)"
+# Capture the `fixuid -q` exit status first since `eval` discards it.
+fixuid_output="$(fixuid -q)"
+eval "$fixuid_output"
 
 client_data_dir="/opt/vmangos/storage/client-data"
 extracted_data_dir="/opt/vmangos/storage/extracted-data"

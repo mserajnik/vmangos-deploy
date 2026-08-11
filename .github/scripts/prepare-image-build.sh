@@ -145,7 +145,6 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
     require_env OCI_ANNOTATION_DATABASE_DESCRIPTION
     require_env OCI_ANNOTATION_DATABASE_BASE_NAME
 
-    # shellcheck disable=SC2153
     commit_hash="$(trim "$COMMIT_HASH")"
     migration_edits="$(trim "${MIGRATION_EDITS:-}")"
     title="$(trim "$OCI_ANNOTATION_DATABASE_TITLE")"
@@ -185,7 +184,6 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
     repository_name="$(trim "$REPOSITORY_NAME")"
     # shellcheck disable=SC2153
     revision="$(trim "$REVISION")"
-    # shellcheck disable=SC2153
     client_version="$(trim "$CLIENT_VERSION")"
     title="$(trim "$OCI_ANNOTATION_SERVER_TITLE")"
     description="$(trim "$OCI_ANNOTATION_SERVER_DESCRIPTION")"
@@ -218,11 +216,8 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
     require_env OCI_ANNOTATION_DATABASE_DESCRIPTION
     require_env OCI_ANNOTATION_DATABASE_BASE_NAME
 
-    # shellcheck disable=SC2153
     repository_owner="$(trim "$REPOSITORY_OWNER")"
-    # shellcheck disable=SC2153
     repository_name="$(trim "$REPOSITORY_NAME")"
-    # shellcheck disable=SC2153
     revision="$(trim "$REVISION")"
     title="$(trim "$OCI_ANNOTATION_DATABASE_TITLE")"
     description="$(trim "$OCI_ANNOTATION_DATABASE_DESCRIPTION")"

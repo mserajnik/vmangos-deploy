@@ -19,8 +19,14 @@ fi
 
 state_file="$1"
 
-if [[ ! -f "$state_file" ]]; then
-  fail "State file '$state_file' does not exist."
+# A state file `jq` cannot read as an object would yield an empty token, which
+# reads as "no recorded edits".
+if ! jq -e '
+  type == "object"
+  and all(.. | objects | select(has("commit")) | .commit;
+          type == "string" and length == 40 and test("^[0-9a-f]{40}$"))
+' "$state_file" >/dev/null; then
+  fail "State file '$state_file' is missing, is not a JSON object, or holds a malformed commit hash."
 fi
 
 jq -r '

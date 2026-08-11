@@ -39,7 +39,6 @@ if [[ -n "${VMANGOS_REPOSITORY:-}${VMANGOS_LATEST_COMMIT_HASH:-}${VMANGOS_KNOWN_
   require_env VMANGOS_LATEST_COMMIT_HASH
   require_env VMANGOS_KNOWN_COMMIT_HASH
 
-  # shellcheck disable=SC2153
   vmangos_latest_commit_hash="$(trim "$VMANGOS_LATEST_COMMIT_HASH")"
 
   # Configs we mirror as `*.conf.example` and the top-level `CMakeLists.txt`,
@@ -62,7 +61,6 @@ if [[ -n "${MARIADB_DOCKER_REPOSITORY:-}${MARIADB_DOCKER_LATEST_COMMIT_HASH:-}${
   require_env MARIADB_DOCKER_LATEST_COMMIT_HASH
   require_env MARIADB_DOCKER_KNOWN_COMMIT_HASH
 
-  # shellcheck disable=SC2153
   mariadb_docker_latest_commit_hash="$(trim "$MARIADB_DOCKER_LATEST_COMMIT_HASH")"
 
   # Patched MariaDB entrypoint. Our `docker/database/docker-entrypoint.sh`

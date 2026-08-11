@@ -130,11 +130,22 @@ table_exists() {
   local db_name="$1"
   local table_name="$2"
   local count
+  local status
 
+  set +e
   count="$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -N -s -e \
     "SELECT COUNT(*) FROM \`information_schema\`.\`TABLES\` \
     WHERE \`TABLE_SCHEMA\` = '$(sql_escape "$db_name")' \
     AND \`TABLE_NAME\` = '$(sql_escape "$table_name")';")"
+  status=$?
+  set -e
+
+  # This runs as an `if` condition, which suppresses `set -e` for the whole
+  # body, so the query status has to be checked by hand. Without it a failed
+  # query leaves `count` empty, which reads as a negative result.
+  if [[ $status -ne 0 ]]; then
+    vmangos_fail "Failed to read the table list for database '$db_name'."
+  fi
 
   [[ "$count" -gt 0 ]]
 }
@@ -220,11 +231,22 @@ correction_acknowledged() {
   local db_name="$1"
   local commit_hash="$2"
   local count
+  local status
 
+  set +e
   count="$(mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -N -s -e \
     "SELECT COUNT(*) FROM \`migration_corrections\` \
     WHERE \`db_name\` = '$(sql_escape "$db_name")' \
     AND \`commit_hash\` = '$(sql_escape "$commit_hash")';")"
+  status=$?
+  set -e
+
+  # This runs as an `if` condition, which suppresses `set -e` for the whole
+  # body, so the query status has to be checked by hand. Without it a failed
+  # query leaves `count` empty, which reads as a negative result.
+  if [[ $status -ne 0 ]]; then
+    vmangos_fail "Failed to read the migration correction ledger for database '$db_name'."
+  fi
 
   [[ "$count" -gt 0 ]]
 }
@@ -407,7 +429,10 @@ wait_for_change_ack() {
 
 process_custom_sql() {
   local file_directory="$1"
-  local file_count
+  local sql_file
+  local sql_files=()
+  local sql_files_raw
+  local status
 
   if [[ ! -d "$file_directory" ]]; then
     vmangos_log "WARNING: Custom SQL file directory '$file_directory' does not exist." >&2
@@ -418,16 +443,27 @@ process_custom_sql() {
     vmangos_fail "Custom SQL file directory '$file_directory' is not readable by the database user (UID $(id -u)). This is a permission problem on the host: the bind-mounted directory must be readable by that user. Adjust the permissions, then restart."
   fi
 
-  file_count=$(find "$file_directory" -name "*.sql" -type f | wc -l)
-  vmangos_log "Found $file_count custom SQL file(s) to process."
+  # Collect the listing before the loop rather than piping into it, where a
+  # failed `find` would abort with nothing said about which step failed.
+  set +e
+  sql_files_raw="$(find "$file_directory" -type f -name '*.sql')"
+  status=$?
+  set -e
 
-  if [[ "$file_count" -gt 0 ]]; then
-    find "$file_directory" -name "*.sql" -type f | sort | while read -r sql_file; do
-      vmangos_log "Processing custom SQL file '$(basename "$sql_file")'..."
-
-      if ! import_data "mangos" "$sql_file"; then
-        vmangos_log "ERROR: Failed to process custom SQL file '$(basename "$sql_file")'." >&2
-      fi
-    done
+  if [[ $status -ne 0 ]]; then
+    vmangos_fail "Failed to list custom SQL files in '$file_directory'."
   fi
+
+  sql_files_raw="$(sort <<<"$sql_files_raw")"
+  mapfile -t sql_files < <(printf '%s' "$sql_files_raw")
+
+  vmangos_log "Found ${#sql_files[@]} custom SQL file(s) to process."
+
+  for sql_file in "${sql_files[@]}"; do
+    vmangos_log "Processing custom SQL file '$(basename "$sql_file")'..."
+
+    if ! import_data "mangos" "$sql_file"; then
+      vmangos_log "ERROR: Failed to process custom SQL file '$(basename "$sql_file")'." >&2
+    fi
+  done
 }

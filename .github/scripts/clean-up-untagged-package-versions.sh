@@ -37,7 +37,9 @@ package_endpoint="$(package_versions_endpoint "$PACKAGE_OWNER" "$PACKAGE_NAME")"
 package_versions_json="$(gh api --paginate --slurp "$package_endpoint?per_page=100")"
 
 for digest in "${!requested_digests[@]}"; do
-  mapfile -t version_ids < <(
+  # Collect the IDs first: `mapfile` reports only its own status, so a `jq`
+  # failure would silently read as "no untagged versions".
+  version_ids_raw="$(
     jq -r \
       --arg digest "$digest" \
       '.[][] |
@@ -46,7 +48,9 @@ for digest in "${!requested_digests[@]}"; do
          ((.metadata.container.tags // []) | length == 0)
        ) |
        .id' <<<"$package_versions_json"
-  )
+  )"
+
+  mapfile -t version_ids < <(printf '%s' "$version_ids_raw")
 
   if ((${#version_ids[@]} == 0)); then
     printf 'No untagged package version found for %s.\n' "$digest"
@@ -55,9 +59,11 @@ for digest in "${!requested_digests[@]}"; do
 
   for version_id in "${version_ids[@]}"; do
     printf 'Deleting untagged package version %s for %s...\n' "$version_id" "$digest"
+    version_endpoint="$(package_version_endpoint "$PACKAGE_OWNER" "$PACKAGE_NAME" "$version_id")"
+
     gh api \
       --method DELETE \
-      "$(package_version_endpoint "$PACKAGE_OWNER" "$PACKAGE_NAME" "$version_id")" \
+      "$version_endpoint" \
       >/dev/null
   done
 done
