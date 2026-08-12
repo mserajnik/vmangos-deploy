@@ -102,6 +102,7 @@ RUN \
     netcat-openbsd \
     python-is-python3 \
     python3 \
+    tzdata \
     zlib1g && \
   # The Ubuntu 26.04 LTS Docker image has a user called `ubuntu` with UID 1000
   # and GID 1000 by default. Since we allow configuration of the name, UID and
