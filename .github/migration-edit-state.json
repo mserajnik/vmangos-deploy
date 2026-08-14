@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "1b3513846a4dd33260e7709cacba70ec54c60b7a",
-    "subject": "Correct creature static flags based on 1.9 wdb files."
+    "commit": "4c0fa1944bcbdc29a969447e1dc3e517ab7fd5c7",
+    "subject": "Increase timeout timer for Missing In Action."
   },
   "characters": null,
   "realmd": null,
