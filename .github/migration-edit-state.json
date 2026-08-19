@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "4c0fa1944bcbdc29a969447e1dc3e517ab7fd5c7",
-    "subject": "Increase timeout timer for Missing In Action."
+    "commit": "10b20b59b3f5b03de55bc108c40c38fd4af1e267",
+    "subject": "No loot flag was added progressively in some cases."
   },
   "characters": null,
   "realmd": null,
