@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 # This entrypoint script is based on
-# https://github.com/MariaDB/mariadb-docker/blob/f8552c80b5104868ff1bb88851ca976bd99029ee/12.3/docker-entrypoint.sh
+# https://github.com/MariaDB/mariadb-docker/blob/063eb10da092170beea08d2c629b6eb79d28cceb/12.3/docker-entrypoint.sh
 # and might need to get adjusted when the original script gets updated.
 # Formatting, comments and commented out code from the original script have
 # been preserved, where possible, to make it easier to compare this script to
