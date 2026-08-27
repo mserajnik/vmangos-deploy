@@ -8,3 +8,7 @@ ignored:
   # (pin every package version); we intentionally do not pin dependencies so
   # the image stays up-to-date automatically against rolling base images.
   - DL3027
+  # The `MARIADB_*` names are the base image's entrypoint contract and cannot
+  # be renamed. The values are placeholder defaults that the Compose file, the
+  # documented way to run this, always overrides.
+  - DL3064
