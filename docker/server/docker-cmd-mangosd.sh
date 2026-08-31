@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Container command wrapper for the `mangosd` binary. Drops privileges via
-# `fixuid`, validates the bind-mounted config file, warns about deprecated
+# `fixuid`, validates the bind-mounted config file, rejects unsupported
 # `WAIT_*` environment variables, and launches `mangosd`.
 
 set -eu
@@ -21,7 +21,8 @@ if [ ! -f "$config_file" ]; then
 fi
 
 if [ -n "${WAIT_HOSTS:-}" ] || [ -n "${WAIT_TIMEOUT:-}" ]; then
-  echo "[vmangos-deploy]: WARNING: The 'WAIT_HOSTS' and 'WAIT_TIMEOUT' environment variables are deprecated and have no effect. The server containers wait for the database via Docker Compose's 'depends_on: condition: service_healthy' instead. Remove these variables from your Compose configuration. After 2026-08-31, vmangos-deploy will fail to start if these are still set." >&2
+  echo "[vmangos-deploy]: ERROR: The 'WAIT_HOSTS' and 'WAIT_TIMEOUT' environment variables are no longer supported. The server containers wait for the database via Docker Compose's 'depends_on: condition: service_healthy' instead. For details, see the breaking changes section of the README: https://github.com/mserajnik/vmangos-deploy#breaking-changes" >&2
+  exit 1
 fi
 
 exec /opt/vmangos/bin/mangosd -c "$config_file"

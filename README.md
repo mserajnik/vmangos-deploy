@@ -524,12 +524,11 @@ they become irrelevant), sorted by newest first:
   use the bundled `vmangos-healthcheck` wrapper, and the `realmd` and `mangosd`
   services need to wait for the `service_healthy` state of the `database`
   service instead of waiting for the TCP port (`WAIT_HOSTS` and `WAIT_TIMEOUT`
-  are deprecated; after 2026-08-31, vmangos-deploy will fail to start if these
-  are still set). See the
-  [updated example Compose configuration](compose.yaml.example) for the exact
-  configuration. Additionally, the bind mount escape hatch that re-created the
-  world database from a file at `/sql/world-new.sql` is removed; there is no
-  direct replacement. On first startup with the new image, existing
+  are no longer supported; vmangos-deploy will fail to start if these are still
+  set). See the [updated example Compose configuration](compose.yaml.example)
+  for the exact configuration. Additionally, the bind mount escape hatch that
+  re-created the world database from a file at `/sql/world-new.sql` is removed;
+  there is no direct replacement. On first startup with the new image, existing
   installations will see exactly one world database re-creation (or halt) to
   apply the most recent flagged migration edit.
 - __[2024-10-31] - Removal of separate images with anticheat support__: As of
