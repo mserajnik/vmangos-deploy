@@ -5,7 +5,7 @@
 </h1>
 
 [![Lint status][badge-lint-status]][badge-lint-status-url]
-[![Build status][badge-build-status]][badge-build-status-url]\
+[![Build status][badge-build-status]][badge-build-status-url]  
 [![Latest VMaNGOS build][badge-latest-vmangos-build]][badge-latest-vmangos-build-url]
 [![Latest build date][badge-latest-build-date]][badge-latest-build-date-url]
 
@@ -394,7 +394,7 @@ E.g., to create an administrator account, set the account level to `6`.
 > Master-specific behavior will begin to apply to characters on that account.
 > Exactly which behavior applies depends on the account level; you can modify
 > some of this via the [`GM.*` options][mangosd-gm-options] in your
-> `mangosd.conf`.\
+> `mangosd.conf`.  
 > In particular, if you use an account level of `3` or higher, you will
 > probably want to set [`GM.CheatGod = 0`][mangosd-gm-options-cheat-god] if you
 > intend to actually play normally with the account, because otherwise your
