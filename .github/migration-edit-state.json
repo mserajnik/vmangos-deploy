@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "10b20b59b3f5b03de55bc108c40c38fd4af1e267",
-    "subject": "No loot flag was added progressively in some cases."
+    "commit": "bae0a8c3a45f6b408274ce4c88d0b0f240b90805",
+    "subject": "Add scripts for neutral banners in arathi basin too."
   },
   "characters": null,
   "realmd": null,
