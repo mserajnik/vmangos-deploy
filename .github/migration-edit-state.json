@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "bae0a8c3a45f6b408274ce4c88d0b0f240b90805",
-    "subject": "Add scripts for neutral banners in arathi basin too."
+    "commit": "8784e676184c93ad6241dd2251b59c53aafd75ad",
+    "subject": "Restore wrongfully deleted firework gameobject."
   },
   "characters": null,
   "realmd": null,
