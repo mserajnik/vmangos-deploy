@@ -1,7 +1,7 @@
 {
   "world": {
-    "commit": "8784e676184c93ad6241dd2251b59c53aafd75ad",
-    "subject": "Restore wrongfully deleted firework gameobject."
+    "commit": "3dc139c5d1ae7ba6b84d19d01818251a1396b62c",
+    "subject": "Add all missing server side trap templates."
   },
   "characters": null,
   "realmd": null,
