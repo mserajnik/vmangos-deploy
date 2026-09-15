@@ -17,7 +17,7 @@ vmangos_fail() {
 }
 
 sql_escape() {
-  printf '%s' "$1" | sed "s/'/''/g"
+  printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e "s/'/''/g"
 }
 
 mark_database_ready() {
