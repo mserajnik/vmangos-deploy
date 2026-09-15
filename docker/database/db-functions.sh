@@ -457,18 +457,32 @@ process_custom_sql() {
   fi
 
   # Collect the listing before the loop rather than piping into it, where a
-  # failed `find` would abort with nothing said about which step failed.
+  # failed `find` would abort with nothing said about which step failed. The
+  # listing is NUL-separated and goes through a file, because these names come
+  # from a user's bind mount and a command substitution drops a NUL byte.
+  sql_files_raw="$(mktemp)"
   set +e
-  sql_files_raw="$(find "$file_directory" -type f -name '*.sql')"
+  find "$file_directory" -type f -name '*.sql' -print0 >"$sql_files_raw"
   status=$?
   set -e
 
   if [[ $status -ne 0 ]]; then
+    rm -f "$sql_files_raw"
     vmangos_fail "Failed to list custom SQL files in '$file_directory'."
   fi
 
-  sql_files_raw="$(sort <<<"$sql_files_raw")"
-  mapfile -t sql_files < <(printf '%s' "$sql_files_raw")
+  set +e
+  sort -z -o "$sql_files_raw" "$sql_files_raw"
+  status=$?
+  set -e
+
+  if [[ $status -ne 0 ]]; then
+    rm -f "$sql_files_raw"
+    vmangos_fail "Failed to sort the custom SQL file listing in '$file_directory'."
+  fi
+
+  mapfile -d '' -t sql_files <"$sql_files_raw"
+  rm -f "$sql_files_raw"
 
   vmangos_log "Found ${#sql_files[@]} custom SQL file(s) to process."
 
