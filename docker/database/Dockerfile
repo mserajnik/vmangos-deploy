@@ -1,3 +1,8 @@
+# check=skip=SecretsUsedInArgOrEnv
+# The MariaDB defaults below are placeholders a user overrides in
+# `compose.yaml`, not secrets. This directive has to precede the license
+# header, because the builder reads it only as the first line.
+
 # SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
