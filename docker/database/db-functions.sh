@@ -397,7 +397,7 @@ For each affected database:
   2. Apply the equivalent SQL to the running database yourself:
        docker compose exec database mariadb -u root -p <database>
      (mariadb will prompt for the password; it matches your
-     `MARIADB_ROOT_PASSWORD` setting in `compose.yaml`.)
+     'MARIADB_ROOT_PASSWORD' setting in 'compose.yaml'.)
   3. When you have applied the changes, confirm by running on the host:
        docker compose exec database vmangos-confirm-changes
 
