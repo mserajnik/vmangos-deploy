@@ -56,6 +56,15 @@ trap 'rm -rf "$clone_dir"' EXIT
 git clone --filter=blob:none --no-checkout --quiet \
   "https://github.com/$repo.git" "$clone_dir"
 
+# Neither the floor nor the tip is guaranteed to still be reachable. Say which
+# revision is gone; without this the walk below dies in the blobless clone's
+# lazy fetch with a raw `not our ref`.
+for revision in "$LAST_BUILT_COMMIT_HASH" "$CURRENT_COMMIT_HASH"; do
+  if ! git -C "$clone_dir" cat-file -e "$revision^{commit}"; then
+    fail "Commit $revision is not available in '$repo'."
+  fi
+done
+
 # Merge commits are excluded because their diff against the first parent would
 # attribute the merged branch's file changes to the merge commit itself, which
 # would give us the wrong commit hash and subject.
