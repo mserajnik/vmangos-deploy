@@ -143,7 +143,7 @@ or `Anticheat.*` and `Warden.*` options. Descriptions are provided for each
 option in the configuration files, so you should be able to find your way
 around easily.
 
-> [!CAUTION]
+> [!WARNING]
 > Options relating to certain things that vmangos-deploy relies on to work
 > correctly (like the database connections or configured directories such as
 > the `DataDir` or the `LogsDir`) should not be adjusted unless you absolutely
@@ -219,7 +219,7 @@ should also be of interest; changing the `VMANGOS_REALMLIST_ADDRESS` to a LAN
 IP, a WAN IP or a domain name is required if you want to allow non-local
 connections.
 
-> [!CAUTION]
+> [!WARNING]
 > Anything in your `compose.yaml` that is not commented or explicitly mentioned
 > in this README, regardless of the section, is likely something you do not
 > have to (or, in some cases, _must not_) change. Doing so may lead to
@@ -342,7 +342,7 @@ This pulls the Docker images first and afterwards automatically creates and
 starts the containers. During the first startup it might take a little longer
 until the server becomes available due to the initial database creation.
 
-> [!CAUTION]
+> [!WARNING]
 > Make sure to not (accidentally) stop VMaNGOS before the database creation
 > process has finished; otherwise, you will likely end up with a broken
 > database and will have to delete and re-create it.
@@ -479,7 +479,7 @@ resolve:
 vmangos-deploy will then record the acknowledgement and continue startup. If
 you instead want to abort, run `docker compose down`.
 
-> [!CAUTION]
+> [!WARNING]
 > When you run `vmangos-confirm-changes`, vmangos-deploy treats the listed
 > commits as applied and continues. It does not check your database to verify
 > that the changes you made match what the commits describe. If your manual fix
