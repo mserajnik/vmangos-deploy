@@ -66,13 +66,14 @@ env:
   OCI_ANNOTATION_DOCUMENTATION: https://github.com/${{ github.repository }}/blob/master/README.md
   OCI_ANNOTATION_SOURCE: https://github.com/${{ github.repository }}
   OCI_ANNOTATION_VENDOR: ${{ vars.OCI_ANNOTATION_VENDOR || github.repository_owner }}
-  OCI_ANNOTATION_LICENSES: GPL-2.0-or-later
   OCI_ANNOTATION_SERVER_TITLE: ${{ inputs.workflow_mode == 'custom' && 'vmangos-deploy - Custom VMaNGOS server image' || 'vmangos-deploy - VMaNGOS server image' }}
   OCI_ANNOTATION_SERVER_DESCRIPTION: VMaNGOS is a server emulator supporting versions 1.5.1 to 1.12.1.
   OCI_ANNOTATION_SERVER_BASE_NAME: ubuntu:26.04
+  OCI_ANNOTATION_SERVER_LICENSES: AGPL-3.0-or-later AND GPL-2.0-or-later
   OCI_ANNOTATION_DATABASE_TITLE: ${{ inputs.workflow_mode == 'custom' && 'vmangos-deploy - Custom VMaNGOS database image' || 'vmangos-deploy - VMaNGOS database image' }}
   OCI_ANNOTATION_DATABASE_DESCRIPTION: Database for the VMaNGOS server emulator.
   OCI_ANNOTATION_DATABASE_BASE_NAME: mariadb:12.3
+  OCI_ANNOTATION_DATABASE_LICENSES: AGPL-3.0-or-later AND GPL-2.0-only AND GPL-2.0-or-later
 
 jobs:
   prepare:

@@ -22,7 +22,6 @@ require_env OCI_ANNOTATION_URL
 require_env OCI_ANNOTATION_DOCUMENTATION
 require_env OCI_ANNOTATION_SOURCE
 require_env OCI_ANNOTATION_VENDOR
-require_env OCI_ANNOTATION_LICENSES
 
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 # shellcheck disable=SC2153
@@ -48,6 +47,7 @@ is_multi_arch="false"
 title=""
 description=""
 base_name=""
+licenses=""
 ref_name=""
 image_name=""
 dockerfile=""
@@ -86,13 +86,17 @@ esac
 case "$IMAGE_KIND" in
   server)
     require_env IMAGE_NAME_SERVER
+    require_env OCI_ANNOTATION_SERVER_LICENSES
     image_name="$IMAGE_NAME_SERVER"
     dockerfile="./docker/server/Dockerfile"
+    licenses="$(trim "$OCI_ANNOTATION_SERVER_LICENSES")"
     ;;
   database)
     require_env IMAGE_NAME_DATABASE
+    require_env OCI_ANNOTATION_DATABASE_LICENSES
     image_name="$IMAGE_NAME_DATABASE"
     dockerfile="./docker/database/Dockerfile"
+    licenses="$(trim "$OCI_ANNOTATION_DATABASE_LICENSES")"
     ;;
   *)
     fail "Unsupported image kind '$IMAGE_KIND'."
@@ -268,7 +272,7 @@ fi
 
 metadata_entries+=(
   "vendor=$oci_annotation_vendor"
-  "licenses=$OCI_ANNOTATION_LICENSES"
+  "licenses=$licenses"
   "ref.name=$ref_name"
   "title=$title"
   "description=$description"
