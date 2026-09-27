@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
+# SPDX-FileCopyrightText: MariaDB Docker contributors <https://github.com/MariaDB/mariadb-docker>
 # SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: GPL-2.0-only
 
 # This entrypoint script is based on
 # https://github.com/MariaDB/mariadb-docker/blob/063eb10da092170beea08d2c629b6eb79d28cceb/12.3/docker-entrypoint.sh
