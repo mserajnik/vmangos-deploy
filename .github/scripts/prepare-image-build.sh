@@ -13,6 +13,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source-path=SCRIPTDIR
 source "$script_dir/helpers.sh"
 
+require_env GITHUB_SHA
 require_env REGISTRY
 require_env WORKFLOW_MODE
 require_env IMAGE_KIND
@@ -24,6 +25,7 @@ require_env OCI_ANNOTATION_SOURCE
 require_env OCI_ANNOTATION_VENDOR
 
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+repository_commit_hash="$(trim "$GITHUB_SHA")"
 # shellcheck disable=SC2153
 architectures="$(trim "$ARCHITECTURES")"
 # shellcheck disable=SC2153
@@ -299,6 +301,19 @@ if ((${#label_only_entries[@]} > 0)); then
     label_lines+=("org.opencontainers.image.$key=$value")
   done
 fi
+
+extra_entries=(
+  "io.github.mserajnik.vmangos-deploy.revision=$repository_commit_hash"
+)
+
+for entry in "${extra_entries[@]}"; do
+  label_lines+=("$entry")
+  manifest_annotation_lines+=("manifest:$entry")
+
+  if [[ "$is_multi_arch" == "true" ]]; then
+    index_annotation_lines+=("index:$entry")
+  fi
+done
 
 printf -v tags_output '%s,' "${tags[@]}"
 tags_output="${tags_output%,}"
