@@ -23,3 +23,12 @@ path = [
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2023-2026 Michael Serajnik <https://github.com/mserajnik>"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "docker/patches/**/*.patch"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "VMaNGOS <https://github.com/vmangos/core>",
+  "2023-2026 Michael Serajnik <https://github.com/mserajnik>",
+]
+SPDX-License-Identifier = "GPL-2.0-or-later"

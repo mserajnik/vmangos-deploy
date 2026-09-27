@@ -26,6 +26,8 @@ ARG VMANGOS_FAIL_ON_PATCH_ERROR
 ARG VMANGOS_WORLD_DB_REPOSITORY_URL
 ARG VMANGOS_WORLD_DB_DUMP_NAME
 
+COPY ./docker/patches /build/patches
+
 RUN \
   apt update && \
   apt install -y --no-install-recommends \
@@ -34,27 +36,34 @@ RUN \
   git clone "$VMANGOS_REPOSITORY_URL" /build/core && \
   cd /build/core && \
   git checkout "$VMANGOS_REVISION" && \
+  # The bundled patches apply to every build. A custom build can also name a
+  # repository with additional patches, which apply after the bundled ones.
   if [ -n "$VMANGOS_PATCHES_REPOSITORY_URL" ]; then \
-    echo "Cloning and applying patches from $VMANGOS_PATCHES_REPOSITORY_URL"; \
-    git clone "$VMANGOS_PATCHES_REPOSITORY_URL" /build/patches && \
-    patch_count=0 && \
-    for patch in /build/patches/*.patch; do \
-      if [ -f "$patch" ]; then \
-        echo "Applying patch $patch"; \
-        if ! git apply "$patch"; then \
-          echo "Failed to apply patch $patch"; \
-          if [ "$VMANGOS_FAIL_ON_PATCH_ERROR" = "1" ]; then \
-            exit 1; \
-          fi; \
+    echo "Cloning additional patches from $VMANGOS_PATCHES_REPOSITORY_URL"; \
+    git clone "$VMANGOS_PATCHES_REPOSITORY_URL" /build/additional-patches || exit 1; \
+  fi && \
+  patch_count=0 && \
+  additional_patch_count=0 && \
+  for patch in /build/patches/*.patch /build/additional-patches/*.patch; do \
+    if [ -f "$patch" ]; then \
+      echo "Applying patch $patch"; \
+      if ! git apply "$patch"; then \
+        echo "Failed to apply patch $patch"; \
+        if [ "$VMANGOS_FAIL_ON_PATCH_ERROR" = "1" ]; then \
+          exit 1; \
         fi; \
-        patch_count=$((patch_count + 1)); \
       fi; \
-    done; \
-    if [ "$patch_count" -eq 0 ]; then \
-      echo "No patches found"; \
+      patch_count=$((patch_count + 1)); \
+      case "$patch" in \
+        /build/additional-patches/*) additional_patch_count=$((additional_patch_count + 1)) ;; \
+      esac; \
     fi; \
-  else \
-    echo "No repository to apply patches from provided"; \
+  done && \
+  if [ "$patch_count" -eq 0 ]; then \
+    echo "No patches found"; \
+  fi && \
+  if [ -n "$VMANGOS_PATCHES_REPOSITORY_URL" ] && [ "$additional_patch_count" -eq 0 ]; then \
+    echo "No additional patches found"; \
   fi && \
   mkdir -p /sql/custom && \
   mkdir -p /sql/migrations && \

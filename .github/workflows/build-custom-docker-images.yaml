@@ -34,7 +34,7 @@ on:
       patches_repository_url:
         type: string
         required: false
-        description: (Optional) A URL to a repository that contains patches to apply to the VMaNGOS code (patches have to end in `.patch` and be located in the root of the repository)
+        description: (Optional) A URL to a repository that contains additional patches to apply to the VMaNGOS code after the bundled ones (patches have to end in `.patch` and be located in the root of the repository)
       custom_tag_fragment:
         type: string
         required: false

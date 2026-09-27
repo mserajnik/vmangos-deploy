@@ -130,7 +130,6 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
     build_args+=(
       "VMANGOS_REVISION=$commit_hash"
       "VMANGOS_CLIENT_VERSION=$client_version"
-      "VMANGOS_PATCHES_REPOSITORY_URL=$vmangos_patches_repository_url"
       "VMANGOS_FAIL_ON_PATCH_ERROR=1"
     )
 
@@ -159,7 +158,6 @@ case "$WORKFLOW_MODE:$IMAGE_KIND" in
 
     build_args+=(
       "VMANGOS_REVISION=$commit_hash"
-      "VMANGOS_PATCHES_REPOSITORY_URL=$vmangos_patches_repository_url"
       "VMANGOS_FAIL_ON_PATCH_ERROR=1"
       "VMANGOS_MIGRATION_EDITS=$migration_edits"
     )

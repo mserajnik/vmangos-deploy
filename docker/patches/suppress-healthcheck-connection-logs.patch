@@ -1,0 +1,76 @@
+diff --git a/src/game/Server/WorldSocket.cpp b/src/game/Server/WorldSocket.cpp
+index ca250a9d9..9f940bef9 100644
+--- a/src/game/Server/WorldSocket.cpp
++++ b/src/game/Server/WorldSocket.cpp
+@@ -83,7 +83,8 @@ WorldSocket::WorldSocket(IO::Networking::AsyncSocket socket)
+ WorldSocket::~WorldSocket()
+ {
+     CloseSocket();
+-    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection closed", GetRemoteIpString().c_str());
++    if (GetRemoteIpString() != "127.0.0.1")
++        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection closed", GetRemoteIpString().c_str());
+ 
+     if (m_sessionNoAuthTimeout)
+     {
+diff --git a/src/game/Server/WorldSocketMgr.cpp b/src/game/Server/WorldSocketMgr.cpp
+index 3f49b768d..47c6e93a4 100644
+--- a/src/game/Server/WorldSocketMgr.cpp
++++ b/src/game/Server/WorldSocketMgr.cpp
+@@ -110,7 +110,8 @@ void WorldSocketMgr::OnNewClientConnected(IO::Networking::SocketDescriptor socke
+     else
+     {
+         // no proxy, we can start directly
+-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection accepted", worldSocket->GetRemoteIpString().c_str());
++        if (worldSocket->GetRemoteIpString() != "127.0.0.1")
++            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection accepted", worldSocket->GetRemoteIpString().c_str());
+         worldSocket->Start();
+     }
+ }
+diff --git a/src/realmd/AuthSocket.cpp b/src/realmd/AuthSocket.cpp
+index 5e64ee223..2afb10cfb 100644
+--- a/src/realmd/AuthSocket.cpp
++++ b/src/realmd/AuthSocket.cpp
+@@ -89,7 +89,8 @@ AuthSocket::~AuthSocket()
+     if (m_sessionDurationTimeout)
+         m_sessionDurationTimeout->Cancel();
+ 
+-    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection closed", GetRemoteIpString().c_str());
++    if (GetRemoteIpString() != "127.0.0.1")
++        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection closed", GetRemoteIpString().c_str());
+ }
+ 
+ AccountTypes AuthSocket::GetSecurityOn(uint32 realmId) const
+diff --git a/src/realmd/Main.cpp b/src/realmd/Main.cpp
+index 739c5df28..065409dde 100644
+--- a/src/realmd/Main.cpp
++++ b/src/realmd/Main.cpp
+@@ -270,7 +270,8 @@ extern int main(int argc, char** argv)
+         else
+         {
+             // no proxy, we can start directly
+-            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection accepted", authSocket->GetRemoteIpString().c_str());
++            if (authSocket->GetRemoteIpString() != "127.0.0.1")
++                sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection accepted", authSocket->GetRemoteIpString().c_str());
+             authSocket->Start();
+         }
+     });
+diff --git a/src/shared/IO/Networking/AsyncSocket_posix.cpp b/src/shared/IO/Networking/AsyncSocket_posix.cpp
+index 9b9e250b0..b7b26da00 100644
+--- a/src/shared/IO/Networking/AsyncSocket_posix.cpp
++++ b/src/shared/IO/Networking/AsyncSocket_posix.cpp
+@@ -510,11 +510,13 @@ void IO::Networking::AsyncSocket::OnIoEvent(uint32_t event)
+         socklen_t errLen = sizeof(error);
+         if (::getsockopt(m_descriptor.GetNativeSocket(), SOL_SOCKET, SO_ERROR, (void*)&error, &errLen) == 0)
+         {
+-            sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] epoll reported socket error: %s", GetRemoteIpString().c_str(), SystemErrorToString(error).c_str());
++            if (GetRemoteIpString() != "127.0.0.1")
++                sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] epoll reported socket error: %s", GetRemoteIpString().c_str(), SystemErrorToString(error).c_str());
+         }
+         else
+         {
+-            sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] epoll reported socket error: Internal error", GetRemoteIpString().c_str());
++            if (GetRemoteIpString() != "127.0.0.1")
++                sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] epoll reported socket error: Internal error", GetRemoteIpString().c_str());
+         }
+         StopPendingTransactionsAndForceClose();
+     }

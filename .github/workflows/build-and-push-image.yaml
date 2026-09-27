@@ -60,7 +60,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME_SERVER: ${{ inputs.workflow_mode == 'custom' && format('{0}/vmangos-server-custom', github.repository_owner) || format('{0}/vmangos-server', github.repository_owner) }}
   IMAGE_NAME_DATABASE: ${{ inputs.workflow_mode == 'custom' && format('{0}/vmangos-database-custom', github.repository_owner) || format('{0}/vmangos-database', github.repository_owner) }}
-  VMANGOS_PATCHES_REPOSITORY_URL: ${{ inputs.workflow_mode == 'default' && 'https://github.com/mserajnik/vmangos-deploy-patches.git' || inputs.patches_repository_url }}
+  VMANGOS_PATCHES_REPOSITORY_URL: ${{ inputs.patches_repository_url }}
   OCI_ANNOTATION_AUTHORS: ${{ vars.OCI_ANNOTATION_AUTHORS || github.repository_owner }}
   OCI_ANNOTATION_URL: https://github.com/${{ github.repository }}
   OCI_ANNOTATION_DOCUMENTATION: https://github.com/${{ github.repository }}/blob/master/README.md
