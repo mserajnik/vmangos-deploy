@@ -1,0 +1,17 @@
+This image is built from https://github.com/mserajnik/vmangos-deploy, which
+documents the image and any changes it makes to third-party software. The
+image's `io.github.mserajnik.vmangos-deploy.revision` label records the
+revision of the repository it was built from, and `docker inspect` shows it.
+
+The image contains the repository's own code and third-party open-source
+software, each under its own license. The repository states the license of its
+own code, and each third-party component states its license in its source
+repository. The image's `org.opencontainers.image.licenses` label names the
+licenses of its main software.
+
+Some of these licenses ask for their text to be included when software is
+distributed in binary form. Apart from what the base image and its packages
+install, this image deliberately includes no license texts, as is common for
+container images. It is only available from the GitHub Container Registry, so
+anyone who pulls it can also reach the sources and licenses of its components,
+which are all open source and publicly available.

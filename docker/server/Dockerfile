@@ -155,6 +155,8 @@ COPY --from=build --exclude=vmangos/etc* --chown=$VMANGOS_USER_NAME:$VMANGOS_GRO
 COPY --chmod=755 ./docker/server/docker-cmd-mangosd.sh /usr/local/bin/mangosd
 COPY --chmod=755 ./docker/server/docker-cmd-realmd.sh /usr/local/bin/realmd
 COPY --chmod=755 ./docker/server/docker-cmd-extract-client-data.sh /usr/local/bin/extract-client-data
+# Ubuntu keeps package license information under `/usr/share/doc`.
+COPY ./docker/docker-notice.txt /usr/share/doc/vmangos-deploy/NOTICE
 
 RUN \
   chmod +x /opt/vmangos/bin/* && \
