@@ -1,0 +1,103 @@
+# The build of every image, which the build workflow passes to
+# docker-deploy-workflows. See its `docs/deploy-yaml.md` for the keys.
+
+primary-source: core
+
+# A `pin` is the commit at which the watched files were last reviewed. After
+# updating the local copies, set it to the commit a failing check suggests.
+sources:
+  core:
+    repository: vmangos/core
+    branch: development
+    pin: 18e37d1fe736a46ff916404d13e58302b5f05ef0
+    cutoff: c53391ecfb2b8b936432c369aad5cabd6c996f06
+
+# One variant per client version. Each gets its own server image, and all of
+# them share the database image.
+variants:
+  "5875":
+    moving-tags: [latest]
+  "5464": {}
+  "5302": {}
+  "5086": {}
+  "4878": {}
+  "4695": {}
+  "4544": {}
+  "4449": {}
+
+drift:
+  upstreams:
+    # Bump the commit in `docker/database/Dockerfile` and in the header of
+    # `docker/database/docker-entrypoint.sh` along with this pin.
+    mariadb:
+      repository: MariaDB/mariadb-docker
+      branch: master
+      pin: 063eb10da092170beea08d2c629b6eb79d28cceb
+  # A change upstream that breaks a patch already fails the build.
+  checks:
+    # A new `find_package(...)` in `CMakeLists.txt` can add a package the
+    # server image has to install. The configuration templates are the sources
+    # of the `*.conf.example` files under `config/`.
+    - source: core
+      files: [CMakeLists.txt, src/mangosd/mangosd.conf.dist.in, src/realmd/realmd.conf.dist.in]
+    # `docker/database/docker-entrypoint.sh` builds on this entrypoint.
+    - {source: mariadb, files: [12.3/docker-entrypoint.sh]}
+
+# A rule has to watch or exclude every file that a `claim` matches, or the run
+# fails.
+migration-edits:
+  targets:
+    world:
+      remedy: recreate
+      sources:
+        core:
+          migrations: [sql/migrations/**/*_world.sql]
+          claim: [sql/migrations/**/*.sql]
+    characters:
+      remedy: manual
+      sources:
+        core: {migrations: [sql/migrations/**/*_characters.sql]}
+    realmd:
+      remedy: manual
+      sources:
+        core: {migrations: [sql/migrations/**/*_logon.sql]}
+    logs:
+      remedy: manual
+      sources:
+        core: {migrations: [sql/migrations/**/*_logs.sql]}
+
+images:
+  - name: server
+    package: vmangos-server
+    dockerfile: docker/server/Dockerfile
+    tags: ["{variant}-{commit:core}", "{variant}"]
+    build-args:
+      VMANGOS_REVISION: "{commit:core}"
+      VMANGOS_CLIENT_VERSION: "{variant}"
+      VMANGOS_FAIL_ON_PATCH_ERROR: "1"
+    oci:
+      title: vmangos-deploy - VMaNGOS server image
+      description: VMaNGOS is a server emulator supporting versions 1.5.1 to 1.12.1.
+      base-name: ubuntu:26.04
+      licenses: AGPL-3.0-or-later AND GPL-2.0-or-later
+      version: "{commit:core}"
+  # The client versions all run the same database, so one image gets built.
+  - name: database
+    package: vmangos-database
+    dockerfile: docker/database/Dockerfile
+    tags: ["{commit:core}"]
+    share: {"5875": ["5464", "5302", "5086", "4878", "4695", "4544", "4449"]}
+    build-args:
+      VMANGOS_REVISION: "{commit:core}"
+      VMANGOS_FAIL_ON_PATCH_ERROR: "1"
+      VMANGOS_MIGRATION_EDITS: "{migration-edits}"
+    oci:
+      title: vmangos-deploy - VMaNGOS database image
+      description: Database for the VMaNGOS server emulator.
+      base-name: mariadb:12.3
+      licenses: AGPL-3.0-or-later AND GPL-2.0-only AND GPL-2.0-or-later
+      version: "{commit:core}"
+
+badges:
+  - {file: build-badge.json, variant: "5875", label: Latest VMaNGOS build, message: "{short-commit:core}", color: blue}
+  - {file: date-badge.json, label: Latest build date, message: "{timestamp}", color: orange}

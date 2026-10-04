@@ -1,0 +1,70 @@
+diff --git a/src/shared/Config/Config.cpp b/src/shared/Config/Config.cpp
+index 031c3ad3..dd25706e 100644
+--- a/src/shared/Config/Config.cpp
++++ b/src/shared/Config/Config.cpp
+@@ -16,6 +16,9 @@
+ 
+ #include "Config.h"
+ #include "Policies/SingletonImp.h"
++#include <cstdlib>
++#include <map>
++#include <string>
+ 
+ INSTANTIATE_SINGLETON_2(Config, Config::Lock);
+ INSTANTIATE_CLASS_MUTEX(Config, std::shared_timed_mutex);
+@@ -159,8 +162,55 @@ std::string Config::GetFilename() const
+     return m_fileName;
+ }
+ 
++// vmangos-deploy: the container setup depends on these options, so the image
++// sets them whatever the configuration file says. The database connections
++// take their user and password from the environment.
++static bool GetPinnedValue(char const* name, std::string &result)
++{
++    static std::map<std::string, std::string> const pinnedValues = {
++        {"BindIP", "0.0.0.0"},
++        {"DataDir", "/opt/vmangos/storage/data"},
++        {"HonorDir", "/opt/vmangos/storage/honor"},
++        {"LogsDir", "/opt/vmangos/storage/logs"},
++        {"Ra.IP", "0.0.0.0"},
++        {"Ra.Port", "3443"},
++        {"RealmServerPort", "3724"},
++        {"SOAP.IP", "0.0.0.0"},
++        {"SOAP.Port", "7878"},
++        {"Warden.ModuleDir", "/opt/vmangos/storage/warden-modules"},
++        {"WorldServerPort", "8085"},
++    };
++    static std::map<std::string, std::string> const databaseNames = {
++        {"CharacterDatabase.Info", "characters"},
++        {"LoginDatabase.Info", "realmd"},
++        {"LoginDatabaseInfo", "realmd"},
++        {"LogsDatabase.Info", "logs"},
++        {"WorldDatabase.Info", "mangos"},
++    };
++
++    if (auto itr = pinnedValues.find(name); itr != pinnedValues.end())
++    {
++        result = itr->second;
++        return true;
++    }
++
++    if (auto itr = databaseNames.find(name); itr != databaseNames.end())
++    {
++        char const* user = std::getenv("VMANGOS_DATABASE_USER");
++        char const* password = std::getenv("VMANGOS_DATABASE_PASSWORD");
++        result = std::string("database;3306;") + (user ? user : "") + ";" +
++                 (password ? password : "") + ";" + itr->second;
++        return true;
++    }
++
++    return false;
++}
++
+ bool Config::GetValueHelper(char const* name, std::string &result) const
+ {
++    if (GetPinnedValue(name, result))
++        return true;
++
+     std::shared_lock<std::shared_timed_mutex> guard(m_configLock);
+ 
+     auto itr = m_configMap.find(name);

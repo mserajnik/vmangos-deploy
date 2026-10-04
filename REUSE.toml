@@ -1,0 +1,40 @@
+version = 1
+
+[[annotations]]
+path = [
+  ".github/ISSUE_TEMPLATE/*",
+  ".github/logo.webp",
+  "README.md",
+  "docker/docker-notice.txt",
+  "docs/*.md",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023-2026 Michael Serajnik <https://github.com/mserajnik>"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+[[annotations]]
+path = [
+  ".dockerignore",
+  ".dprint.jsonc",
+  ".editorconfig",
+  ".gitattributes",
+  ".github/deploy.yaml",
+  ".gitignore",
+  ".hadolint.yaml",
+  ".shellcheckrc",
+  "compose.yaml.example",
+  "config/*.conf.example",
+  "storage/database/custom-sql/*.sql.example",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023-2026 Michael Serajnik <https://github.com/mserajnik>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "docker/patches/**/*.patch"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "VMaNGOS <https://github.com/vmangos/core>",
+  "2023-2026 Michael Serajnik <https://github.com/mserajnik>",
+]
+SPDX-License-Identifier = "GPL-2.0-or-later"

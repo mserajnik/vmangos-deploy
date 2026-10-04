@@ -1,0 +1,152 @@
+# See `docs/compose.md`.
+
+services:
+  database:
+    image: ghcr.io/mserajnik/vmangos-database
+    restart: unless-stopped
+    stop_grace_period: 2m # Gives a running startup step time to finish during shutdown.
+    healthcheck:
+      test: ['CMD', 'vmangos-healthcheck']
+      interval: 1m
+      timeout: 3s
+      retries: 5
+      start_period: 24h
+    volumes:
+      - vmangos-database:/var/lib/mysql
+      - ./storage/database/custom-sql:/sql/custom:ro
+    environment:
+      - VMANGOS_DEPLOY_VERSION=1 # See `docs/breaking-changes.md`.
+      - TZ=Etc/UTC # The time zone, usually your host's.
+      - MARIADB_USER=mangos # Takes effect on the first start only.
+      - MARIADB_PASSWORD=mangos # Takes effect on the first start only.
+      - MARIADB_ROOT_PASSWORD=password # Takes effect on the first start only.
+      - VMANGOS_REALMLIST_NAME=VMaNGOS
+      - VMANGOS_REALMLIST_ADDRESS=127.0.0.1 # The LAN or WAN address or the domain name that clients connect to.
+      - VMANGOS_REALMLIST_PORT=8085 # The host port of the `mangosd` service.
+      - VMANGOS_REALMLIST_ICON=1 # 0 = Normal, 1 = PvP, 6 = RP, 8 = RP PvP.
+      - VMANGOS_REALMLIST_TIMEZONE=0 # 2 = United States, 3 = Oceanic, 4 = Latin America, 8 = English, 9 = German, 10 = French, 11 = Spanish, 12 = Russian.
+      - VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0 # 0 admits regular players.
+      - VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1 # Re-creates the world database to apply a migration edit.
+      - VMANGOS_HALT_ON_MIGRATION_EDITS=1 # Halts the start until you apply a migration edit to a database with player data.
+      - VMANGOS_PROCESS_CUSTOM_SQL=1 # Runs your custom SQL files on every start.
+
+  realmd:
+    image: ghcr.io/mserajnik/vmangos-server:5875
+    command: realmd
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'nc', '-z', 'localhost', '3724']
+      interval: 1m
+      timeout: 3s
+      retries: 5
+      start_period: 5m
+    ports:
+      - 3724:3724 # To use another port, change the host port, left of the colon.
+    volumes:
+      - ./config/realmd.conf:/opt/vmangos/config/realmd.conf:ro
+      - ./storage/realmd/logs:/opt/vmangos/storage/logs
+    environment:
+      - VMANGOS_DEPLOY_VERSION=1 # See `docs/breaking-changes.md`.
+      - VMANGOS_UID=1000 # On Linux, the owner of the writable bind mounts. Do not change it once the server has run.
+      - VMANGOS_GID=1000 # On Linux, the group of the writable bind mounts. Do not change it once the server has run.
+      - VMANGOS_DATABASE_USER=mangos # Must match `MARIADB_USER` of the `database` service.
+      - VMANGOS_DATABASE_PASSWORD=mangos # Must match `MARIADB_PASSWORD` of the `database` service.
+      - TZ=Etc/UTC # The time zone, usually your host's.
+
+  mangosd:
+    # The `&mangosd-image` anchor is used by `check-deploy-version` and
+    # `extract-client-data` and has to stay.
+    image: &mangosd-image ghcr.io/mserajnik/vmangos-server:5875
+    command: mangosd
+    tty: true
+    stdin_open: true
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 2m # Gives a busy server time to save during shutdown.
+    healthcheck:
+      test: ['CMD', 'nc', '-z', 'localhost', '8085']
+      interval: 1m
+      timeout: 3s
+      retries: 5
+      start_period: 5m
+    ports:
+      - 8085:8085 # The host port, left of the colon, has to match `VMANGOS_REALMLIST_PORT`.
+      # - 7878:7878 # For SOAP, uncomment this line and set `SOAP.Enabled = 1` in `config/mangosd.conf`.
+      # - 3443:3443 # For RA, uncomment this line and set `Ra.Enable = 1` in `config/mangosd.conf`.
+    volumes:
+      - ./config/mangosd.conf:/opt/vmangos/config/mangosd.conf:ro
+      - ./storage/mangosd/extracted-data:/opt/vmangos/storage/data:ro
+      - ./storage/mangosd/logs:/opt/vmangos/storage/logs
+      - ./storage/mangosd/honor:/opt/vmangos/storage/honor
+      # - ./storage/mangosd/warden-modules:/opt/vmangos/storage/warden-modules # For Warden, see `docs/usage.md`.
+    # The `&mangosd-environment` anchor is used by `check-deploy-version` and
+    # `extract-client-data` and has to stay.
+    environment: &mangosd-environment
+      - VMANGOS_DEPLOY_VERSION=1 # See `docs/breaking-changes.md`.
+      - VMANGOS_UID=1000 # On Linux, the owner of the writable bind mounts. Do not change it once the server has run.
+      - VMANGOS_GID=1000 # On Linux, the group of the writable bind mounts. Do not change it once the server has run.
+      - VMANGOS_DATABASE_USER=mangos # Must match `MARIADB_USER` of the `database` service.
+      - VMANGOS_DATABASE_PASSWORD=mangos # Must match `MARIADB_PASSWORD` of the `database` service.
+      - TZ=Etc/UTC # The time zone, usually your host's.
+
+  # These run only on demand. See `docs/usage.md`.
+  check-deploy-version:
+    image: *mangosd-image
+    profiles: ['tools']
+    entrypoint: ['check-deploy-version']
+    environment: *mangosd-environment
+
+  extract-client-data:
+    image: *mangosd-image
+    profiles: ['tools']
+    entrypoint: ['extract-client-data']
+    volumes:
+      - ./storage/mangosd/client-data:/opt/vmangos/storage/client-data
+      - ./storage/mangosd/extracted-data:/opt/vmangos/storage/data
+    environment: *mangosd-environment
+
+  # # Optional: daily database backups, kept for a week.
+  # database-backup:
+  #   image: databack/mysql-backup
+  #   user: 1000:1000 # On Linux, the owner of `storage/database/backups/`.
+  #   command: dump
+  #   depends_on:
+  #     database:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./storage/database/backups:/backup
+  #   environment:
+  #     - TZ=Etc/UTC # The time zone, usually your host's.
+  #     - DB_SERVER=database
+  #     - DB_USER=root
+  #     - DB_PASS=password # Must match `MARIADB_ROOT_PASSWORD` of the `database` service.
+  #     - DB_DUMP_INCLUDE=characters,realmd,maintenance
+  #     - DB_DUMP_TARGET=/backup
+  #     - DB_DUMP_COMPRESSION=gzip
+  #     - DB_DUMP_CRON=CRON_TZ=Etc/UTC 0 4 * * * # Every day at 04:00. `CRON_TZ` is the schedule's time zone.
+  #     - DB_DUMP_RETENTION=7d
+  #     - DB_DUMP_SAFECHARS=true
+
+  # # Optional: phpMyAdmin at http://localhost:8080.
+  # phpmyadmin:
+  #   image: phpmyadmin
+  #   depends_on:
+  #     database:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #   ports:
+  #     - 8080:80
+  #   environment:
+  #     - PMA_HOST=database
+  #     - PMA_PORT=3306
+  #     - PMA_USER=root
+  #     - PMA_PASSWORD=password # Must match `MARIADB_ROOT_PASSWORD` of the `database` service.
+
+volumes:
+  vmangos-database:

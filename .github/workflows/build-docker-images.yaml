@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+name: Build and push Docker images
+
+on:
+  # Build images daily.
+  schedule:
+    - cron: 0 0 * * *
+  push:
+    branches:
+      - master
+    paths:
+      - .dockerignore
+      - .github/deploy.yaml
+      - .github/workflows/build-docker-images.yaml
+      - docker/**
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .dockerignore
+      - .github/deploy.yaml
+      - .github/workflows/build-docker-images.yaml
+      - docker/**
+  workflow_dispatch:
+    inputs:
+      force-rebuild:
+        type: boolean
+        description: Rebuild every image, even when it is up to date.
+        default: false
+      test-run:
+        type: boolean
+        description: Publish to `-test` packages and skip the badges and retention.
+        default: false
+
+# Serialize runs so they cannot race on the moving tags and the cleanup.
+concurrency:
+  group: build-docker-images
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    uses: mserajnik/docker-deploy-workflows/.github/workflows/build.yaml@v1
+    permissions:
+      contents: read
+      packages: write
+    with:
+      force-rebuild: ${{ inputs.force-rebuild || false }}
+      test-run: ${{ inputs.test-run || false }}
+    # The badge upload reads `BADGES_FTP_HOST`, `BADGES_FTP_USERNAME`, and
+    # `BADGES_FTP_PASSWORD`.
+    secrets: inherit

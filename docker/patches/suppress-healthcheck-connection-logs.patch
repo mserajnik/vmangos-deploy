@@ -1,0 +1,88 @@
+diff --git a/src/game/Server/WorldSocket.cpp b/src/game/Server/WorldSocket.cpp
+index 72ce94e..cb6159f 100644
+--- a/src/game/Server/WorldSocket.cpp
++++ b/src/game/Server/WorldSocket.cpp
+@@ -84,7 +84,10 @@ WorldSocket::WorldSocket(IO::Networking::AsyncSocket socket)
+ WorldSocket::~WorldSocket()
+ {
+     CloseSocket();
+-    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection closed", GetRemoteIpString().c_str());
++    // vmangos-deploy: leave out the connections of the healthcheck, which come
++    // from 127.0.0.1.
++    if (GetRemoteIpString() != "127.0.0.1")
++        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection closed", GetRemoteIpString().c_str());
+ 
+     if (m_sessionNoAuthTimeout)
+     {
+diff --git a/src/game/Server/WorldSocketMgr.cpp b/src/game/Server/WorldSocketMgr.cpp
+index fbf15d8..a153bb0 100644
+--- a/src/game/Server/WorldSocketMgr.cpp
++++ b/src/game/Server/WorldSocketMgr.cpp
+@@ -110,7 +110,10 @@ void WorldSocketMgr::OnNewClientConnected(IO::Networking::SocketDescriptor socke
+     else
+     {
+         // no proxy, we can start directly
+-        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection accepted", worldSocket->GetRemoteIpString().c_str());
++        // vmangos-deploy: leave out the connections of the healthcheck, which
++        // come from 127.0.0.1.
++        if (worldSocket->GetRemoteIpString() != "127.0.0.1")
++            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection accepted", worldSocket->GetRemoteIpString().c_str());
+         worldSocket->Start();
+     }
+ }
+diff --git a/src/realmd/AuthSocket.cpp b/src/realmd/AuthSocket.cpp
+index 9167864..dafd891 100644
+--- a/src/realmd/AuthSocket.cpp
++++ b/src/realmd/AuthSocket.cpp
+@@ -93,7 +93,10 @@ AuthSocket::~AuthSocket()
+     if (m_sessionDurationTimeout)
+         m_sessionDurationTimeout->Cancel();
+ 
+-    sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection closed", GetRemoteIpString().c_str());
++    // vmangos-deploy: leave out the connections of the healthcheck, which come
++    // from 127.0.0.1.
++    if (GetRemoteIpString() != "127.0.0.1")
++        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection closed", GetRemoteIpString().c_str());
+ }
+ 
+ AccountTypes AuthSocket::GetSecurityOn(uint32 realmId) const
+diff --git a/src/realmd/Main.cpp b/src/realmd/Main.cpp
+index c82cb5c..a46c345 100644
+--- a/src/realmd/Main.cpp
++++ b/src/realmd/Main.cpp
+@@ -268,7 +268,10 @@ extern int main(int argc, char** argv)
+         else
+         {
+             // no proxy, we can start directly
+-            sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection accepted", authSocket->GetRemoteIpString().c_str());
++            // vmangos-deploy: leave out the connections of the healthcheck,
++            // which come from 127.0.0.1.
++            if (authSocket->GetRemoteIpString() != "127.0.0.1")
++                sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection accepted", authSocket->GetRemoteIpString().c_str());
+             authSocket->Start();
+         }
+     });
+diff --git a/src/shared/IO/Networking/AsyncSocket_posix.cpp b/src/shared/IO/Networking/AsyncSocket_posix.cpp
+index 9b9e250..e9d45ab 100644
+--- a/src/shared/IO/Networking/AsyncSocket_posix.cpp
++++ b/src/shared/IO/Networking/AsyncSocket_posix.cpp
+@@ -510,11 +510,17 @@ void IO::Networking::AsyncSocket::OnIoEvent(uint32_t event)
+         socklen_t errLen = sizeof(error);
+         if (::getsockopt(m_descriptor.GetNativeSocket(), SOL_SOCKET, SO_ERROR, (void*)&error, &errLen) == 0)
+         {
+-            sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] epoll reported socket error: %s", GetRemoteIpString().c_str(), SystemErrorToString(error).c_str());
++            // vmangos-deploy: leave out the connections of the healthcheck,
++            // which come from 127.0.0.1.
++            if (GetRemoteIpString() != "127.0.0.1")
++                sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] epoll reported socket error: %s", GetRemoteIpString().c_str(), SystemErrorToString(error).c_str());
+         }
+         else
+         {
+-            sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] epoll reported socket error: Internal error", GetRemoteIpString().c_str());
++            // vmangos-deploy: leave out the connections of the healthcheck,
++            // which come from 127.0.0.1.
++            if (GetRemoteIpString() != "127.0.0.1")
++                sLog.Out(LOG_NETWORK, LOG_LVL_ERROR, "[%s] epoll reported socket error: Internal error", GetRemoteIpString().c_str());
+         }
+         StopPendingTransactionsAndForceClose();
+     }

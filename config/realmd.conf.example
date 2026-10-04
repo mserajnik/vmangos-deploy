@@ -1,0 +1,194 @@
+# vmangos-deploy: this file differs from upstream's `realmd.conf.dist.in` in
+# the options below, which it leaves out, because the image sets them and
+# ignores them in this file. Adding one back has no effect.
+#
+# - `LoginDatabaseInfo`: the server connects to the `database` service, with
+#   the user and password from `VMANGOS_DATABASE_USER` and
+#   `VMANGOS_DATABASE_PASSWORD` in the Compose file.
+# - `LogsDir`: the directory under `/opt/vmangos/storage/` that the Compose
+#   file mounts.
+# - `RealmServerPort` and `BindIP`: to use another port, change its host side
+#   in your `compose.yaml`.
+
+############################################
+# MaNGOS realmd configuration file         #
+############################################
+
+[RealmdConf]
+ConfVersion=2026042601
+
+###################################################################################################################
+# REALMD SETTINGS
+#
+#    PatchesDir
+#         Folder to serve client patches.
+#         Important: Patches dir must contain mpq files like this: <build><lang>.mpq e.g. 65535enGB.mpq
+#         Default: "./patches"
+#
+#    MaxPingTime
+#         Settings for maximum database-ping interval (minutes between pings)
+#
+#    TrustedProxyServers
+#        Description: Enables the parsing of Proxy Protocol v2 for specific IPs.
+#                     You can use this feature when your server is behind a proxy, load balancer, or similar component,
+#                     to retrieve the real IP address of players.
+#                     You need to enable Proxy Protocol v2 on both this server and the proxy/load balancer.
+#                     For example see HaProxy "send-proxy-v2" option.
+#                     Multiple servers can be separated with ','
+#        Default:     ""                      - (Disabled, no proxy)
+#        Example      "10.13.37.1,10.13.37.2" - (to allow multiple proxy servers)
+#
+#    PidFile
+#        Realmd daemon PID file
+#        Default: ""             - do not create PID file
+#                 "./realmd.pid" - create PID file (recommended name)
+#
+#    LogLevel.Console
+#        Server console level of logging
+#        0 = Error; 1 = Minimum; 2 = Basic; 3 = Detail; 4 = Full/Debug
+#        Default: 2
+#
+#    LogLevel.File
+#        Server file level of logging
+#        0 = Error; 1 = Minimum; 2 = Basic; 3 = Detail; 4 = Full/Debug
+#        Default: 2
+#
+#    LogTime
+#        Include time in server console output [hh:mm:ss]
+#        Default: 0 (no time)
+#                 1 (print time)
+#
+#    LogFile
+#        Logfile name
+#        Default: "Realmd.log"
+#                 "" - empty name disable creating log file
+#
+#    LogTimestamp
+#        Logfile with timestamp of server start in name
+#        Default: 0 - no timestamp in name
+#                 1 - add timestamp in name in form Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
+#
+#    LogFileLevel
+#        Server file level of logging
+#        0 = Minimum; 1 = Error; 2 = Detail; 3 = Full/Debug
+#        Default: 0
+#
+#    UseProcessors
+#        Used processors mask for multi-processors system (Used only at Windows)
+#        Default: 0 (selected by OS)
+#                 number (bitmask value of selected processors)
+#
+#    ProcessPriority
+#        Process proirity setting (Used only at Windows)
+#        Default: 1 (HIGH)
+#                 0 (Normal)
+#
+#    WaitAtStartupError
+#        After startup error report wait <Enter> or some time before continue (and possible close console window)
+#                 -1 (wait until <Enter> press)
+#                  0 (no wait)
+#         Default: 5 (wait 5 sec)
+#                  N (>0, wait N secs)
+#
+#    MinRealmListDelay
+#        Minimum amount of time, in seconds, that must pass before a second realm list request is considered legitimate
+#        Default: 1
+#
+#    RealmsStateUpdateDelay
+#        Realm list Update up delay (updated at realm list request if delay expired).
+#        Default: 20
+#                 0  (Disabled)
+#
+#    ReqEmailVerification
+#        Required that the user has verified their email address before allowing logins
+#        Default: 0 (No verification required)
+#                 1 (Verification required)
+#
+#    ReqEmailSince
+#        Require the Email Verification Since the Timestamp
+#        Default: 0 (Disabled)
+#                 1530302395 (Timestamp)
+#
+#    GeoLocking
+#        Blocks account logins when a change in geographical location is detected
+#        Default: 0
+#
+#    StrictVersionCheck
+#        Description: Prevent modified clients from connnecting
+#        Default: 1 - (Enabled)
+#                 0 - (Disabled)
+#
+#    SendMail
+#        Whether the server is allowed to send emails
+#        The server must have been compiled with ENABLE_MAILSENDER
+#        Default: 0 (Do not send mail)
+#
+#    MailFrom
+#        Specify the email address to send mail from
+#        Default: ""
+#
+#    MailCertChecks
+#        Whether to validate the certificates of the mail server
+#        Default: 1 (Recommended)
+#
+#    SendGridKey
+#        If SendGrid is being used for emailing, specify your API key here
+#        This option must be set if SendGrid is enabled
+#        Default: ""
+#
+#    GeolockGUID
+#        The SendGrid template GUID for geolocking emails
+#        Default: ""
+#
+#    MaxSessionDuration
+#        Maximum time in seconds that sessions can stay open
+#        Default: 300 (5 minutes)
+#
+###################################################################################################################
+
+PatchesDir = "./patches"
+MaxPingTime = 30
+TrustedProxyServers = ""
+PidFile = ""
+LogLevel.Console = 2
+LogLevel.File = 2
+LogTime = 0
+LogFile = "Realmd.log"
+LogTimestamp = 0
+LogFileLevel = 0
+UseProcessors = 0
+ProcessPriority = 1
+WaitAtStartupError = 5 # consider fixing your actual problem before changing this value!
+MinRealmListDelay = 1
+RealmsStateUpdateDelay = 20
+ReqEmailVerification = 0
+ReqEmailSince = 0
+GeoLocking = 0
+StrictVersionCheck = 1
+SendMail = 0
+MailFrom = ""
+MailCertChecks = 1
+SendGridKey = ""
+GeolockGUID = ""
+MaxSessionDuration = 300
+
+###################################################################################################################
+#    LOGIN THROTTLE SETTINGS
+#
+#    In-memory brute-force guard on realmd. Locks out an IP after repeated
+#    wrong-password failures within a sliding window. A successful login
+#    clears the failure counter.
+#
+#    WrongPass.MaxAttempts
+#        Maximum wrong-password attempts per IP before further logon challenges are rejected outright.
+#        Set to 0 to disable the brute-force guard entirely.
+#        Default: 10
+#
+#    WrongPass.ThrottleWindowDurationSec
+#        Sliding window for the brute-force guard, in seconds.
+#        Default: 60
+#
+###################################################################################################################
+
+WrongPass.MaxAttempts = 10
+WrongPass.ThrottleWindowDurationSec = 60
