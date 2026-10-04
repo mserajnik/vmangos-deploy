@@ -11,6 +11,14 @@
 
 > A Docker setup for VMaNGOS
 
+> [!CAUTION]
+> This branch preserves the project as it was before its relaunch on 2026-10-04
+> and is no longer maintained. Its instructions do not work with the current
+> images. The current instructions are in the README on the
+> [`master` branch][master-readme].
+
+---
+
 > [!TIP]
 > Also check out my similar Docker setups:
 >
@@ -684,6 +692,7 @@ non-commercial use only and comes with no warranty.
 [maintainer]: https://github.com/mserajnik
 [mangosd-gm-options]: https://github.com/mserajnik/vmangos-deploy/blob/master/config/mangosd.conf.example#L2256-L2361
 [mangosd-gm-options-cheat-god]: https://github.com/mserajnik/vmangos-deploy/blob/master/config/mangosd.conf.example#L2361
+[master-readme]: https://github.com/mserajnik/vmangos-deploy/blob/master/README.md
 [phpmyadmin]: https://www.phpmyadmin.net/
 [pull-requests]: https://github.com/mserajnik/vmangos-deploy/pulls
 [reuse-spec]: https://reuse.software/spec/
