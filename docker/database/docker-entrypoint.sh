@@ -4,9 +4,10 @@
 # SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
 # SPDX-License-Identifier: GPL-2.0-only
 
-# Based on the MariaDB entrypoint below. Its formatting, comments, and
-# commented-out code stay, so the two remain easy to compare.
+# Based on this MariaDB entrypoint:
 # https://github.com/MariaDB/mariadb-docker/blob/063eb10da092170beea08d2c629b6eb79d28cceb/12.3/docker-entrypoint.sh
+# Its formatting, comments, and commented-out code stay, so the two remain easy
+# to compare.
 
 set -eo pipefail
 
