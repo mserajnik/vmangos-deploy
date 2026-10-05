@@ -63,11 +63,11 @@ The `environment` of `realmd` and `mangosd` has:
 | Variable                    | Default   | Description                                                                                                       |
 | --------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------- |
 | `VMANGOS_DEPLOY_VERSION`    | Required  | The number that the image checks on startup. See the [`VMANGOS_DEPLOY_VERSION` section](#vmangos_deploy_version). |
+| `TZ`                        | `Etc/UTC` | The time zone of the service, such as `Europe/Vienna`. You usually want to set this to your host's time zone.     |
 | `VMANGOS_UID`               | `1000`    | The UID the server runs as. See the [user and group section](#user-and-group).                                    |
 | `VMANGOS_GID`               | `1000`    | The GID the server runs as. See the [user and group section](#user-and-group).                                    |
 | `VMANGOS_DATABASE_USER`     | Required  | The user the server connects to the `database` service with. It has to match `MARIADB_USER` of that service.      |
 | `VMANGOS_DATABASE_PASSWORD` | Required  | The password of that user. It has to match `MARIADB_PASSWORD` of the `database` service.                          |
-| `TZ`                        | `Etc/UTC` | The time zone of the service, such as `Europe/Vienna`. You usually want to set this to your host's time zone.     |
 
 ### `mangosd`
 
