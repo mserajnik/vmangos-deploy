@@ -3,9 +3,9 @@
 Some updates require you to adjust your configuration. These breaking changes
 are listed below, newest first.
 
-Every Docker image checks `VMANGOS_DEPLOY_VERSION` on startup, and refuses to
-start with a number other than the one it expects. The number counts the
-breaking changes since the images started to check it.
+Every Docker image checks `VMANGOS_DEPLOY_VERSION` on startup. Each breaking
+change raises the number it expects by 1, and thus prevents installations that
+lack the necessary adjustments for the breaking change from starting.
 
 To update across a version, first refresh your clone of this repository, as the
 [updating your clone section](usage.md#updating-your-clone) describes, so you

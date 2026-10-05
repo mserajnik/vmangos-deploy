@@ -48,8 +48,8 @@ offers:
 
 ## Quick start
 
-The steps below get a local setup running quickly, for playing on the same
-machine. You need [Docker][docker] with [Docker Compose][docker-compose].
+The steps below get a local installation running quickly, for playing on the
+same machine. You need [Docker][docker] with [Docker Compose][docker-compose].
 
 1. Clone the repository and copy the example configuration files:
 
@@ -60,11 +60,10 @@ machine. You need [Docker][docker] with [Docker Compose][docker-compose].
    cp config/realmd.conf.example config/realmd.conf
    ```
 
-   Then adjust the copies to your liking, for example the `GameType`, the
-   `RealmZone`, or the `Anticheat.*` and `Warden.*` options in your
-   `config/mangosd.conf`. The files describe their options. Some options are
-   set by the image and cannot be configured in the files. A comment at the top
-   of your `mangosd.conf` and `realmd.conf` lists them.
+   Then adjust the copies to your liking, for example the `GameType` or the
+   `RealmZone` in your `config/mangosd.conf`. The files describe their options.
+   Some options are set by the image and cannot be configured in the files. A
+   comment at the top of your `mangosd.conf` and `realmd.conf` lists them.
 
 2. Copy the example Compose file:
 
@@ -87,7 +86,8 @@ machine. You need [Docker][docker] with [Docker Compose][docker-compose].
    ```
 
    Use the client that matches your chosen client version. Extracting can take
-   many hours, and the [client data section](docs/usage.md#client-data)
+   many hours, and the
+   [extracting the client data section](docs/usage.md#extracting-the-client-data)
    describes the details.
 
 5. Start VMaNGOS and follow its output:

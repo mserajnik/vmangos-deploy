@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Sets up the databases on the first start, and acknowledges the image's
-# migration edits, which a fresh install already has.
+# migration edits, which a new installation already has.
 
 set -euo pipefail
 

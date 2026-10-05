@@ -35,10 +35,10 @@ Each image also has a tag with the full VMaNGOS commit it contains, such as
 `ghcr.io/mserajnik/vmangos-server:5875-46183d287f80ab1ebf27bab12f37bc0b5b188c86`
 and
 `ghcr.io/mserajnik/vmangos-database:46183d287f80ab1ebf27bab12f37bc0b5b188c86`.
-Use such tags to pin your setup to a specific commit. You have to give the
-server and the database image the same commit, so the code and the data match.
-The databases apply new migrations on start, so an image older than the ones
-you ran before cannot work with them.
+Use such tags to pin your installation to a specific commit. You have to give
+the server and the database image the same commit, so the code and the data
+match. The databases apply new migrations on start, so an image older than the
+ones you ran before cannot work with them.
 
 Since the Docker images are generally built only once a day, there is likely no
 build for every single VMaNGOS commit. Older images are deleted automatically
@@ -48,12 +48,10 @@ can build them yourself. The registry lists the current
 [server images][image-vmangos-server-versions] and
 [database images][image-vmangos-database-versions].
 
-## Client data
+## Extracting the client data
 
 The server needs data extracted from the game client for handling movement and
 line of sight.
-
-### Extracting the client data
 
 Copy the contents of your client directory into `storage/mangosd/client-data/`.
 Then, to extract the data, run:
@@ -66,18 +64,21 @@ The command runs the image of the `mangosd` service as its user (see the
 [`extract-client-data` section](compose.md#extract-client-data)), so the
 image's client version has to match the client you extract from.
 
-The extraction can take many hours, and it prints some notices and errors while
-it runs that are normal as long as the command does not end with an error. The
-data ends up in `storage/mangosd/extracted-data/`.
+The extraction writes the data into `storage/mangosd/extracted-data/` and can
+take many hours. It prints some notices and errors while it runs that are
+normal as long as the command does not end with an error.
 
 If you already have extracted data from another source, put it into
 `storage/mangosd/extracted-data/`. You can then skip the extraction.
 
-To extract again later, for example after VMaNGOS improves the movement data,
-run the same command. It asks before it overwrites the old data. To skip the
-question, add `--force` at the end of the command.
+You may want to extract again when VMaNGOS improves the extractors in some way.
+To do so, run the same command. It asks before it overwrites the old data. To
+skip the question, add `--force` at the end of the command.
 
-### Warden
+## Anticheat and Warden
+
+VMaNGOS's anticheat checks player movement. By default, it is disabled. The
+`Anticheat.*` options in your `config/mangosd.conf` turn it on and adjust it.
 
 To use Warden, download the [Warden modules][warden-modules] into
 `storage/mangosd/warden-modules/`, uncomment the mount for that directory in
@@ -188,16 +189,16 @@ containers:
 docker compose up -d
 ```
 
-If you pinned your setup to a specific commit, the update only takes effect
-once you set newer tags.
+If you pinned your installation to a specific commit, the update only takes
+effect once you set newer tags.
 
 On the first start after an update, the `database` service applies the new
 migrations to the databases. If a migration fails, the `database` service logs
 the error, and its automatic restart counts the migration as applied. The cause
-is a bug or something in your setup. Check the log for what failed, and decide
-for yourself how to continue. You likely have to restore a backup from before
-the update: remove the database volume with `docker compose down -v`, start
-again, and restore the backup as the
+is a bug or something in your installation. Check the log for what failed, and
+decide for yourself how to continue. You likely have to restore a backup from
+before the update: remove the database volume with `docker compose down -v`,
+start again, and restore the backup as the
 [restoring a backup section](#restoring-a-backup) shows. With the
 `database-backup` service as the Compose file sets it up, the restore loses the
 event progress of the world, as the [backups section](#backups) describes.
@@ -296,13 +297,13 @@ uncomment it (see the
 
 > [!IMPORTANT]
 > The Compose file leaves the world and logs databases out of the
-> `database-backup` service, because most personal setups likely do not care
-> enough about their contents to accept much larger backups. Apart from changes
-> you make to it yourself, the image can re-create the world database. The
-> world database also stores the event progress of the world, such as the stage
-> of the AQ War Effort, in its `variables` table. The logs database stores what
-> the servers log to it. To back up either, add `mangos` or `logs` to
-> `DB_DUMP_INCLUDE`.
+> `database-backup` service, because most personal installations likely do not
+> care enough about their contents to accept much larger backups. Apart from
+> changes you make to it yourself, the image can re-create the world database.
+> The world database also stores the event progress of the world, such as the
+> stage of the AQ War Effort, in its `variables` table. The logs database
+> stores what the servers log to it. To back up either, add `mangos` or `logs`
+> to `DB_DUMP_INCLUDE`.
 
 To create a backup right away, run:
 

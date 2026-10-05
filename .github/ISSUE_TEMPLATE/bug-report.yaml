@@ -48,8 +48,8 @@ body:
       options:
         - Linux (any distribution)
         - macOS
-        - Windows, with the setup on the WSL 2 file system
-        - Windows, with the setup on the Windows file system
+        - Windows, with the installation on the WSL 2 file system
+        - Windows, with the installation on the Windows file system
         - Other (explain under Additional context)
     validations:
       required: true
@@ -97,7 +97,7 @@ body:
     id: configuration-changes
     attributes:
       label: Configuration changes
-      description: Any changes you made to the configuration files in `config/` and any custom SQL files you use. Write "None" if you run an unmodified setup.
+      description: Any changes you made to the configuration files in `config/` and any custom SQL files you use. Write "None" if you run an unmodified installation.
     validations:
       required: true
   - type: textarea
@@ -113,13 +113,13 @@ body:
     attributes:
       label: File permissions
       description: |
-        The output of the following command, run from your vmangos-deploy directory. On Linux and macOS (and inside WSL 2, if your setup is on the WSL 2 file system):
+        The output of the following command, run from your vmangos-deploy directory. On Linux and macOS (and inside WSL 2, if your installation is on the WSL 2 file system):
 
         ```sh
         find . -name .git -prune -o \( -name client-data -o -name extracted-data -o -name warden-modules \) -prune -print0 -o -print0 | xargs -0 ls -ld
         ```
 
-        On Windows, if your setup is on the Windows file system (PowerShell):
+        On Windows, if your installation is on the Windows file system (PowerShell):
 
         ```powershell
         Get-ChildItem -Recurse | Where-Object FullName -NotMatch '[\\/](\.git|client-data|extracted-data|warden-modules)[\\/]' | Format-Table Mode, FullName -AutoSize | Out-String -Width 4096
