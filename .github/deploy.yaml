@@ -1,5 +1,7 @@
 # The build of every image, which the build workflow passes to
-# docker-deploy-workflows. See its `docs/deploy-yaml.md` for the keys.
+# docker-deploy-workflows.
+# See:
+# https://github.com/mserajnik/docker-deploy-workflows/blob/v1/docs/deploy-yaml.md
 
 primary-source: core
 
