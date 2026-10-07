@@ -9,8 +9,6 @@
 [![Latest VMaNGOS build][badge-latest-vmangos-build]][badge-latest-vmangos-build-url]
 [![Latest build date][badge-latest-build-date]][badge-latest-build-date-url]
 
-> A Docker setup for VMaNGOS
-
 ---
 
 > [!WARNING]
