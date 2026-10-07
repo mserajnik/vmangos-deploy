@@ -12,7 +12,8 @@ To update across a version, first refresh your clone of this repository, as the
 have the new example Compose file to compare with.
 
 Then apply every entry up to that version, and set `VMANGOS_DEPLOY_VERSION` to
-that number in the `database`, `realmd`, and `mangosd` services.
+that number in the `database`, `realmd`, and `mangosd` services in your
+`compose.yaml`.
 
 ## Version 1 (2026-10-04)
 

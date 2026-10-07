@@ -1,8 +1,12 @@
 # Docker Compose reference
 
 Your `compose.yaml` starts as a copy of the example Compose file,
-[`compose.yaml.example`](../compose.yaml.example). It configures every service
-of the setup, and the tables below describe each of its settings.
+[`compose.yaml.example`](../compose.yaml.example).
+
+For each service, the [services section](#services) below has a table of its
+keys, such as `image` and `volumes`, and, if it has any, a table of its
+environment variables with their default values. The sections after it explain
+some settings in more detail.
 
 > [!WARNING]
 > Where a setting needs a specific value for the setup to work, its description
