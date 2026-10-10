@@ -44,7 +44,7 @@ mark_initialized() {
 }
 
 # A data directory from before the markers counts as set up when its world
-# database holds data.
+# database contains data.
 require_initialized() {
   if [[ -f "$INITIALIZED_MARKER" ]]; then
     return 0
@@ -58,7 +58,7 @@ require_initialized() {
     return 0
   fi
 
-  vmangos_fail "The databases are not set up completely. If this is a new installation, remove the database volume and start again. Otherwise the volume holds your characters: remove it only if you have a backup, and restore the backup after the new start:
+  vmangos_fail "The databases are not set up completely. If this is a new installation, remove the database volume and start again. Otherwise the volume contains your characters: remove it only if you have a backup, and restore the backup after the new start:
 https://github.com/mserajnik/vmangos-deploy/blob/master/docs/usage.md#restoring-a-backup"
 }
 
@@ -295,7 +295,7 @@ acknowledge_correction() {
     VALUES ('$(sql_escape "$db_name")', '$(sql_escape "$commit_hash")');"
 }
 
-# Keeps the world database's `variables` table, which holds event progress,
+# Keeps the world database's `variables` table, which contains event progress,
 # across a re-creation. The dump is in the data directory, so a dump found
 # there comes from a re-creation that did not finish and is the only copy.
 # TODO: Remove this and its calls once `vmangos/core#2825` moves the table to
