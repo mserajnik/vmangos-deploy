@@ -268,8 +268,26 @@ The container waits as long as you need. To resolve the halt:
    docker compose exec database vmangos-confirm-changes
    ```
 
-The start then records the commits as applied and continues. To give up on the
-start, run `docker compose down`.
+The `database` service then records the commits as applied, and the start
+continues.
+
+If you would rather cancel the start and handle the edits later, run
+`docker compose down` instead of confirming. The `database` service halts again
+on your next start.
+
+In a database with player data, you can ignore an edit to a migration that has
+not been applied to it yet. To check, look up the timestamp at the start of the
+migration's file name, such as `20260826140125` for
+`20260826140125_characters.sql`:
+
+```sh
+docker compose exec database mariadb -u root -p <database> \
+  -e "SELECT id FROM migrations WHERE id = '<timestamp>'"
+```
+
+When the query returns no row, the migration has not been applied. For a
+renamed migration, check its old file name. Even when every listed edit can be
+ignored, you still have to confirm, as step 3 above describes.
 
 > [!WARNING]
 > The confirmation marks the listed commits as applied without checking your

@@ -43,7 +43,7 @@ process_world_corrections
 process_userstate_corrections
 
 if [[ "${#PENDING_DB_NAMES[@]}" -gt 0 ]]; then
-  print_correction_abort_message
+  print_correction_halt_message
   wait_for_change_ack
 
   i=0

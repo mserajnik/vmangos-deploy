@@ -426,7 +426,7 @@ process_userstate_corrections() {
   done
 }
 
-print_correction_abort_message() {
+print_correction_halt_message() {
   cat >&2 <<'EOF'
 [vmangos-deploy]: ERROR: Migration edits affect your databases.
 vmangos-deploy will not apply these changes for you. Startup is halted.
@@ -461,25 +461,27 @@ For each entry above:
        docker compose exec database mariadb -u root -p <database>
      (mariadb prompts for the password, which matches your
      'MARIADB_ROOT_PASSWORD' setting in your 'compose.yaml'.)
+     You can ignore an edit to a migration that has not been applied to the
+     database yet. The documentation shows how to check:
+     https://github.com/mserajnik/vmangos-deploy/blob/master/docs/usage.md#applying-changes-by-hand
 
 When you have applied the changes to all of them, confirm by running on the
 host:
   docker compose exec database vmangos-confirm-changes
 
-To abort instead, run on the host:
+To cancel the start and handle the edits later instead, run on the host:
   docker compose down
 
 While the container is paused, MariaDB is reachable inside the container via
 the internal socket. TCP access on port 3306 is not available during the pause.
-VMaNGOS stays offline until you confirm or abort, so take as long as you
-need.
+VMaNGOS stays offline until you confirm or cancel, so take as long as you need.
 
-Note: When you confirm, vmangos-deploy treats the listed commits as applied
-and continues. It does not check your database to verify that the changes you
-made match what the commits describe. If your manual fix is incorrect or
-incomplete, the database will be in an inconsistent state and VMaNGOS may
-fail to start. The responsibility for matching what the commits do is yours,
-and vmangos-deploy provides no further support for resolving these issues.
+Note: When you confirm, vmangos-deploy treats the listed commits as applied and
+continues. It does not check your database to verify that the changes you made
+match what the commits describe. If your manual fix is incorrect or incomplete,
+the database will be in an inconsistent state and VMaNGOS may fail to start.
+The responsibility for matching what the commits do is yours, and
+vmangos-deploy provides no further support for resolving these issues.
 EOF
 }
 
