@@ -224,9 +224,9 @@ your configuration.
 
 ## Migration edits
 
-Sometimes, upstream edits a migration that your databases have already applied.
-The database cannot apply such a change again, so vmangos-deploy detects these
-edits and acts on them.
+Sometimes, the VMaNGOS developers edit a migration that your databases have
+already applied. The database cannot apply such a change again, so
+vmangos-deploy detects these edits and acts on them.
 
 - For the world database, the `database` service re-creates it from the new
   image. It keeps the `variables` table, so hardcoded event progress, such as
@@ -243,9 +243,9 @@ describes the two variables that control this.
 ### Applying changes by hand
 
 When the start halts, the `database` service prints the affected databases and
-the link to each upstream commit. `realmd` and `mangosd` wait for the database,
-so `docker compose up -d` keeps waiting too. Read the message from a second
-terminal:
+the link to the commit of each edit. `realmd` and `mangosd` wait for the
+database, so `docker compose up -d` keeps waiting too. Read the message from a
+second terminal:
 
 ```sh
 docker compose logs database
@@ -254,15 +254,23 @@ docker compose logs database
 The container waits as long as you need. To resolve the halt:
 
 1. Open each linked commit and read its changes to the SQL files.
-2. Apply the same changes to each affected database, with the name in
-   parentheses in the message. To open a database, run:
+2. Make each edit's changes yourself in the affected database, whose name the
+   message lists with the edit. The database does not apply an edited migration
+   again, so it still matches the result of the old version. Compare the old
+   and the new version of each edited file in the commit, and run the SQL that
+   changes the database to the result of the new version. For example, if the
+   edit adds a column, add that column yourself.
+
+   To open a database, run:
 
    ```sh
    docker compose exec database mariadb -u root -p <database>
    ```
 
-   The password is `MARIADB_ROOT_PASSWORD` from your `compose.yaml`.
-3. Once you have applied every change, confirm:
+   The password is `MARIADB_ROOT_PASSWORD` from your `compose.yaml`. The
+   [MariaDB client documentation][mariadb-client] describes the client's
+   commands. To leave the client, run `exit`.
+3. Once you have handled every listed edit, confirm:
 
    ```sh
    docker compose exec database vmangos-confirm-changes
@@ -270,6 +278,13 @@ The container waits as long as you need. To resolve the halt:
 
 The `database` service then records the commits as applied, and the start
 continues.
+
+> [!WARNING]
+> The confirmation marks the listed commits as applied without checking your
+> database. If your change is wrong or incomplete, the database stays
+> inconsistent, and VMaNGOS may fail to start. Matching what the commits do is
+> your responsibility, and vmangos-deploy provides no further support for
+> individual cases.
 
 If you would rather cancel the start and handle the edits later, run
 `docker compose down` instead of confirming. The `database` service halts again
@@ -288,12 +303,6 @@ docker compose exec database mariadb -u root -p <database> \
 When the query returns no row, the migration has not been applied. For a
 renamed migration, check its old file name. Even when every listed edit can be
 ignored, you still have to confirm, as step 3 above describes.
-
-> [!WARNING]
-> The confirmation marks the listed commits as applied without checking your
-> database. If your change is wrong or incomplete, the database stays
-> inconsistent, and VMaNGOS may fail to start. Matching what the commits do is
-> your responsibility.
 
 ## Custom SQL
 
@@ -384,4 +393,5 @@ responsible for securing it. vmangos-deploy does not support such a setup.
 [hermesproxy]: https://github.com/WowLegacyCore/HermesProxy
 [image-vmangos-database-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-database/versions?filters%5Bversion_type%5D=tagged
 [image-vmangos-server-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-server/versions?filters%5Bversion_type%5D=tagged
+[mariadb-client]: https://mariadb.com/docs/server/clients-and-utilities/mariadb-client/mariadb-command-line-client
 [warden-modules]: https://github.com/vmangos/warden_modules
