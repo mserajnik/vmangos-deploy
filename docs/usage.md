@@ -4,7 +4,7 @@ To run VMaNGOS, you choose Docker images for a client version, extract the
 client data, and start the server with Docker Compose. Later, you update it to
 get the latest VMaNGOS changes. The sections below describe each step, and
 other tasks such as creating accounts, making backups, and accessing the
-database. The [Docker Compose reference](compose.md) describes each setting in
+databases. The [Docker Compose reference](compose.md) describes each setting in
 your `compose.yaml`.
 
 ## Choosing images
@@ -38,8 +38,8 @@ and
 `ghcr.io/mserajnik/vmangos-database:46183d287f80ab1ebf27bab12f37bc0b5b188c86`.
 Use such tags to pin your installation to a specific commit. You have to give
 the server and the database image the same commit, so the code and the data
-match. The databases apply new migrations on start, so an image older than the
-ones you ran before cannot work with them.
+match. The `database` service applies new migrations on startup, so an image
+older than the ones you ran before cannot work with the databases.
 
 Since the Docker images are generally built only once a day, there is likely no
 build for every single VMaNGOS commit. Older images are deleted automatically
@@ -180,9 +180,9 @@ docker compose run --rm check-deploy-version
 When the new images need configuration adjustments due to a
 [breaking change](breaking-changes.md), the check fails and shows the version
 they expect. Make those adjustments first. The `check-deploy-version` service
-reads only `VMANGOS_DEPLOY_VERSION` of `mangosd`. The `database`, `realmd`, and
-`mangosd` services also each check their own value when they start, so you have
-to set the same number in all three.
+reads only `VMANGOS_DEPLOY_VERSION` of the `mangosd` service. The `database`,
+`realmd`, and `mangosd` services also each check their own value when they
+start, so you have to set the same number in all three.
 
 If the check passes and prints that the variable matches, re-create the
 containers:
@@ -195,21 +195,23 @@ If you pinned your installation to a specific commit, the update only takes
 effect once you set newer tags.
 
 On the first start after an update, the `database` service applies the new
-migrations to the databases. If a migration fails, the `database` service logs
-the error, and its automatic restart counts the migration as applied. The cause
-is a bug or something in your installation. Check the log for what failed, and
+migrations. If a migration fails, the `database` service logs the error and
+stops. Its automatic restart then counts the migration as applied. The cause is
+a bug or something in your installation. Check the log for what failed, and
 decide for yourself how to continue. You likely have to restore a backup from
 before the update: remove the database volume with `docker compose down -v`,
 start again, and restore the backup as the
 [restoring a backup section](#restoring-a-backup) shows. With the
-`database-backup` service as the Compose file sets it up, the restore loses the
-event progress of the world, as the [backups section](#backups) describes.
+`database-backup` service as the example Compose file sets it up, the restore
+loses the event progress of the world, as the [backups section](#backups)
+describes.
 
 ### Updating your clone
 
 Update your clone of this repository regularly with `git pull`, and always
 before you apply a breaking change, so you have the updated example Compose
-file to compare with.
+file to compare with. Most other changes are maintenance or new VMaNGOS options
+that you may want in your configuration.
 
 > [!IMPORTANT]
 > The relaunch replaced the history of this repository, so `git pull` fails in
@@ -219,23 +221,21 @@ file to compare with.
 > any edit you made to the repository's own files. Afterwards, `git pull` works
 > again.
 
-Most other changes are maintenance or new VMaNGOS options that you may want in
-your configuration.
-
 ## Migration edits
 
-Sometimes, the VMaNGOS developers edit a migration that your databases have
-already applied. The database cannot apply such a change again, so
-vmangos-deploy detects these edits and acts on them.
+Sometimes, the VMaNGOS developers edit a migration that has already been
+applied to one of your databases. The `database` service does not apply an
+edited migration again, so vmangos-deploy detects these edits and acts on them.
 
 - For the world database, the `database` service re-creates it from the new
   image. It keeps the `variables` table, so hardcoded event progress, such as
   the stage of the AQ War Effort, carries over. Other changes you made directly
   in the world database are lost, such as your own NPCs or `npc_vendor` edits.
-  Keep such changes as [custom SQL](#custom-sql), which the database runs again
-  after the re-creation.
-- A database with player data cannot be re-created. For those, the start halts
-  and asks you to apply the change by hand, as the next section describes.
+  Keep such changes as [custom SQL](#custom-sql), which the `database` service
+  runs again after the re-creation.
+- A database with player data cannot be re-created. For such a database, the
+  start halts and asks you to apply the change by hand, as the next section
+  describes.
 
 The [`database` section](compose.md#database) of the Docker Compose reference
 describes the two variables that control this.
@@ -243,23 +243,23 @@ describes the two variables that control this.
 ### Applying changes by hand
 
 When the start halts, the `database` service prints the affected databases and
-the link to the commit of each edit. `realmd` and `mangosd` wait for the
-database, so `docker compose up -d` keeps waiting too. Read the message from a
-second terminal:
+the link to the commit of each edit. The `realmd` and `mangosd` services wait
+for the `database` service, so `docker compose up -d` keeps waiting too. Read
+the message from a second terminal:
 
 ```sh
 docker compose logs database
 ```
 
-The container waits as long as you need. To resolve the halt:
+The `database` service waits as long as you need. To resolve the halt:
 
 1. Open each linked commit and read its changes to the SQL files.
 2. Make each edit's changes yourself in the affected database, whose name the
-   message lists with the edit. The database does not apply an edited migration
-   again, so it still matches the result of the old version. Compare the old
-   and the new version of each edited file in the commit, and run the SQL that
-   changes the database to the result of the new version. For example, if the
-   edit adds a column, add that column yourself.
+   message lists with the edit. The `database` service does not apply an edited
+   migration again, so the database still matches the result of the old
+   version. Compare the old and the new version of each edited file in the
+   commit, and run the SQL that changes the database to the result of the new
+   version. For example, if the edit adds a column, add that column yourself.
 
    To open a database, run:
 
@@ -281,7 +281,7 @@ continues.
 
 > [!WARNING]
 > The confirmation marks the listed commits as applied without checking your
-> database. If your change is wrong or incomplete, the database stays
+> databases. If your change is wrong or incomplete, the affected database stays
 > inconsistent, and VMaNGOS may fail to start. Matching what the commits do is
 > your responsibility, and vmangos-deploy provides no further support for
 > individual cases.
@@ -301,8 +301,9 @@ docker compose exec database mariadb -u root -p <database> \
 ```
 
 When the query returns no row, the migration has not been applied. For a
-renamed migration, check its old file name. Even when every listed edit can be
-ignored, you still have to confirm, as step 3 above describes.
+renamed migration, check the timestamp of its old file name. Even when every
+listed edit can be ignored, you still have to confirm, as step 3 above
+describes.
 
 ## Custom SQL
 
@@ -325,14 +326,14 @@ uncomment it (see the
 [`database-backup` section](compose.md#database-backup-optional)).
 
 > [!IMPORTANT]
-> The Compose file leaves the world and logs databases out of the
+> The example Compose file leaves the world and logs databases out of the
 > `database-backup` service, because most personal installations likely do not
 > care enough about their contents to accept much larger backups. Apart from
-> changes you make to it yourself, the image can re-create the world database.
-> The world database also stores the event progress of the world, such as the
-> stage of the AQ War Effort, in its `variables` table. The logs database
-> stores what the servers log to it. To back up either, add `mangos` or `logs`
-> to `DB_DUMP_INCLUDE`.
+> changes you make to it yourself, the `database` service can re-create the
+> world database. The world database also stores the event progress of the
+> world, such as the stage of the AQ War Effort, in its `variables` table. The
+> logs database stores what the servers log to it. To back up either, add
+> `mangos` or `logs` to `DB_DUMP_INCLUDE`.
 
 To create a backup right away, run:
 
@@ -362,15 +363,15 @@ restore one:
      <backup-file>
    ```
 
-3. Restart the database, which applies the migrations the backup lacks and
-   writes the realm entry again, then start the servers:
+3. Restart the `database` service, which applies the migrations the backup
+   lacks and writes the realm entry again, then start the servers:
 
    ```sh
    docker compose restart database
    docker compose start realmd mangosd
    ```
 
-   If the backup is older than a migration edit, the restart handles the edit
+   If the backup is older than a migration edit, the restart acts on the edit
    again, as the [migration edits section](#migration-edits) describes.
 
 ## Database access
@@ -382,9 +383,9 @@ the browser once you uncomment it (see the
 
 ### Database security
 
-Do not expose the database to the internet, whether through a port mapping, a
-phpMyAdmin instance, or anything else. If you expose it anyway, you are
-responsible for securing it. vmangos-deploy does not support such a setup.
+Do not expose the databases to the internet, whether through a port mapping, a
+phpMyAdmin instance, or anything else. If you expose them anyway, you are
+responsible for securing them. vmangos-deploy does not support such a setup.
 
 > [!CAUTION]
 > The `root` user and the user from `MARIADB_USER` have full access to all

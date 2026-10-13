@@ -1,12 +1,12 @@
-# vmangos-deploy: this file differs from upstream's `realmd.conf.dist.in` in
-# the options below, which it leaves out, because the image sets them and
+# vmangos-deploy: this file differs from the `realmd.conf.dist.in` of VMaNGOS
+# in the options below, which it leaves out, because the image sets them and
 # ignores them in this file. Adding one back has no effect.
 #
 # - `LoginDatabaseInfo`: the server connects to the `database` service, with
 #   the user and password from `VMANGOS_DATABASE_USER` and
-#   `VMANGOS_DATABASE_PASSWORD` in the Compose file.
-# - `LogsDir`: the directory under `/opt/vmangos/storage/` that the Compose
-#   file mounts.
+#   `VMANGOS_DATABASE_PASSWORD` in your `compose.yaml`.
+# - `LogsDir`: the directory under `/opt/vmangos/storage/` that your
+#   `compose.yaml` mounts.
 # - `RealmServerPort` and `BindIP`: to use another port, change its host side
 #   in your `compose.yaml`.
 

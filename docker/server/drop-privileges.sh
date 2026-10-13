@@ -23,6 +23,6 @@ if [ "$(id -u)" = "0" ]; then
   export HOME=/home/vmangos VMANGOS_PRIVILEGES_DROPPED=1
   exec setpriv --reuid="$uid" --regid="$gid" --clear-groups --inh-caps=-all "$0" "$@"
 elif [ -z "${VMANGOS_PRIVILEGES_DROPPED:-}" ]; then
-  echo "[vmangos-deploy]: ERROR: The container has to start as root. Replace 'user' with 'VMANGOS_UID' and 'VMANGOS_GID' in its service in your 'compose.yaml', as 'compose.yaml.example' shows." >&2
+  echo "[vmangos-deploy]: ERROR: The container has to start as root. Replace 'user' with 'VMANGOS_UID' and 'VMANGOS_GID' in its service in your 'compose.yaml', as the example Compose file shows." >&2
   exit 1
 fi

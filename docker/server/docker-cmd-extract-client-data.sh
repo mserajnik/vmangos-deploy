@@ -33,12 +33,12 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ ! -d "$client_data_dir" ] || [ ! -d "$client_data_dir/Data" ]; then
-  echo "[vmangos-deploy]: ERROR: '$client_data_dir' has no 'Data' directory. Copy the contents of your client directory there." >&2
+  echo "[vmangos-deploy]: ERROR: The client data directory '$client_data_dir' has no 'Data' directory. Copy the contents of your client directory into the directory that your 'compose.yaml' mounts there, as the example Compose file shows." >&2
   exit 1
 fi
 
 if [ ! -d "$extracted_data_dir" ]; then
-  echo "[vmangos-deploy]: ERROR: The extracted data directory '$extracted_data_dir' does not exist. Mount your extracted data directory there in your 'compose.yaml', as 'compose.yaml.example' shows." >&2
+  echo "[vmangos-deploy]: ERROR: The extracted data directory '$extracted_data_dir' does not exist. Mount your extracted data directory there in your 'compose.yaml', as the example Compose file shows." >&2
   exit 1
 fi
 
@@ -47,7 +47,7 @@ cd "$client_data_dir"
 
 if [ "$force" = false ]; then
   if [ -d "$extracted_data_dir/maps" ] || [ -d "$extracted_data_dir/mmaps" ] || [ -d "$extracted_data_dir/vmaps" ] || [ -d "$client_version_dir" ]; then
-    echo "[vmangos-deploy]: Previously extracted data has been found in '$extracted_data_dir'. Continue with the extraction, which will overwrite the old data? [Y/n]"
+    echo "[vmangos-deploy]: The extracted data directory '$extracted_data_dir' already contains extracted data. Continue with the extraction, which overwrites the old data? [Y/n]"
 
     if ! read -r choice; then
       choice="y"

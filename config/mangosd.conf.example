@@ -1,5 +1,5 @@
-# vmangos-deploy: this file differs from upstream's `mangosd.conf.dist.in` in
-# the options below, which it leaves out, because the image sets them and
+# vmangos-deploy: this file differs from the `mangosd.conf.dist.in` of VMaNGOS
+# in the options below, which it leaves out, because the image sets them and
 # ignores them in this file. Adding one back has no effect.
 #
 # - `DataDir`, `LogsDir`, `HonorDir`, and `Warden.ModuleDir`: the directories
@@ -7,7 +7,7 @@
 # - `LoginDatabase.Info`, `WorldDatabase.Info`, `CharacterDatabase.Info`, and
 #   `LogsDatabase.Info`: the server connects to the `database` service, with
 #   the user and password from `VMANGOS_DATABASE_USER` and
-#   `VMANGOS_DATABASE_PASSWORD` in the Compose file.
+#   `VMANGOS_DATABASE_PASSWORD` in your `compose.yaml`.
 # - `WorldServerPort`, `BindIP`, `Ra.IP`, `Ra.Port`, `SOAP.IP`, and
 #   `SOAP.Port`: to use another port, change its host side in your
 #   `compose.yaml`.

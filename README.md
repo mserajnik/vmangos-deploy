@@ -61,7 +61,7 @@ same machine. You need [Docker][docker] with [Docker Compose][docker-compose].
    ```
 
 3. Adjust your `compose.yaml`: set the server image of your client version for
-   `realmd` and `mangosd`, as the
+   the `realmd` and `mangosd` services, as the
    [client versions section](docs/usage.md#client-versions) lists. Set `TZ` to
    your time zone in every service, and change the database passwords. On
    Linux, set `VMANGOS_UID` and `VMANGOS_GID` to your user's UID and GID. The
@@ -160,8 +160,8 @@ The prompt that works best depends on the agent and the model.
 
 - [Usage](docs/usage.md): choosing images, the client data, running and
   updating VMaNGOS, backups, and database access.
-- [Docker Compose reference](docs/compose.md): every setting in the Compose
-  file.
+- [Docker Compose reference](docs/compose.md): every setting in your
+  `compose.yaml`.
 - [Breaking changes](docs/breaking-changes.md): the changes you have to act on
   when you update.
 

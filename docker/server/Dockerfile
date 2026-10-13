@@ -34,9 +34,9 @@ RUN \
   patch_count=0 && \
   for patch in /build/patches/*.patch; do \
     if [ -f "$patch" ]; then \
-      echo "Applying patch '$patch'."; \
+      echo "Applying the patch '$patch'..."; \
       if ! git apply "$patch"; then \
-        echo "Failed to apply patch '$patch'."; \
+        echo "Failed to apply the patch '$patch'."; \
         if [ "$VMANGOS_FAIL_ON_PATCH_ERROR" = "1" ]; then \
           exit 1; \
         fi; \
@@ -45,7 +45,7 @@ RUN \
     fi; \
   done && \
   if [ "$patch_count" -eq 0 ]; then \
-    echo "No patches found."; \
+    echo "Found no patches to apply."; \
   fi && \
   mkdir -p \
     /opt/vmangos/config \

@@ -58,7 +58,7 @@ require_initialized() {
     return 0
   fi
 
-  vmangos_fail "The databases are not set up completely. If this is a new installation, remove the database volume and start again. Otherwise the volume contains your characters: remove it only if you have a backup, and restore the backup after the new start:
+  vmangos_fail "The databases are not set up completely. If this is a new installation, remove the database volume and start again. Otherwise, the volume contains your characters: remove it only if you have a backup, and restore the backup after the new start:
 https://github.com/mserajnik/vmangos-deploy/blob/master/docs/usage.md#restoring-a-backup"
 }
 
@@ -67,11 +67,13 @@ create_database() {
   local silent="${2:-false}"
 
   if [[ "$silent" = false ]]; then
-    vmangos_log "Creating database '$db_name'..."
+    vmangos_log "Creating the '$db_name' database..."
   fi
 
-  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
-    "CREATE DATABASE IF NOT EXISTS \`$db_name\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+  if ! mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
+    "CREATE DATABASE IF NOT EXISTS \`$db_name\` DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"; then
+    vmangos_fail "Failed to create the '$db_name' database. See the error above."
+  fi
 }
 
 drop_database() {
@@ -79,11 +81,13 @@ drop_database() {
   local silent="${2:-false}"
 
   if [[ "$silent" = false ]]; then
-    vmangos_log "Dropping database '$db_name'..."
+    vmangos_log "Dropping the '$db_name' database..."
   fi
 
-  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
-    "DROP DATABASE IF EXISTS \`$db_name\`;"
+  if ! mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
+    "DROP DATABASE IF EXISTS \`$db_name\`;"; then
+    vmangos_fail "Failed to drop the '$db_name' database. See the error above."
+  fi
 }
 
 grant_permissions() {
@@ -93,16 +97,18 @@ grant_permissions() {
   local password
 
   if [[ "$silent" = false ]]; then
-    vmangos_log "Granting permissions to database user '$MARIADB_USER' for database '$db_name'..."
+    vmangos_log "Granting the '$MARIADB_USER' user access to the '$db_name' database..."
   fi
 
   user="$(sql_escape "$MARIADB_USER")"
   password="$(sql_escape "$MARIADB_PASSWORD")"
 
-  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
+  if ! mariadb -u root -p"$MARIADB_ROOT_PASSWORD" -e \
     "CREATE USER IF NOT EXISTS '$user'@'%' IDENTIFIED BY '$password'; \
     GRANT ALL ON \`$db_name\`.* TO '$user'@'%'; \
-    FLUSH PRIVILEGES;"
+    FLUSH PRIVILEGES;"; then
+    vmangos_fail "Failed to grant the '$MARIADB_USER' user access to the '$db_name' database. See the error above."
+  fi
 }
 
 import_data() {
@@ -117,10 +123,11 @@ import_dump() {
   local db_name="$1"
   local dump_file="$2"
 
-  vmangos_log "Importing initial data for database '$db_name'..."
+  vmangos_log "Importing the initial data for the '$db_name' database..."
 
-  import_data "$db_name" "$dump_file"
-  return $?
+  if ! import_data "$db_name" "$dump_file"; then
+    vmangos_fail "Failed to import the initial data for the '$db_name' database. See the error above."
+  fi
 }
 
 import_updates() {
@@ -131,10 +138,10 @@ import_updates() {
     return 0
   fi
 
-  vmangos_log "Importing potential updates for database '$db_name'..."
+  vmangos_log "Applying any new migrations to the '$db_name' database..."
 
   if ! import_data "$db_name" "$update_file"; then
-    vmangos_fail "Failed to apply the migrations to database '$db_name'. See the error above."
+    vmangos_fail "Failed to apply the new migrations to the '$db_name' database. See the error above."
   fi
 }
 
@@ -152,9 +159,9 @@ configure_realm() {
   realm_icon="$(sql_escape "$VMANGOS_REALMLIST_ICON")"
   realm_timezone="$(sql_escape "$VMANGOS_REALMLIST_TIMEZONE")"
   realm_allowed_security_level="$(sql_escape "$VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL")"
-  vmangos_log "Configuring realm '$VMANGOS_REALMLIST_NAME'..."
+  vmangos_log "Configuring the '$VMANGOS_REALMLIST_NAME' realm..."
 
-  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "realmd" -e \
+  if ! mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "realmd" -e \
     "INSERT INTO \`realmlist\` \
        (\`id\`, \`name\`, \`address\`, \`port\`, \`icon\`, \`timezone\`, \`allowedSecurityLevel\`) \
      VALUES \
@@ -165,7 +172,9 @@ configure_realm() {
        \`port\` = VALUES(\`port\`), \
        \`icon\` = VALUES(\`icon\`), \
        \`timezone\` = VALUES(\`timezone\`), \
-       \`allowedSecurityLevel\` = VALUES(\`allowedSecurityLevel\`);"
+       \`allowedSecurityLevel\` = VALUES(\`allowedSecurityLevel\`);"; then
+    vmangos_fail "Failed to configure the '$VMANGOS_REALMLIST_NAME' realm. See the error above."
+  fi
 }
 
 table_exists() {
@@ -185,7 +194,7 @@ table_exists() {
   # Callers use this as a condition, where `set -e` does not apply, so check
   # the query status by hand.
   if [[ $status -ne 0 ]]; then
-    vmangos_fail "Failed to read the table list for database '$db_name'."
+    vmangos_fail "Failed to read the table list of the '$db_name' database. See the error above."
   fi
 
   [[ "$count" -gt 0 ]]
@@ -195,13 +204,15 @@ ensure_maintenance_db_exists() {
   create_database "maintenance" true
   grant_permissions "maintenance" true
 
-  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
+  if ! mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
     "CREATE TABLE IF NOT EXISTS \`migration_corrections\` ( \
       \`db_name\` VARCHAR(64) NOT NULL, \
       \`commit_hash\` CHAR(40) NOT NULL, \
       \`acknowledged_at\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, \
       PRIMARY KEY (\`db_name\`, \`commit_hash\`) \
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"; then
+    vmangos_fail "Failed to set up the record of confirmed migration edits in the 'maintenance' database. See the error above."
+  fi
 }
 
 # The GitHub repository of a migration edit source.
@@ -280,7 +291,7 @@ correction_acknowledged() {
   # Callers use this as a condition, where `set -e` does not apply, so check
   # the query status by hand.
   if [[ $status -ne 0 ]]; then
-    vmangos_fail "Failed to read which migration edits the databases have applied. See the error above."
+    vmangos_fail "Failed to read the record of confirmed migration edits in the 'maintenance' database. See the error above."
   fi
 
   [[ "$count" -gt 0 ]]
@@ -290,9 +301,11 @@ acknowledge_correction() {
   local db_name="$1"
   local commit_hash="$2"
 
-  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
+  if ! mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "maintenance" -e \
     "INSERT IGNORE INTO \`migration_corrections\` (\`db_name\`, \`commit_hash\`) \
-    VALUES ('$(sql_escape "$db_name")', '$(sql_escape "$commit_hash")');"
+    VALUES ('$(sql_escape "$db_name")', '$(sql_escape "$commit_hash")');"; then
+    vmangos_fail "Failed to update the record of confirmed migration edits in the 'maintenance' database. See the error above."
+  fi
 }
 
 # Keeps the world database's `variables` table, which contains event progress,
@@ -309,8 +322,10 @@ capture_world_variables() {
 
   vmangos_log "Capturing the 'variables' table of the world database..."
 
-  mariadb-dump --no-create-info --replace -u root -p"$MARIADB_ROOT_PASSWORD" \
-    "mangos" "variables" >"$WORLD_VARIABLES_DUMP.partial"
+  if ! mariadb-dump --no-create-info --replace -u root -p"$MARIADB_ROOT_PASSWORD" \
+    "mangos" "variables" >"$WORLD_VARIABLES_DUMP.partial"; then
+    vmangos_fail "Failed to capture the 'variables' table of the world database. See the error above."
+  fi
   mv "$WORLD_VARIABLES_DUMP.partial" "$WORLD_VARIABLES_DUMP"
 }
 
@@ -321,7 +336,9 @@ restore_world_variables() {
 
   vmangos_log "Restoring the 'variables' table of the world database..."
 
-  mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "mangos" <"$WORLD_VARIABLES_DUMP"
+  if ! mariadb -u root -p"$MARIADB_ROOT_PASSWORD" "mangos" <"$WORLD_VARIABLES_DUMP"; then
+    vmangos_fail "Failed to restore the 'variables' table of the world database. See the error above."
+  fi
   rm -f "$WORLD_VARIABLES_DUMP"
 }
 
@@ -379,7 +396,7 @@ process_world_corrections() {
   local repository
   for i in "${pending[@]}"; do
     repository="$(correction_source_repository "${MIGRATION_EDIT_SOURCES[i]}")"
-    vmangos_log "WARNING: The world database has a migration edit ($repository@${MIGRATION_EDIT_COMMITS[i]:0:7}), but both 'VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS' and 'VMANGOS_HALT_ON_MIGRATION_EDITS' are disabled. The start continues, and the world database stays out of step with this image. The server may misbehave or fail to start." >&2
+    vmangos_log "WARNING: The world database has a migration edit ($repository@${MIGRATION_EDIT_COMMITS[i]:0:7}), but both 'VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS' and 'VMANGOS_HALT_ON_MIGRATION_EDITS' are disabled. The start continues, and the world database stays in an inconsistent state. The server may misbehave or fail to start." >&2
   done
 }
 
@@ -422,14 +439,14 @@ process_userstate_corrections() {
     # Leave the edit unacknowledged. The warning then repeats on every start.
     repository="$(correction_source_repository "$source_name")"
     database_name="$(correction_database_name "$db_name")"
-    vmangos_log "WARNING: The '$database_name' database has a migration edit ($repository@${commit_hash:0:7}), but 'VMANGOS_HALT_ON_MIGRATION_EDITS' is disabled. The start continues, and the database stays out of step with this image." >&2
+    vmangos_log "WARNING: The '$database_name' database has a migration edit ($repository@${commit_hash:0:7}), but 'VMANGOS_HALT_ON_MIGRATION_EDITS' is disabled. The start continues, and the database stays in an inconsistent state." >&2
   done
 }
 
 print_correction_halt_message() {
   cat >&2 <<'EOF'
 [vmangos-deploy]: ERROR: Migration edits affect your databases.
-vmangos-deploy will not apply these changes for you. Startup is halted.
+vmangos-deploy does not handle these edits for you. The start is halted.
 
 The edits, each with the name of the database it affects:
 EOF
@@ -456,10 +473,10 @@ EOF
 For each edit above:
 
   1. Open its GitHub link to see what changed.
-  2. Make the edit's changes yourself in the affected database. The database
-     does not apply an edited migration again, so it still matches the result
-     of the old version. Run the SQL that changes it to the result of the new
-     version. To open the database, run on the host:
+  2. Make the edit's changes yourself in the affected database. The 'database'
+     service does not apply an edited migration again, so the database still
+     matches the result of the old version. Run the SQL that changes it to the
+     result of the new version. To open the database, run on the host:
 
        docker compose exec database mariadb -u root -p <database>
 
@@ -479,15 +496,15 @@ To cancel the start and handle the edits later instead, run on the host:
 
   docker compose down
 
-While the container is paused, MariaDB is reachable inside the container via
-the internal socket. TCP access on port 3306 is not available during the pause.
-VMaNGOS stays offline until you confirm or cancel, so take as long as you need.
+While the start is halted, MariaDB is reachable only inside the container,
+through its socket, and not on port 3306. VMaNGOS stays offline until you
+confirm, so take as long as you need.
 
 Note: When you confirm, vmangos-deploy treats the listed commits as applied and
-continues. It does not check your database to verify that the changes you made
+continues. It does not check your databases to verify that the changes you made
 match what the commits describe. If your manual fix is incorrect or incomplete,
-the database will be in an inconsistent state and VMaNGOS may fail to start.
-The responsibility for matching what the commits do is yours, and
+the affected database is left in an inconsistent state and VMaNGOS may fail to
+start. The responsibility for matching what the commits do is yours, and
 vmangos-deploy provides no further support for individual cases.
 EOF
 }
@@ -514,12 +531,12 @@ process_custom_sql() {
   local status
 
   if [[ ! -d "$file_directory" ]]; then
-    vmangos_log "WARNING: The custom SQL file directory '$file_directory' does not exist." >&2
+    vmangos_log "WARNING: The custom SQL file directory '$file_directory' does not exist. Mount your custom SQL directory there in your 'compose.yaml', as the example Compose file shows, or set 'VMANGOS_PROCESS_CUSTOM_SQL' to '0'." >&2
     return 0
   fi
 
   if [[ ! -r "$file_directory" ]] || [[ ! -x "$file_directory" ]]; then
-    vmangos_fail "The custom SQL file directory '$file_directory' is not readable by the database user (UID $(id -u)). This is a permission problem on the host: the bind-mounted directory must be readable by that user. Adjust the permissions, then restart."
+    vmangos_fail "The custom SQL file directory '$file_directory' is not readable by the 'mysql' user (UID $(id -u)). This is a permission problem on the host: the bind-mounted directory must be readable by that user. Adjust the permissions, then restart."
   fi
 
   # Check `find` on its own, so a failure says which step failed. The names are
@@ -532,7 +549,7 @@ process_custom_sql() {
 
   if [[ $status -ne 0 ]]; then
     rm -f "$sql_files_raw"
-    vmangos_fail "Failed to list custom SQL files in '$file_directory'."
+    vmangos_fail "Failed to list the custom SQL files in '$file_directory'. See the error above."
   fi
 
   set +e
@@ -542,19 +559,23 @@ process_custom_sql() {
 
   if [[ $status -ne 0 ]]; then
     rm -f "$sql_files_raw"
-    vmangos_fail "Failed to sort the custom SQL file listing in '$file_directory'."
+    vmangos_fail "Failed to sort the custom SQL file listing in '$file_directory'. See the error above."
   fi
 
   mapfile -d '' -t sql_files <"$sql_files_raw"
   rm -f "$sql_files_raw"
 
-  vmangos_log "Found ${#sql_files[@]} custom SQL file(s) to process."
+  case "${#sql_files[@]}" in
+    0) vmangos_log "Found no custom SQL files to process." ;;
+    1) vmangos_log "Found 1 custom SQL file to process." ;;
+    *) vmangos_log "Found ${#sql_files[@]} custom SQL files to process." ;;
+  esac
 
   for sql_file in "${sql_files[@]}"; do
-    vmangos_log "Processing custom SQL file '$(basename "$sql_file")'..."
+    vmangos_log "Processing the custom SQL file '$(basename "$sql_file")'..."
 
     if ! import_data "mangos" "$sql_file"; then
-      vmangos_log "ERROR: Failed to process custom SQL file '$(basename "$sql_file")'." >&2
+      vmangos_log "ERROR: Failed to process the custom SQL file '$(basename "$sql_file")'. See the error above." >&2
     fi
   done
 }

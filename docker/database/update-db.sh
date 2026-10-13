@@ -52,7 +52,7 @@ if [[ "${#PENDING_DB_NAMES[@]}" -gt 0 ]]; then
     i=$((i + 1))
   done
 
-  vmangos_log "Migration edits confirmed. Continuing the start."
+  vmangos_log "The migration edits are confirmed. The start continues."
 fi
 
 import_updates "mangos" "/sql/migrations/world_db_updates.sql"
