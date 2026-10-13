@@ -20,7 +20,7 @@ body:
           required: true
         - label: I can reproduce the problem with the latest published images (after pulling them and re-creating the containers).
           required: true
-        - label: I checked that what I report is an actual defect in this setup and not a documented limitation, an upstream problem, or an intended design decision.
+        - label: I checked that what I report is an actual defect in this setup and not a documented limitation, a problem in VMaNGOS, or an intended design decision.
           required: true
   - type: textarea
     id: what-happened

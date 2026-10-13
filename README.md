@@ -172,7 +172,7 @@ The images contain [VMaNGOS][vmangos] with the patches from
 
 - It corrects a problem that breaks the build or the running server.
 - It adapts the code to how the images are built and run.
-- It changes an upstream default to a value that gives objectively better
+- It changes a VMaNGOS default to a value that gives objectively better
   results.
 
 Every patch adds a comment to the code it changes, which explains what the

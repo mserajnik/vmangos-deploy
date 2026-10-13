@@ -178,7 +178,7 @@ docker compose run --rm check-deploy-version
 ```
 
 When the new images need configuration adjustments due to a
-[breaking change](breaking-changes.md), the check fails and names the version
+[breaking change](breaking-changes.md), the check fails and shows the version
 they expect. Make those adjustments first. The `check-deploy-version` service
 reads only `VMANGOS_DEPLOY_VERSION` of `mangosd`. The `database`, `realmd`, and
 `mangosd` services also each check their own value when they start, so you have
