@@ -87,9 +87,10 @@ your `compose.yaml`, and adjust the `Warden.*` options in your
 `config/mangosd.conf`.
 
 > [!WARNING]
-> Using [HermesProxy][hermesproxy] (or projects derived from it) to connect
-> `1.14.x` or other modern Classic clients to VMaNGOS is likely to result in
-> disconnects when Warden is enabled.
+> Clients other than the ones VMaNGOS targets, such as modern official clients
+> that connect through a proxy and third-party re-implementations, are unlikely
+> to work when Warden is enabled: the server disconnects a client that fails to
+> answer its checks.
 
 ## Running VMaNGOS
 
@@ -391,7 +392,6 @@ responsible for securing them. vmangos-deploy does not support such a setup.
 > The `root` user and the user from `MARIADB_USER` have full access to all
 > VMaNGOS data, from any address.
 
-[hermesproxy]: https://github.com/WowLegacyCore/HermesProxy
 [image-vmangos-database-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-database/versions?filters%5Bversion_type%5D=tagged
 [image-vmangos-server-versions]: https://github.com/mserajnik/vmangos-deploy/pkgs/container/vmangos-server/versions?filters%5Bversion_type%5D=tagged
 [mariadb-client]: https://mariadb.com/docs/server/clients-and-utilities/mariadb-client/mariadb-command-line-client
