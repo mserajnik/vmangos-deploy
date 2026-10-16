@@ -79,8 +79,10 @@ body:
 
         ```sh
         docker compose images
-        docker image inspect --format '{{ json .Config.Labels }}' ghcr.io/mserajnik/vmangos-server:<tag>
-        docker image inspect --format '{{ json .Config.Labels }}' ghcr.io/mserajnik/vmangos-database
+        docker image inspect --format '{{ json .Config.Labels }}' \
+          ghcr.io/mserajnik/vmangos-server:<tag>
+        docker image inspect --format '{{ json .Config.Labels }}' \
+          ghcr.io/mserajnik/vmangos-database
         ```
       render: text
     validations:
@@ -116,13 +118,20 @@ body:
         The output of the following command, run from your vmangos-deploy directory. On Linux and macOS (and inside WSL 2, if your installation is on the WSL 2 file system):
 
         ```sh
-        find . -name .git -prune -o \( -name client-data -o -name extracted-data -o -name warden-modules \) -prune -print0 -o -print0 | xargs -0 ls -ld
+        find . -name .git -prune \
+          -o \( -name client-data -o -name extracted-data -o -name warden-modules \) \
+             -prune -print0 \
+          -o -print0 | xargs -0 ls -ld
         ```
 
         On Windows, if your installation is on the Windows file system (PowerShell):
 
         ```powershell
-        Get-ChildItem -Recurse | Where-Object FullName -NotMatch '[\\/](\.git|client-data|extracted-data|warden-modules)[\\/]' | Format-Table Mode, FullName -AutoSize | Out-String -Width 4096
+        $exclude = '[\\/](\.git|client-data|extracted-data|warden-modules)[\\/]'
+        Get-ChildItem -Recurse |
+          Where-Object FullName -NotMatch $exclude |
+          Format-Table Mode, FullName -AutoSize |
+          Out-String -Width 4096
         ```
       render: text
     validations:
