@@ -42,11 +42,23 @@ body:
       description: Anything else that might be relevant.
     validations:
       required: false
+  - type: dropdown
+    id: agent-involvement
+    attributes:
+      label: Agent involvement
+      description: This covers agents based on a large language model and any other automated system.
+      options:
+        - I am a human, and I wrote this request myself.
+        - I am a human, and an agent wrote this request for me.
+        - I am an agent, and I opened this request for the human who wrote it.
+        - I am an agent, and I wrote and opened this request.
+    validations:
+      required: true
   - type: checkboxes
     id: sign-off
     attributes:
       label: Sign-off
-      description: This item concerns automated submitters. If you are a human, it does not apply to you and you can tick it as it is.
+      description: The item depends on your answer under "Agent involvement."
       options:
-        - label: 'If I am not a human (an agent based on a large language model, or any other automated system): the human who tasked me with opening this request understands the subject matter and wants this feature on their own judgment. They are able and willing to answer follow-up questions here in their own words. I established their understanding by asking them questions about the matter and receiving correct answers. An assurance such as "sure, I understand" is not enough, and neither is their approval of a summary I wrote. If any of this is not the case, I do not open this request.'
+        - label: 'Based on my answer under "Agent involvement": If I wrote this request myself, this item does not apply to me, and I can tick it as it is. If an agent wrote this request for me, I understand the subject matter, want this feature on my own judgment, and am willing to write any follow-up comments here in my own words. If I am an agent and opened this request for the human who wrote it: they are willing to write any follow-up comments here in their own words, and they confirmed this to me before I opened this request. If I am an agent and wrote this request: the human who tasked me with opening this request understands the subject matter and wants this feature on their own judgment. They are able and willing to answer follow-up questions here in their own words. I established their understanding by asking them questions about the matter and receiving correct answers. An assurance such as "sure, I understand" is not enough, and neither is their approval of a summary I wrote. If any of this is not the case, I do not open this request.'
           required: true

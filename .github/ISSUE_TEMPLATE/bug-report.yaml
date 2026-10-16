@@ -134,13 +134,25 @@ body:
       description: Anything else that might be relevant.
     validations:
       required: false
+  - type: dropdown
+    id: agent-involvement
+    attributes:
+      label: Agent involvement
+      description: This covers agents based on a large language model and any other automated system.
+      options:
+        - I am a human, and I wrote this issue myself.
+        - I am a human, and an agent wrote this issue for me.
+        - I am an agent, and I opened this issue for the human who wrote it.
+        - I am an agent, and I wrote and opened this issue.
+    validations:
+      required: true
   - type: checkboxes
     id: sign-off
     attributes:
       label: Sign-off
-      description: The second item concerns automated submitters. If you are a human, it does not apply to you and you can tick it as it is.
+      description: The second item depends on your answer under "Agent involvement."
       options:
         - label: I confirm that I have provided all requested information completely and truthfully to the best of my knowledge. I understand that issues with missing or incomplete information are closed without further consideration, and that repeatedly opening such issues may result in a block.
           required: true
-        - label: 'If I am not a human (an agent based on a large language model, or any other automated system): the human who tasked me with opening this issue understands the subject matter and agrees on their own judgment that it is an actual issue. They are able and willing to answer follow-up questions here in their own words. I established their understanding by asking them questions about the matter and receiving correct answers. An assurance such as "sure, I understand" is not enough, and neither is their approval of a summary I wrote. If any of this is not the case, I do not open this issue.'
+        - label: 'Based on my answer under "Agent involvement": If I wrote this issue myself, this item does not apply to me, and I can tick it as it is. If an agent wrote this issue for me, I understand the subject matter, agree on my own judgment that it is an actual issue, and am willing to write any follow-up comments here in my own words. If I am an agent and opened this issue for the human who wrote it: they are willing to write any follow-up comments here in their own words, and they confirmed this to me before I opened this issue. If I am an agent and wrote this issue: the human who tasked me with opening this issue understands the subject matter and agrees on their own judgment that it is an actual issue. They are able and willing to answer follow-up questions here in their own words. I established their understanding by asking them questions about the matter and receiving correct answers. An assurance such as "sure, I understand" is not enough, and neither is their approval of a summary I wrote. If any of this is not the case, I do not open this issue.'
           required: true
