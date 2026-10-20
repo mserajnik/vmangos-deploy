@@ -168,12 +168,15 @@ The prompt that works best depends on the agent and the model.
 ## Modifications
 
 The images contain [VMaNGOS][vmangos] with the patches from
-[`docker/patches/`](docker/patches). A patch exists for one of these reasons:
+[`docker/patches/`](docker/patches). A patch exists for one or more of these
+reasons:
 
 - It corrects a problem that breaks the build or the running server.
 - It adapts the code to how the images are built and run.
 - It changes a VMaNGOS default to a value that gives objectively better
   results.
+- It applies a fix from an open VMaNGOS pull request that the maintainer has
+  reviewed and that does not conflict with VMaNGOS's goals.
 
 Every patch adds a comment to the code it changes, which explains what the
 change does and why. A patch is removed once it is no longer needed, so the
