@@ -7,6 +7,6 @@
     "wrapCodeSpans": false
   },
   "plugins": [
-    "https://plugins.dprint.dev/markdown-0.26.0.wasm"
+    "https://plugins.dprint.dev/markdown-0.28.2.wasm"
   ]
 }
