@@ -38,8 +38,8 @@ and
 `ghcr.io/mserajnik/vmangos-database:46183d287f80ab1ebf27bab12f37bc0b5b188c86`.
 Use such tags to pin your installation to a specific commit. You have to give
 the server and the database image the same commit, so the code and the data
-match. The `database` service applies new migrations on startup, so an image
-older than the ones you ran before cannot work with the databases.
+match. The `database` service applies new migrations when it starts, so an
+image older than those you ran before cannot work with the databases.
 
 Since the Docker images are generally built only once a day, there is likely no
 build for every single VMaNGOS commit. Older images are deleted automatically
@@ -87,10 +87,10 @@ your `compose.yaml`, and adjust the `Warden.*` options in your
 `config/mangosd.conf`.
 
 > [!WARNING]
-> Clients other than the ones VMaNGOS targets, such as modern official clients
-> that connect through a proxy and third-party re-implementations, are unlikely
-> to work when Warden is enabled: the server disconnects a client that fails to
-> answer its checks.
+> Clients other than those that VMaNGOS targets, such as modern official
+> versions that connect through a proxy and third-party re-implementations, are
+> unlikely to work while Warden is enabled: the server disconnects a client
+> that fails to answer its checks.
 
 ## Running VMaNGOS
 
@@ -103,9 +103,9 @@ docker compose up -d
 The first start takes longer, because it creates the databases.
 
 > [!WARNING]
-> Do not interrupt the first start. If it stops early and the next start of the
-> `database` service fails, remove the database volume with
-> `docker compose down -v`, and start again.
+> Do not interrupt the first start. If it stops early and the `database`
+> service then fails to start, remove the database volume with
+> `docker compose down -v`, and run `docker compose up -d` again.
 
 To follow the server output, run:
 
@@ -192,20 +192,23 @@ containers:
 docker compose up -d
 ```
 
+If `docker compose up -d` keeps waiting for the `database` service, it has
+likely halted for [migration edits](#migration-edits).
+
 If you pinned your installation to a specific commit, the update only takes
 effect once you set newer tags.
 
-On the first start after an update, the `database` service applies the new
-migrations. If a migration fails, the `database` service logs the error and
-stops. Its automatic restart then counts the migration as applied. The cause is
-a bug or something in your installation. Check the log for what failed, and
-decide for yourself how to continue. You likely have to restore a backup from
-before the update: remove the database volume with `docker compose down -v`,
-start again, and restore the backup as the
-[restoring a backup section](#restoring-a-backup) shows. With the
-`database-backup` service as the example Compose file sets it up, the restore
-loses the event progress of the world, as the [backups section](#backups)
-describes.
+After an update, the `database` service applies the new migrations when it
+starts. If a migration fails, the `database` service logs the error and stops.
+When Docker then restarts the container, the `database` service counts the
+migration as applied. The cause is a bug or something in your installation.
+Check the log for what failed, and decide for yourself how to continue. You
+likely have to restore a backup from before the update: remove the database
+volume with `docker compose down -v`, run `docker compose up -d` again, and
+restore the backup as the [restoring a backup section](#restoring-a-backup)
+shows. With the `database-backup` service as the example Compose file sets it
+up, the restore loses the event progress of the world, as the
+[backups section](#backups) describes.
 
 ### Updating your clone
 
@@ -235,32 +238,39 @@ edited migration again, so vmangos-deploy detects these edits and acts on them.
   Keep such changes as [custom SQL](#custom-sql), which the `database` service
   runs again after the re-creation.
 - A database with player data cannot be re-created. For such a database, the
-  start halts and asks you to apply the change by hand, as the next section
-  describes.
+  `database` service halts and asks you to apply the change by hand, as the
+  next section describes.
 
 The [`database` section](compose.md#database) of the Docker Compose reference
 describes the two variables that control this.
 
 ### Applying changes by hand
 
-When the start halts, the `database` service prints the affected databases and
-the link to the commit of each edit. The `realmd` and `mangosd` services wait
-for the `database` service, so `docker compose up -d` keeps waiting too. Read
-the message from a second terminal:
+During a halt, the `database` service prints the affected databases and the
+link to the commit of each edit. Its healthcheck does not pass until you
+confirm, and the `realmd` and `mangosd` services only start once it passes, so
+`docker compose up -d` keeps waiting too. Read the message from a second
+terminal:
 
 ```sh
 docker compose logs database
 ```
 
+> [!WARNING]
+> The SQL you run here changes your databases directly. If something goes
+> wrong, only a backup from before the update can restore them. The restore
+> needs the `database` service to run normally, so confirm first, then follow
+> the [restoring a backup section](#restoring-a-backup).
+
 The `database` service waits as long as you need. To resolve the halt:
 
 1. Open each linked commit and read its changes to the SQL files.
-2. Make each edit's changes yourself in the affected database, whose name the
-   message lists with the edit. The `database` service does not apply an edited
-   migration again, so the database still matches the result of the old
+2. The message lists each edit with the database it affects. Make the edit's
+   changes yourself in that database. The `database` service does not apply an
+   edited migration again, so the database still matches the result of the old
    version. Compare the old and the new version of each edited file in the
    commit, and run the SQL that changes the database to the result of the new
-   version. For example, if the edit adds a column, add that column yourself.
+   version.
 
    To open a database, run:
 
@@ -277,8 +287,10 @@ The `database` service waits as long as you need. To resolve the halt:
    docker compose exec database vmangos-confirm-changes
    ```
 
-The `database` service then records the commits as applied, and the start
-continues.
+The `database` service then records the commits as applied and resumes. If the
+halt lasted longer than the `start_period` of its healthcheck (24 hours in the
+example Compose file), `docker compose up -d` has likely stopped with an error,
+and you need to run it again to start the `realmd` and `mangosd` services.
 
 > [!WARNING]
 > The confirmation marks the listed commits as applied without checking your
@@ -287,9 +299,8 @@ continues.
 > your responsibility, and vmangos-deploy provides no further support for
 > individual cases.
 
-If you would rather cancel the start and handle the edits later, run
-`docker compose down` instead of confirming. The `database` service halts again
-on your next start.
+To stop the containers and handle the edits later, run `docker compose down`
+without confirming. The `database` service halts again the next time it starts.
 
 In a database with player data, you can ignore an edit to a migration that has
 not been applied to it yet. To check, look up the timestamp at the start of the
@@ -309,8 +320,8 @@ describes.
 ## Custom SQL
 
 To make your own changes to the world database, put them into `.sql` files in
-`storage/database/custom-sql/`. The `database` service runs every file there in
-alphabetical order on every start, after the migrations, and after a
+`storage/database/custom-sql/`. The `database` service runs each file there in
+alphabetical order every time it starts, after the migrations, and after a
 re-creation of the world database too. So the statements have to be idempotent:
 running them twice has to give the same result as running them once.
 
@@ -348,7 +359,7 @@ schedule with a one-off run.
 ### Restoring a backup
 
 A restore drops and re-creates the tables of each database in the backup. To
-restore one:
+restore a backup:
 
 1. Stop the servers, which would otherwise read and write the tables while they
    change:
@@ -372,14 +383,15 @@ restore one:
    docker compose start realmd mangosd
    ```
 
-   If the backup is older than a migration edit, the restart acts on the edit
-   again, as the [migration edits section](#migration-edits) describes.
+   If the backup is older than a migration edit, the `database` service then
+   acts on the edit again, as the [migration edits section](#migration-edits)
+   describes.
 
 ## Database access
 
 Some tasks, such as managing accounts or changing the realm entry, need a
-MariaDB client. The `phpmyadmin` service in your `compose.yaml` provides one in
-the browser once you uncomment it (see the
+MariaDB client. The `phpmyadmin` service in your `compose.yaml` provides a
+client in the browser once you uncomment it (see the
 [`phpmyadmin` section](compose.md#phpmyadmin-optional)).
 
 ### Database security

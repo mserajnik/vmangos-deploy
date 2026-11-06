@@ -4,7 +4,7 @@ services:
   database:
     image: ghcr.io/mserajnik/vmangos-database
     restart: unless-stopped
-    stop_grace_period: 2m # Gives a running startup step time to finish during shutdown.
+    stop_grace_period: 2m # Gives a running import or update time to finish when Docker stops the container.
     healthcheck:
       test: ['CMD', 'vmangos-healthcheck']
       interval: 1m
@@ -27,8 +27,8 @@ services:
       - VMANGOS_REALMLIST_TIMEZONE=0 # 2 = United States, 3 = Oceanic, 4 = Latin America, 8 = English, 9 = German, 10 = French, 11 = Spanish, 12 = Russian.
       - VMANGOS_REALMLIST_ALLOWED_SECURITY_LEVEL=0 # 0 admits regular players.
       - VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS=1 # Re-creates the world database to apply a migration edit.
-      - VMANGOS_HALT_ON_MIGRATION_EDITS=1 # Halts the start until you handle a migration edit to a database with player data.
-      - VMANGOS_PROCESS_CUSTOM_SQL=1 # Runs your custom SQL files on every start.
+      - VMANGOS_HALT_ON_MIGRATION_EDITS=1 # Halts the service until you handle a migration edit to a database with player data.
+      - VMANGOS_PROCESS_CUSTOM_SQL=1 # Runs your custom SQL files every time the service starts.
 
   realmd:
     image: ghcr.io/mserajnik/vmangos-server:5875
@@ -67,7 +67,7 @@ services:
       database:
         condition: service_healthy
     restart: unless-stopped
-    stop_grace_period: 2m # Gives a busy server time to save during shutdown.
+    stop_grace_period: 2m # Gives the server time to save when Docker stops the container.
     healthcheck:
       test: ['CMD', 'nc', '-z', 'localhost', '8085']
       interval: 1m

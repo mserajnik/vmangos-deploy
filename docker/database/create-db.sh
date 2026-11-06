@@ -3,8 +3,9 @@
 # SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-# Sets up the databases on the first start, and acknowledges the image's
-# migration edits, which a new installation already has.
+# Sets up the databases when the entrypoint initializes the data directory, and
+# acknowledges the image's migration edits, which a new installation already
+# has.
 
 set -euo pipefail
 

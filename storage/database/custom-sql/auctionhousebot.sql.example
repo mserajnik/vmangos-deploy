@@ -1,6 +1,7 @@
 START TRANSACTION;
 
--- Truncate first, so the file can run on every start.
+-- Truncate first, so the file can run every time the `database` service
+-- starts.
 TRUNCATE `auctionhousebot`;
 
 -- Insert the default rows, so enabling this example as it is does not change

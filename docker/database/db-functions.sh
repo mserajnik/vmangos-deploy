@@ -30,8 +30,7 @@ clear_change_sentinels() {
   rm -f /tmp/vmangos-changes-pending /tmp/vmangos-changes-acknowledged
 }
 
-# A data directory with the first marker is from a first start that did not
-# finish.
+# A data directory with the first marker is from a setup that did not finish.
 INITIALIZING_MARKER="/var/lib/mysql/.vmangos-deploy-initializing"
 INITIALIZED_MARKER="/var/lib/mysql/.vmangos-deploy-initialized"
 
@@ -58,7 +57,7 @@ require_initialized() {
     return 0
   fi
 
-  vmangos_fail "The databases are not set up completely. If this is a new installation, remove the database volume and start again. Otherwise, the volume contains your characters: remove it only if you have a backup, and restore the backup after the new start:
+  vmangos_fail "The databases are not set up completely. If this is a new installation, remove the database volume and run 'docker compose up -d' again. Otherwise, the volume contains your characters: remove it only if you have a backup, and restore the backup once the databases are set up again:
 https://github.com/mserajnik/vmangos-deploy/blob/master/docs/usage.md#restoring-a-backup"
 }
 
@@ -392,11 +391,12 @@ process_world_corrections() {
     return 0
   fi
 
-  # Leave the edit unacknowledged. The warning then repeats on every start.
+  # Leave the edit unacknowledged. The warning then repeats every time the
+  # container starts.
   local repository
   for i in "${pending[@]}"; do
     repository="$(correction_source_repository "${MIGRATION_EDIT_SOURCES[i]}")"
-    vmangos_log "WARNING: The world database has a migration edit ($repository@${MIGRATION_EDIT_COMMITS[i]:0:7}), but both 'VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS' and 'VMANGOS_HALT_ON_MIGRATION_EDITS' are disabled. The start continues, and the world database stays in an inconsistent state. The server may misbehave or fail to start." >&2
+    vmangos_log "WARNING: The world database has a migration edit ($repository@${MIGRATION_EDIT_COMMITS[i]:0:7}), but both 'VMANGOS_ENABLE_AUTOMATIC_WORLD_DB_CORRECTIONS' and 'VMANGOS_HALT_ON_MIGRATION_EDITS' are disabled. The 'database' service does not halt, and the world database stays in an inconsistent state. The 'mangosd' service may misbehave or fail to start." >&2
   done
 }
 
@@ -436,17 +436,19 @@ process_userstate_corrections() {
       continue
     fi
 
-    # Leave the edit unacknowledged. The warning then repeats on every start.
+    # Leave the edit unacknowledged. The warning then repeats every time the
+    # container starts.
     repository="$(correction_source_repository "$source_name")"
     database_name="$(correction_database_name "$db_name")"
-    vmangos_log "WARNING: The '$database_name' database has a migration edit ($repository@${commit_hash:0:7}), but 'VMANGOS_HALT_ON_MIGRATION_EDITS' is disabled. The start continues, and the database stays in an inconsistent state." >&2
+    vmangos_log "WARNING: The '$database_name' database has a migration edit ($repository@${commit_hash:0:7}), but 'VMANGOS_HALT_ON_MIGRATION_EDITS' is disabled. The 'database' service does not halt, and the '$database_name' database stays in an inconsistent state." >&2
   done
 }
 
 print_correction_halt_message() {
   cat >&2 <<'EOF'
 [vmangos-deploy]: ERROR: Migration edits affect your databases.
-vmangos-deploy does not handle these edits for you. The start is halted.
+vmangos-deploy does not handle these edits for you. VMaNGOS does not start
+until you handle them and confirm, as described below.
 
 The edits, each with the name of the database it affects:
 EOF
@@ -470,19 +472,26 @@ EOF
 
   cat >&2 <<'EOF'
 
+The SQL you run changes your databases directly. If something goes wrong, only
+a backup from before the update can restore them. The restore needs the
+'database' service to run normally, so confirm first, then restore the backup
+as the documentation describes.
+
 For each edit above:
 
   1. Open its GitHub link to see what changed.
   2. Make the edit's changes yourself in the affected database. The 'database'
      service does not apply an edited migration again, so the database still
      matches the result of the old version. Run the SQL that changes it to the
-     result of the new version. To open the database, run on the host:
+     result of the new version.
+
+     To open the database, run on the host:
 
        docker compose exec database mariadb -u root -p <database>
 
-     (The MariaDB client prompts for the password, which matches your
-     'MARIADB_ROOT_PASSWORD' setting in your 'compose.yaml'. To leave the
-     client, run 'exit'.)
+     (The MariaDB client prompts for the password, which is
+     'MARIADB_ROOT_PASSWORD' from your 'compose.yaml'. To leave the client, run
+     'exit'.)
 
      You can ignore an edit to a migration that has not been applied to the
      database yet. The documentation shows how to check:
@@ -492,18 +501,17 @@ When you have handled every edit above, confirm by running on the host:
 
   docker compose exec database vmangos-confirm-changes
 
-To cancel the start and handle the edits later instead, run on the host:
+To stop the containers and handle the edits later, run on the host:
 
   docker compose down
 
-While the start is halted, MariaDB is reachable only inside the container,
-through its socket, and not on port 3306. VMaNGOS stays offline until you
-confirm, so take as long as you need.
+Until you confirm, MariaDB is reachable only inside the container, through its
+socket, and not on port 3306.
 
-Note: When you confirm, vmangos-deploy treats the listed commits as applied and
-continues. It does not check your databases to verify that the changes you made
-match what the commits describe. If your manual fix is incorrect or incomplete,
-the affected database is left in an inconsistent state and VMaNGOS may fail to
+Note: When you confirm, vmangos-deploy treats the listed commits as applied. It
+does not check your databases to verify that the changes you made match what
+the commits describe. If your manual fix is incorrect or incomplete, the
+affected database is left in an inconsistent state and VMaNGOS may fail to
 start. The responsibility for matching what the commits do is yours, and
 vmangos-deploy provides no further support for individual cases.
 EOF
@@ -518,8 +526,8 @@ wait_for_change_ack() {
 
   rm -f /tmp/vmangos-changes-pending
 
-  # `vmangos-confirm-changes` waits for the receipt, because a later start
-  # deletes the acknowledgement too.
+  # `vmangos-confirm-changes` waits for the receipt, because the next container
+  # start deletes the acknowledgement too.
   mv /tmp/vmangos-changes-acknowledged /tmp/vmangos-changes-consumed
 }
 
@@ -536,7 +544,7 @@ process_custom_sql() {
   fi
 
   if [[ ! -r "$file_directory" ]] || [[ ! -x "$file_directory" ]]; then
-    vmangos_fail "The custom SQL file directory '$file_directory' is not readable by the 'mysql' user (UID $(id -u)). This is a permission problem on the host: the bind-mounted directory must be readable by that user. Adjust the permissions, then restart."
+    vmangos_fail "The custom SQL file directory '$file_directory' is not readable by the 'mysql' user (UID $(id -u)). This is a permission problem on the host: the bind-mounted directory must be readable by that user. Adjust the permissions, then run 'docker compose up -d' on the host."
   fi
 
   # Check `find` on its own, so a failure says which step failed. The names are

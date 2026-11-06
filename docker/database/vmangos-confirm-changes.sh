@@ -3,21 +3,22 @@
 # SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-# Confirms the migration edits the user applied. A halted start then continues.
+# Confirms the migration edits the user applied. The halted `update-db.sh` then
+# resumes.
 
 set -eu
 
-# A restart during a pause leaves the sentinel behind, so also require a
-# running `update-db.sh`.
+# A container restart during a halt leaves the sentinel behind, so also require
+# a running `update-db.sh`.
 if [[ ! -f /tmp/vmangos-changes-pending ]] ||
   ! pgrep -f '/always-initdb.d/update-db.sh' >/dev/null; then
   echo "[vmangos-deploy]: ERROR: vmangos-deploy is not currently waiting for confirmation." >&2
   exit 1
 fi
 
-# `docker compose exec` runs as root, but the start runs as the `mysql` user,
-# which has to rename the file in sticky `/tmp`. Move the file into place only
-# once it has that owner.
+# `docker compose exec` runs as root, but the entrypoint runs as the `mysql`
+# user, which has to rename the file in sticky `/tmp`. Move the file into place
+# only once it has that owner.
 acknowledged="$(mktemp /tmp/vmangos-changes-acknowledged.XXXXXX)"
 trap 'rm -f "$acknowledged"' EXIT
 
@@ -29,7 +30,7 @@ fi
 rm -f /tmp/vmangos-changes-consumed
 mv "$acknowledged" /tmp/vmangos-changes-acknowledged
 
-# Wait for the receipt, because a later start also deletes the file.
+# Wait for the receipt, because the next container start also deletes the file.
 waited=0
 while [[ ! -f /tmp/vmangos-changes-consumed ]] && [[ "$waited" -lt 30 ]]; do
   sleep 1
@@ -42,4 +43,4 @@ if [[ ! -f /tmp/vmangos-changes-consumed ]]; then
   exit 1
 fi
 
-echo "[vmangos-deploy]: The confirmation is recorded. The start continues."
+echo "[vmangos-deploy]: The confirmation is recorded. The 'database' service resumes. If the halt lasted longer than the 'start_period' of its healthcheck (24 hours in the example Compose file), 'docker compose up -d' has likely stopped with an error, and you need to run it again."

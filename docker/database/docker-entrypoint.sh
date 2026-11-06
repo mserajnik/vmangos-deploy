@@ -73,8 +73,9 @@ fi
 # skip setup if they aren't running mysqld or want an option that stops mysqld
 if [ "$1" = 'mariadbd' ] || [ "$1" = 'mysqld' ] && ! _mysql_want_help "$@"; then
   mysql_note "Custom entrypoint script for MariaDB Server ${MARIADB_VERSION} started."
-  # Outside the hook run, a stop ends the start once the running command
-  # finishes. PID 1 ignores a signal it has no handler for.
+  # Outside the hook run, when Docker stops the container, the entrypoint exits
+  # once the running command finishes. PID 1 ignores a signal without a
+  # handler.
   trap 'exit 143' TERM
 
   # shellcheck source=docker/check-deploy-version.sh
@@ -108,9 +109,10 @@ if [ "$1" = 'mariadbd' ] || [ "$1" = 'mysqld' ] && ! _mysql_want_help "$@"; then
     docker_temp_server_start "$@"
     mysql_note "Temporary server started."
 
-    # A stop lets the running hook step finish and then shuts the temporary
-    # server down cleanly. The hooks run in the background, because a trap runs
-    # only between commands and PID 1 ignores a signal it has no handler for.
+    # When Docker stops the container, the entrypoint lets the running hook
+    # step finish and then shuts the temporary server down cleanly. The hooks
+    # run in the background, because PID 1 ignores a signal without a handler
+    # and a trap runs only between commands.
     trap 'pkill -P "$hooks_pid" || :; wait "$hooks_pid" || :; docker_temp_server_stop; exit 143' TERM
     docker_process_init_files /always-initdb.d/* &
     hooks_pid=$!

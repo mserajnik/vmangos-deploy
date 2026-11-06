@@ -121,7 +121,7 @@ For the full instructions, see the [usage documentation](docs/usage.md).
 ### Using a coding agent
 
 A coding agent such as [Claude Code][claude-code] or [Codex][codex] can walk
-you through the setup. Try a prompt like this one:
+you through the setup. Try a prompt like the following:
 
 ```text
 Help me install and set up https://github.com/mserajnik/vmangos-deploy.

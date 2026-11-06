@@ -4,7 +4,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Stops with an error when `VMANGOS_DEPLOY_VERSION` does not match the number
-# this image expects. Every image sources this first.
+# this image expects. It is sourced early, so that this happens as soon as
+# possible.
 
 # Raise this with each breaking change that needs the user to act, and add the
 # change to `docs/breaking-changes.md`.

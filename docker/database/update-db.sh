@@ -3,15 +3,17 @@
 # SPDX-FileCopyrightText: 2023-2026 Michael Serajnik <https://github.com/mserajnik>
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-# Acts on the image's migration edits on every later start, then applies the
-# migrations and the custom SQL and updates the realm.
+# Acts on the image's migration edits when the data directory already has
+# databases, then applies the migrations and the custom SQL and updates the
+# realm.
 
 set -euo pipefail
 
 # shellcheck source=docker/database/db-functions.sh
 source "/opt/scripts/db-functions.sh"
 
-# A stop ends the start once the running command finishes.
+# When Docker stops the container, the script exits once the running command
+# finishes.
 trap 'exit 143' TERM
 
 clear_database_ready
@@ -52,7 +54,7 @@ if [[ "${#PENDING_DB_NAMES[@]}" -gt 0 ]]; then
     i=$((i + 1))
   done
 
-  vmangos_log "The migration edits are confirmed. The start continues."
+  vmangos_log "The migration edits are confirmed."
 fi
 
 import_updates "mangos" "/sql/migrations/world_db_updates.sql"

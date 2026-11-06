@@ -1,6 +1,6 @@
 # vmangos-deploy: this file differs from the `mangosd.conf.dist.in` of VMaNGOS
 # in the options below, which it leaves out, because the image sets them and
-# ignores them in this file. Adding one back has no effect.
+# ignores them in this file. Adding any of these options back has no effect.
 #
 # - `DataDir`, `LogsDir`, `HonorDir`, and `Warden.ModuleDir`: the directories
 #   under `/opt/vmangos/storage/`.
