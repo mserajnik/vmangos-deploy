@@ -27,7 +27,7 @@ variants:
   "4544": {}
   "4449": {}
 
-drift:
+diff:
   upstreams:
     # Bump the commit in `docker/database/Dockerfile` and in the header of
     # `docker/database/docker-entrypoint.sh` along with this pin.
