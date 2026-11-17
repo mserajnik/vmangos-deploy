@@ -1,5 +1,5 @@
 diff --git a/src/game/Server/WorldSocket.cpp b/src/game/Server/WorldSocket.cpp
-index 72ce94e..cb6159f 100644
+index d5a67d9..e23eca8 100644
 --- a/src/game/Server/WorldSocket.cpp
 +++ b/src/game/Server/WorldSocket.cpp
 @@ -84,7 +84,10 @@ WorldSocket::WorldSocket(IO::Networking::AsyncSocket socket)
@@ -15,13 +15,13 @@ index 72ce94e..cb6159f 100644
      if (m_sessionNoAuthTimeout)
      {
 diff --git a/src/game/Server/WorldSocketMgr.cpp b/src/game/Server/WorldSocketMgr.cpp
-index fbf15d8..a153bb0 100644
+index 7fda44b..57d9266 100644
 --- a/src/game/Server/WorldSocketMgr.cpp
 +++ b/src/game/Server/WorldSocketMgr.cpp
-@@ -110,7 +110,10 @@ void WorldSocketMgr::OnNewClientConnected(IO::Networking::SocketDescriptor socke
-     else
-     {
-         // no proxy, we can start directly
+@@ -121,7 +121,10 @@ void WorldSocketMgr::OnNewClientConnected(IO::Networking::SocketDescriptor socke
+             sLog.Out(LOG_BASIC, LOG_LVL_BASIC, "[%s] Connection rejected (banned ip)", worldSocket->GetRemoteIpString().c_str());
+             return; // implicit close()
+         }
 -        sLog.Out(LOG_NETWORK, LOG_LVL_BASIC, "[%s] Connection accepted", worldSocket->GetRemoteIpString().c_str());
 +        // vmangos-deploy: leave out the connections of the healthcheck, which
 +        // come from 127.0.0.1.
@@ -31,7 +31,7 @@ index fbf15d8..a153bb0 100644
      }
  }
 diff --git a/src/realmd/AuthSocket.cpp b/src/realmd/AuthSocket.cpp
-index 9167864..dafd891 100644
+index 54641f4..99a3d92 100644
 --- a/src/realmd/AuthSocket.cpp
 +++ b/src/realmd/AuthSocket.cpp
 @@ -93,7 +93,10 @@ AuthSocket::~AuthSocket()
