@@ -11,7 +11,7 @@ sources:
   core:
     repository: vmangos/core
     branch: development
-    pin: 5fdb6fc2176f3c50be2616fc71f63edf46ab1195
+    pin: 59f1276352556ae1cbeee8bf365c3b50660743d9
     cutoff: c53391ecfb2b8b936432c369aad5cabd6c996f06
 
 # One variant per client version. Each gets its own server image, and all of
