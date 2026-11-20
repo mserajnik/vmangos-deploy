@@ -204,15 +204,13 @@ You are welcome to help out!
 ## Licenses
 
 - [`AGPL-3.0-or-later`][license-agpl-3.0-or-later] (Code)
-- [`GPL-2.0-only`][license-gpl-2.0-only] (Database entrypoint script, based on
-  MariaDB's)
-- [`GPL-2.0-or-later`][license-gpl-2.0-or-later] (Patches, matching VMaNGOS
-  source)
 - [`CC-BY-SA-4.0`][license-cc-by-sa-4.0] (Documentation, graphic assets, and
   issue templates)
 - [`CC0-1.0`][license-cc0-1.0] (Configuration files)
 
-This project follows the [REUSE specification][reuse-spec].
+This project follows the [REUSE specification][reuse-spec].  
+Patches and other files based on upstream projects are licensed like those
+projects.
 
 ## Disclaimer
 
@@ -244,8 +242,6 @@ non-commercial use only and comes with no warranty.
 [license-agpl-3.0-or-later]: LICENSES/AGPL-3.0-or-later.txt
 [license-cc-by-sa-4.0]: LICENSES/CC-BY-SA-4.0.txt
 [license-cc0-1.0]: LICENSES/CC0-1.0.txt
-[license-gpl-2.0-only]: LICENSES/GPL-2.0-only.txt
-[license-gpl-2.0-or-later]: LICENSES/GPL-2.0-or-later.txt
 [lost-city-rs]: https://github.com/LostCityRS
 [lost-city-rs-deploy]: https://github.com/mserajnik/lost-city-rs-deploy
 [maintainer]: https://github.com/mserajnik
