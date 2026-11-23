@@ -34,7 +34,7 @@ diff:
     mariadb:
       repository: MariaDB/mariadb-docker
       branch: master
-      pin: 063eb10da092170beea08d2c629b6eb79d28cceb
+      pin: d8991eb691a0bafc6442b21a72b97d0ba8a8374a
   # A change upstream that breaks a patch already fails the build.
   checks:
     # A new `find_package(...)` in `CMakeLists.txt` can add a package the

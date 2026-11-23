@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 # Based on this MariaDB entrypoint:
-# https://github.com/MariaDB/mariadb-docker/blob/063eb10da092170beea08d2c629b6eb79d28cceb/12.3/docker-entrypoint.sh
+# https://github.com/MariaDB/mariadb-docker/blob/d8991eb691a0bafc6442b21a72b97d0ba8a8374a/12.3/docker-entrypoint.sh
 # Its formatting, comments, and commented-out code stay, so the two remain easy
 # to compare.
 
